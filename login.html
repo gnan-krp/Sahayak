@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResQNet – Control room sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a1424;
+    --panel: #0e1b30;
+    --panel-2: #132340;
+    --line: #22344f;
+    --text: #e8eef7;
+    --muted: #93a4bc;
+    --crit: #ff4d4d;
+    --high: #ff8a3d;
+    --med: #f5c542;
+    --ok: #3ddc97;
+    --info: #4da3ff;
+    --display: "Archivo", "Noto Sans Devanagari", "Noto Sans Gujarati", "Helvetica Neue", Arial, sans-serif;
+    --body: "IBM Plex Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0a1424; --panel: #0e1b30; --panel-2: #132340; --line: #22344f;
+      --text: #e8eef7; --muted: #93a4bc;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0a1424; --panel: #0e1b30; --panel-2: #132340; --line: #22344f;
+    --text: #e8eef7; --muted: #93a4bc;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
+
+  /* Hindi and Gujarati need more line height and no negative tracking */
+  :lang(hi) body, :lang(gu) body { line-height: 1.65; }
+  :lang(hi) .hero h1, :lang(gu) .hero h1 { line-height: 1.28; letter-spacing: 0; font-size: clamp(30px, 3.6vw, 46px); }
+  :lang(hi) .form-wrap h2, :lang(gu) .form-wrap h2 { line-height: 1.35; letter-spacing: 0; }
+  :lang(hi) .brand-name, :lang(gu) .brand-name { letter-spacing: 0; }
+
+  .shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(360px, 1fr);
+    min-height: 100vh;
+  }
+
+  /* ---------- Left: live situation map ---------- */
+  .stage {
+    position: relative;
+    overflow: hidden;
+    background: #081120;
+    min-height: 560px;
+    isolation: isolate;
+  }
+  .stage svg.map {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    z-index: -2;
+  }
+  .stage::before {
+    content: "";
+    position: absolute; inset: 0; z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(8,17,32,.92) 0%, rgba(8,17,32,.55) 38%, rgba(8,17,32,0) 62%),
+      linear-gradient(0deg, rgba(8,17,32,.9) 0%, rgba(8,17,32,0) 34%);
+    pointer-events: none;
+  }
+  .stage-inner {
+    position: absolute; inset: 0;
+    padding: 32px 36px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--crit);
+    display: grid; place-items: center;
+  }
+  .brand-name { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -.01em; }
+  .brand-sub { color: var(--muted); font-size: 13px; margin-left: 4px; }
+
+  .hero { max-width: 460px; margin-top: 28px; }
+  .hero h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(34px, 4.2vw, 56px);
+    line-height: 1.02;
+    letter-spacing: -.025em;
+    margin: 0 0 14px;
+  }
+  .hero p { color: #b4c2d6; margin: 0; max-width: 42ch; }
+
+  .stats { display: flex; gap: 28px; margin-top: 26px; flex-wrap: wrap; }
+  .stat b { display: block; font-family: var(--display); font-size: 28px; font-weight: 700; line-height: 1.2; }
+  .stat span { font-size: 13px; color: var(--muted); }
+  .stat.crit b { color: var(--crit); }
+
+  .feed-card {
+    align-self: flex-start;
+    width: min(460px, 100%);
+    background: rgba(10, 20, 36, .78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    pointer-events: auto;
+  }
+  .feed-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 14px; border-bottom: 1px solid var(--line);
+    font-size: 13px; color: var(--muted);
+  }
+  .live { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-weight: 500; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: blink 1.6s ease-in-out infinite; }
+  #feed { list-style: none; margin: 0; padding: 4px 0; }
+  #feed li {
+    display: grid; grid-template-columns: 12px 1fr auto; gap: 10px; align-items: center;
+    padding: 7px 14px; font-size: 13.5px;
+  }
+  #feed li.enter { animation: enter .5s ease-out; }
+  #feed .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .dot.crit { background: var(--crit); } .dot.high { background: var(--high); }
+  .dot.med { background: var(--med); } .dot.ok { background: var(--ok); } .dot.info { background: var(--info); }
+  #feed .ago { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+  .pulse { transform-box: fill-box; transform-origin: center; animation: ping 2.4s ease-out infinite; }
+  .pulse.d2 { animation-delay: .8s; } .pulse.d3 { animation-delay: 1.6s; }
+  .route { stroke-dasharray: 6 7; animation: dash 1.2s linear infinite; }
+  .map-label { font-family: var(--body); font-size: 13px; font-weight: 500; fill: #e8eef7; paint-order: stroke; stroke: #081120; stroke-width: 4px; stroke-linejoin: round; }
+  .map-sub { font-size: 11.5px; fill: #93a4bc; font-weight: 400; }
+
+  @keyframes ping { 0% { transform: scale(.6); opacity: .75; } 100% { transform: scale(3.4); opacity: 0; } }
+  @keyframes dash { to { stroke-dashoffset: -26; } }
+  @keyframes blink { 50% { opacity: .35; } }
+  @keyframes enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Right: sign in ---------- */
+  .signin {
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 32px 40px 22px;
+  }
+  .signin-top { display: flex; justify-content: flex-end; }
+  .lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
+  .lang button {
+    background: none; border: 0; padding: 4px 12px; border-radius: 999px; cursor: pointer; color: var(--muted); font-size: 13px;
+  }
+  .lang button:hover { color: var(--text); }
+  .lang button[aria-pressed="true"] { background: var(--panel-2); color: var(--text); }
+
+  .form-wrap { width: 100%; max-width: 380px; margin: 0 auto; }
+  .form-wrap h2 { font-family: var(--display); font-size: 28px; font-weight: 700; letter-spacing: -.015em; margin: 0 0 6px; line-height: 1.15; }
+  .form-wrap > p { margin: 0 0 22px; color: var(--muted); }
+
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .role {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; text-align: left; cursor: pointer; display: flex; gap: 10px; align-items: center;
+    transition: border-color .15s, background .15s;
+  }
+  .role:hover { border-color: #38507a; }
+  .role[aria-checked="true"] { border-color: var(--info); background: #0f2545; }
+  .role svg { flex: none; color: var(--muted); }
+  .role[aria-checked="true"] svg { color: var(--info); }
+  .role span { font-weight: 500; font-size: 14px; }
+  #role-hint { font-size: 13px; color: var(--muted); margin: 0 0 20px; min-height: 40px; }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .field { margin-bottom: 14px; }
+  input[type=text], input[type=password] {
+    width: 100%; height: 48px; padding: 0 14px; border-radius: 10px;
+    background: var(--bg); border: 1px solid var(--line); color: var(--text);
+  }
+  input::placeholder { color: #5d7090; }
+  input:focus { outline: none; border-color: var(--info); box-shadow: 0 0 0 3px rgba(77,163,255,.2); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: -2px 0 18px; font-size: 13px; }
+  .row a { color: var(--info); text-decoration: none; white-space: nowrap; }
+  .row a:hover { text-decoration: underline; }
+  .check { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); cursor: pointer; margin: 0; }
+
+  .btn {
+    width: 100%; min-height: 48px; border-radius: 10px; font-weight: 600; cursor: pointer; border: 1px solid transparent;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 14px;
+  }
+  .btn.primary { background: var(--text); color: #0a1424; }
+  .btn.primary:hover { background: #fff; }
+  .btn.ghost { background: transparent; border-color: var(--line); color: var(--text); margin-top: 10px; }
+  .btn.ghost:hover { border-color: #38507a; background: var(--panel-2); }
+
+  .demo { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .demo p { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; font-size: 13px; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--info); }
+
+  .sos {
+    margin-top: 22px; width: 100%; min-height: 56px; border-radius: 12px; cursor: pointer;
+    background: rgba(255,77,77,.1); border: 1px solid rgba(255,77,77,.55); color: #ffb3b3;
+    display: flex; align-items: center; gap: 14px; padding: 8px 16px; text-align: left;
+  }
+  .sos:hover { background: rgba(255,77,77,.18); }
+  .sos-ico { width: 34px; height: 34px; border-radius: 50%; background: var(--crit); display: grid; place-items: center; flex: none; }
+  .sos strong { display: block; color: #ffd4d4; font-weight: 600; font-size: 14.5px; }
+  .sos small { color: #d99a9a; font-size: 12.5px; }
+
+  #msg { min-height: 22px; margin-top: 12px; font-size: 13px; color: var(--ok); }
+
+  .foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-top: 24px; }
+  .status { display: inline-flex; align-items: center; gap: 8px; }
+  .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgba(61,220,151,.18); flex: none; }
+
+  @media (max-width: 960px) {
+    .shell { grid-template-columns: 1fr; }
+    .stage { min-height: 420px; }
+    .stage-inner { padding: 22px; }
+    .hero { margin-top: 16px; }
+    .hero p, .stats { display: none; }
+    .feed-card { width: 100%; }
+    #feed li:nth-child(n+4) { display: none; }
+    .signin { border-left: 0; border-top: 1px solid var(--line); padding: 26px 22px 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse, .route, .live i { animation: none; }
+    #feed li.enter { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- LEFT -->
+  <section class="stage">
+    <svg class="map" viewBox="0 0 800 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <pattern id="blocks" width="64" height="64" patternUnits="userSpaceOnUse">
+          <path d="M64 0H0V64" fill="none" stroke="#12213a" stroke-width="1.2"/>
+        </pattern>
+        <radialGradient id="glowRed"><stop offset="0" stop-color="#ff4d4d" stop-opacity=".35"/><stop offset="1" stop-color="#ff4d4d" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="800" height="700" fill="#081120"/>
+      <rect width="800" height="700" fill="url(#blocks)"/>
+
+      <!-- river and flood zone -->
+      <path d="M-20 420 C150 380 250 490 420 445 S650 360 830 400" fill="none" stroke="#0f3357" stroke-width="54" stroke-linecap="round"/>
+      <path d="M-20 420 C150 380 250 490 420 445 S650 360 830 400" fill="none" stroke="#154470" stroke-width="30" stroke-linecap="round" opacity=".7"/>
+      <path d="M190 440 C230 385 340 395 380 450 C400 500 300 540 230 510 C190 490 175 465 190 440Z" fill="#4da3ff" fill-opacity=".16" stroke="#4da3ff" stroke-opacity=".7" stroke-dasharray="5 5"/>
+
+      <!-- roads -->
+      <g fill="none" stroke="#1d3050" stroke-linecap="round">
+        <path d="M0 210 L800 240" stroke-width="7"/>
+        <path d="M0 560 L800 535" stroke-width="7"/>
+        <path d="M225 0 L250 700" stroke-width="7"/>
+        <path d="M510 0 L495 700" stroke-width="7"/>
+        <path d="M0 330 L800 300" stroke-width="4"/>
+        <path d="M100 0 L120 700" stroke-width="4"/>
+        <path d="M660 0 L690 700" stroke-width="4"/>
+        <path d="M0 90 C250 120 500 60 800 150" stroke="#2a4470" stroke-width="10"/>
+      </g>
+
+      <!-- industrial zone -->
+      <rect x="590" y="262" width="130" height="86" rx="6" fill="#ff8a3d" fill-opacity=".1" stroke="#ff8a3d" stroke-opacity=".55" stroke-dasharray="4 4"/>
+
+      <!-- hospitals -->
+      <g>
+        <rect x="390" y="310" width="20" height="20" rx="4" fill="#0f3d2e" stroke="#3ddc97"/>
+        <path d="M400 315v10M395 320h10" stroke="#3ddc97" stroke-width="2.2"/>
+        <rect x="110" y="460" width="20" height="20" rx="4" fill="#0f3d2e" stroke="#3ddc97"/>
+        <path d="M120 465v10M115 470h10" stroke="#3ddc97" stroke-width="2.2"/>
+        <rect x="690" y="510" width="20" height="20" rx="4" fill="#0f3d2e" stroke="#3ddc97"/>
+        <path d="M700 515v10M695 520h10" stroke="#3ddc97" stroke-width="2.2"/>
+      </g>
+
+      <!-- team routes -->
+      <g fill="none" stroke="#e8eef7" stroke-opacity=".75" stroke-width="1.6" stroke-linecap="round">
+        <path class="route" d="M400 330 L345 395 L300 455"/>
+        <path class="route" d="M400 320 L520 312 L640 300"/>
+        <path class="route" d="M700 530 L645 565 L590 600"/>
+      </g>
+      <g fill="#fff">
+        <circle r="4.5"><animateMotion dur="7s" repeatCount="indefinite" path="M400 330 L345 395 L300 455"/></circle>
+        <circle r="4.5"><animateMotion dur="9s" repeatCount="indefinite" path="M400 320 L520 312 L640 300"/></circle>
+        <circle r="4.5"><animateMotion dur="6s" repeatCount="indefinite" path="M700 530 L645 565 L590 600"/></circle>
+      </g>
+
+      <!-- merged duplicate reports -->
+      <g stroke="#ff8a3d" stroke-opacity=".7" stroke-dasharray="2 3" fill="none">
+        <path d="M568 585 L590 600"/><path d="M614 576 L590 600"/><path d="M594 628 L590 600"/>
+      </g>
+      <g fill="none" stroke="#ff8a3d" stroke-width="1.5">
+        <circle cx="568" cy="585" r="4"/><circle cx="614" cy="576" r="4"/><circle cx="594" cy="628" r="4"/>
+      </g>
+
+      <!-- incidents: critical flood -->
+      <g>
+        <circle cx="300" cy="455" r="40" fill="url(#glowRed)"/>
+        <circle class="pulse" cx="300" cy="455" r="9" fill="#ff4d4d"/>
+        <circle class="pulse d2" cx="300" cy="455" r="9" fill="#ff4d4d"/>
+        <circle cx="300" cy="455" r="9" fill="#ff4d4d" stroke="#081120" stroke-width="2.5"/>
+        <text class="map-label" x="316" y="450" data-i18n="mapFlood">Flood, Sector 4</text>
+        <text class="map-label map-sub" x="316" y="467" data-i18n="mapFloodSub">Critical, 2 teams assigned</text>
+      </g>
+      <!-- critical highway pileup -->
+      <g>
+        <circle class="pulse" cx="542" cy="103" r="9" fill="#ff4d4d"/>
+        <circle class="pulse d3" cx="542" cy="103" r="9" fill="#ff4d4d"/>
+        <circle cx="542" cy="103" r="9" fill="#ff4d4d" stroke="#081120" stroke-width="2.5"/>
+        <text class="map-label" x="558" y="98" data-i18n="mapCrash">Multi-vehicle crash, NH48</text>
+        <text class="map-label map-sub" x="558" y="115" data-i18n="mapCrashSub">Critical, awaiting ambulance</text>
+      </g>
+      <!-- high: gas leak -->
+      <g>
+        <circle class="pulse d2" cx="640" cy="300" r="8" fill="#ff8a3d"/>
+        <circle cx="640" cy="300" r="8" fill="#ff8a3d" stroke="#081120" stroke-width="2.5"/>
+        <text class="map-label" x="654" y="296" data-i18n="mapGas">Gas leak, Industrial Zone</text>
+      </g>
+      <!-- high: fire, merged -->
+      <g>
+        <circle class="pulse d3" cx="590" cy="600" r="8" fill="#ff8a3d"/>
+        <circle cx="590" cy="600" r="8" fill="#ff8a3d" stroke="#081120" stroke-width="2.5"/>
+        <text class="map-label" x="604" y="606" data-i18n="mapFire">Warehouse fire</text>
+        <text class="map-label map-sub" x="604" y="623" data-i18n="mapFireSub">3 reports merged into 1</text>
+      </g>
+      <!-- medium: tree fall -->
+      <g>
+        <circle cx="170" cy="360" r="7" fill="#f5c542" stroke="#081120" stroke-width="2.5"/>
+      </g>
+    </svg>
+
+    <div class="stage-inner">
+      <div>
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
+          </div>
+          <div><span class="brand-name">ResQNet</span><span class="brand-sub" data-i18n="brandSub">Emergency coordination</span></div>
+        </div>
+        <div class="hero">
+          <h1 data-i18n="heroTitle">One picture of every emergency.</h1>
+          <p data-i18n="heroText">Calls, citizen reports, sensors and field teams land in one place. Duplicates merge, severity is scored, and the nearest resources are suggested within seconds.</p>
+          <div class="stats">
+            <div class="stat"><b id="s-active">14</b><span data-i18n="statActive">Active incidents</span></div>
+            <div class="stat crit"><b id="s-crit">3</b><span data-i18n="statCrit">Critical</span></div>
+            <div class="stat"><b>9</b><span data-i18n="statTeams">Teams en route</span></div>
+            <div class="stat"><b data-i18n="statDispatchVal">2m 10s</b><span data-i18n="statDispatch">Median dispatch time</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feed-card">
+        <div class="feed-head"><span class="live"><i></i><span data-i18n="feedTitle">Live incident feed</span></span><span data-i18n="feedNote">Simulated data</span></div>
+        <ul id="feed" aria-live="off"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT -->
+  <main class="signin">
+    <div class="signin-top">
+      <div class="lang" role="group" aria-label="Language" data-i18n-aria="langAria">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button>
+        <button type="button" data-lang="gu" aria-pressed="false">ગુજરાતી</button>
+      </div>
+    </div>
+
+    <div class="form-wrap">
+      <h2 data-i18n="signTitle">Sign in to the control room</h2>
+      <p data-i18n="signSub">Choose your role so you land on the right view.</p>
+
+      <div class="roles" role="radiogroup" aria-label="Role" data-i18n-aria="rolesAria">
+        <button type="button" class="role" role="radio" aria-checked="true" data-role="dispatcher">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="4" height="6" rx="1.5"/><rect x="18" y="14" width="4" height="6" rx="1.5"/></svg>
+          <span data-i18n="role_dispatcher">Dispatcher</span>
+        </button>
+        <button type="button" class="role" role="radio" aria-checked="false" data-role="field">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          <span data-i18n="role_field">Field team</span>
+        </button>
+        <button type="button" class="role" role="radio" aria-checked="false" data-role="hospital">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
+          <span data-i18n="role_hospital">Hospital</span>
+        </button>
+        <button type="button" class="role" role="radio" aria-checked="false" data-role="authority">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>
+          <span data-i18n="role_authority">Authority</span>
+        </button>
+      </div>
+      <p id="role-hint">See every active incident and assign teams.</p>
+
+      <form id="form" novalidate>
+        <div class="field">
+          <label for="uid" id="uid-label">Employee ID</label>
+          <input id="uid" type="text" autocomplete="username" placeholder="e.g. DSP-2041">
+        </div>
+        <div class="field">
+          <label for="pw" data-i18n="password">Password</label>
+          <input id="pw" type="password" autocomplete="current-password" placeholder="Enter your password" data-i18n-ph="phPassword">
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" style="accent-color:#4da3ff"> <span data-i18n="keep">Keep me signed in on this device</span></label>
+          <a href="#" onclick="return false" data-i18n="forgot">Forgot password?</a>
+        </div>
+        <button class="btn primary" type="submit" id="submit-btn">Sign in as dispatcher</button>
+        <button class="btn ghost" type="button" id="otp-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+          <span data-i18n="otp">Sign in with a one-time code</span>
+        </button>
+        <div id="msg" role="status"></div>
+      </form>
+
+      <div class="demo">
+        <p data-i18n="demoText">Judges, try a demo account. No password needed.</p>
+        <div class="chips">
+          <button type="button" class="chip" data-demo="dispatcher" data-i18n="role_dispatcher">Dispatcher</button>
+          <button type="button" class="chip" data-demo="field" data-i18n="role_field">Field team</button>
+          <button type="button" class="chip" data-demo="hospital" data-i18n="role_hospital">Hospital</button>
+          <button type="button" class="chip" data-demo="authority" data-i18n="role_authority">Authority</button>
+        </div>
+      </div>
+
+      <button type="button" class="sos" id="sos">
+        <span class="sos-ico" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 17h.01"/><path d="M10.3 3.9L2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        </span>
+        <span><strong data-i18n="sosTitle">Report an emergency</strong><small data-i18n="sosSub">No sign-in needed. Location is detected automatically.</small></span>
+      </button>
+    </div>
+
+    <div class="foot">
+      <span class="status"><i></i><span data-i18n="status">All services running, live updates connected</span></span>
+      <span data-i18n="twoStep">Two-step verification on for all staff</span>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  /* =====================================================
+     TRANSLATIONS: edit the text here to change any wording
+     ===================================================== */
+  var I18N = {
+    en: {
+      pageTitle: "ResQNet – Control room sign in",
+      langAria: "Language", rolesAria: "Role",
+      brandSub: "Emergency coordination",
+      heroTitle: "One picture of every emergency.",
+      heroText: "Calls, citizen reports, sensors and field teams land in one place. Duplicates merge, severity is scored, and the nearest resources are suggested within seconds.",
+      statActive: "Active incidents", statCrit: "Critical", statTeams: "Teams en route",
+      statDispatch: "Median dispatch time", statDispatchVal: "2m 10s",
+      feedTitle: "Live incident feed", feedNote: "Simulated data",
+      signTitle: "Sign in to the control room",
+      signSub: "Choose your role so you land on the right view.",
+      role_dispatcher: "Dispatcher", role_field: "Field team", role_hospital: "Hospital", role_authority: "Authority",
+      id_dispatcher: "Employee ID", id_field: "Team code", id_hospital: "Facility ID", id_authority: "Department email",
+      ph_dispatcher: "e.g. DSP-2041", ph_field: "e.g. FIRE-07", ph_hospital: "e.g. HSP-118", ph_authority: "name@department.gov.in",
+      hint_dispatcher: "See every active incident and assign teams.",
+      hint_field: "Get your assignments, route and status updates.",
+      hint_hospital: "Share bed and ICU capacity, see incoming patients.",
+      hint_authority: "Monitor escalations, delays and area-wide analytics.",
+      btn_dispatcher: "Sign in as dispatcher", btn_field: "Sign in as field team",
+      btn_hospital: "Sign in as hospital", btn_authority: "Sign in as authority",
+      password: "Password", phPassword: "Enter your password",
+      keep: "Keep me signed in on this device", forgot: "Forgot password?",
+      otp: "Sign in with a one-time code",
+      demoText: "Judges, try a demo account. No password needed.",
+      sosTitle: "Report an emergency",
+      sosSub: "No sign-in needed. Location is detected automatically.",
+      status: "All services running, live updates connected",
+      twoStep: "Two-step verification on for all staff",
+      msgDemo: "Demo details filled in. Select the sign in button to continue.",
+      msgEnter: "Enter your {field} and password, or pick a demo account below.",
+      msgSigning: "Signing in...",
+      msgSignedIn: "Signed in as {name}.",
+      msgOtp: "A 6-digit code will be sent to your registered phone.",
+      msgSos: "This opens the public report form (photo, location, description).",
+      msgNoServer: "Cannot reach the server. Check that it is running.",
+      errInvalid: "Invalid ID or password",
+      errRole: "This account belongs to a different role. Pick the correct tab.",
+      errServer: "Server error. Please try again.",
+      mapFlood: "Flood, Sector 4", mapFloodSub: "Critical, 2 teams assigned",
+      mapCrash: "Multi-vehicle crash, NH48", mapCrashSub: "Critical, awaiting ambulance",
+      mapGas: "Gas leak, Industrial Zone",
+      mapFire: "Warehouse fire", mapFireSub: "3 reports merged into 1",
+      f1: "Flood water rising, Sector 4",
+      f2: "Gas leak reported, Industrial Zone",
+      f3: "3 duplicate reports merged, Warehouse fire",
+      f4: "Ambulance A-12 reached Ring Road crash",
+      p1: "Multi-vehicle crash, NH48, 4 injured",
+      p2: "River sensor S-07 crossed danger level",
+      p3: "Tree fall blocking Market Road",
+      p4: "Smoke seen near chemical storage",
+      p5: "Fire team F-03 marked scene safe",
+      p6: "Nearest ICU beds found: City Hospital, 6",
+      p7: "Escalated to district authority: flood",
+      agoNow: "just now", agoMin: "{n} min ago"
+    },
+
+    hi: {
+      pageTitle: "ResQNet – कंट्रोल रूम साइन इन",
+      langAria: "भाषा", rolesAria: "भूमिका",
+      brandSub: "आपातकालीन समन्वय",
+      heroTitle: "हर आपातकाल की एक साझा तस्वीर।",
+      heroText: "कॉल, नागरिकों की रिपोर्ट, सेंसर और फील्ड टीमों की जानकारी एक ही जगह आती है। एक जैसी रिपोर्ट जुड़ जाती हैं, गंभीरता का आकलन होता है और सबसे नज़दीकी संसाधन कुछ ही सेकंड में सुझाए जाते हैं।",
+      statActive: "सक्रिय घटनाएँ", statCrit: "गंभीर", statTeams: "रास्ते में टीमें",
+      statDispatch: "औसत डिस्पैच समय", statDispatchVal: "2 मि 10 सेकंड",
+      feedTitle: "लाइव घटना फ़ीड", feedNote: "नकली (सिम्युलेटेड) डेटा",
+      signTitle: "कंट्रोल रूम में साइन इन करें",
+      signSub: "अपनी भूमिका चुनें ताकि सही स्क्रीन खुले।",
+      role_dispatcher: "डिस्पैचर", role_field: "फील्ड टीम", role_hospital: "अस्पताल", role_authority: "प्राधिकरण",
+      id_dispatcher: "कर्मचारी आईडी", id_field: "टीम कोड", id_hospital: "सुविधा आईडी", id_authority: "विभाग का ईमेल",
+      ph_dispatcher: "जैसे DSP-2041", ph_field: "जैसे FIRE-07", ph_hospital: "जैसे HSP-118", ph_authority: "name@department.gov.in",
+      hint_dispatcher: "सभी सक्रिय घटनाएँ देखें और टीमें सौंपें।",
+      hint_field: "अपने असाइनमेंट, रूट और स्थिति अपडेट देखें।",
+      hint_hospital: "बेड और आईसीयू की उपलब्धता साझा करें, आने वाले मरीज़ देखें।",
+      hint_authority: "एस्केलेशन, देरी और क्षेत्रवार विश्लेषण पर नज़र रखें।",
+      btn_dispatcher: "डिस्पैचर के रूप में साइन इन करें", btn_field: "फील्ड टीम के रूप में साइन इन करें",
+      btn_hospital: "अस्पताल के रूप में साइन इन करें", btn_authority: "प्राधिकरण के रूप में साइन इन करें",
+      password: "पासवर्ड", phPassword: "अपना पासवर्ड दर्ज करें",
+      keep: "इस डिवाइस पर साइन इन रखें", forgot: "पासवर्ड भूल गए?",
+      otp: "वन-टाइम कोड से साइन इन करें",
+      demoText: "जजों के लिए: डेमो अकाउंट आज़माएँ। पासवर्ड की ज़रूरत नहीं।",
+      sosTitle: "आपातकाल की सूचना दें",
+      sosSub: "साइन इन ज़रूरी नहीं। लोकेशन अपने आप पता चल जाती है।",
+      status: "सभी सेवाएँ चालू हैं, लाइव अपडेट जुड़े हैं",
+      twoStep: "सभी कर्मचारियों के लिए टू-स्टेप वेरिफ़िकेशन चालू है",
+      msgDemo: "डेमो जानकारी भर दी गई है। आगे बढ़ने के लिए साइन इन बटन दबाएँ।",
+      msgEnter: "कृपया {field} और पासवर्ड दर्ज करें, या नीचे से डेमो अकाउंट चुनें।",
+      msgSigning: "साइन इन हो रहा है...",
+      msgSignedIn: "{name} के रूप में साइन इन हुआ।",
+      msgOtp: "आपके पंजीकृत फ़ोन पर 6 अंकों का कोड भेजा जाएगा।",
+      msgSos: "यह सार्वजनिक रिपोर्ट फ़ॉर्म खोलेगा (फ़ोटो, लोकेशन, विवरण)।",
+      msgNoServer: "सर्वर से संपर्क नहीं हो पा रहा। जाँचें कि सर्वर चल रहा है।",
+      errInvalid: "आईडी या पासवर्ड गलत है",
+      errRole: "यह खाता किसी दूसरी भूमिका का है। सही टैब चुनें।",
+      errServer: "सर्वर में समस्या है। कृपया फिर कोशिश करें।",
+      mapFlood: "बाढ़, सेक्टर 4", mapFloodSub: "गंभीर, 2 टीमें तैनात",
+      mapCrash: "कई वाहनों की टक्कर, NH48", mapCrashSub: "गंभीर, एम्बुलेंस का इंतज़ार",
+      mapGas: "गैस रिसाव, औद्योगिक क्षेत्र",
+      mapFire: "गोदाम में आग", mapFireSub: "3 रिपोर्ट जुड़कर 1 बनीं",
+      f1: "सेक्टर 4 में बाढ़ का पानी बढ़ रहा है",
+      f2: "औद्योगिक क्षेत्र में गैस रिसाव की सूचना",
+      f3: "गोदाम की आग की 3 एक जैसी रिपोर्ट जुड़ीं",
+      f4: "एम्बुलेंस A-12 रिंग रोड दुर्घटना स्थल पर पहुँची",
+      p1: "NH48 पर कई वाहनों की टक्कर, 4 घायल",
+      p2: "नदी सेंसर S-07 ख़तरे के स्तर से ऊपर",
+      p3: "पेड़ गिरने से मार्केट रोड बंद",
+      p4: "रसायन भंडार के पास धुआँ दिखा",
+      p5: "फायर टीम F-03 ने स्थान को सुरक्षित बताया",
+      p6: "नज़दीकी आईसीयू बेड मिले: सिटी हॉस्पिटल, 6",
+      p7: "ज़िला प्राधिकरण को एस्केलेट किया गया: बाढ़",
+      agoNow: "अभी-अभी", agoMin: "{n} मिनट पहले"
+    },
+
+    gu: {
+      pageTitle: "ResQNet – કંટ્રોલ રૂમ સાઇન ઇન",
+      langAria: "ભાષા", rolesAria: "ભૂમિકા",
+      brandSub: "કટોકટી સંકલન",
+      heroTitle: "દરેક કટોકટીનું એક સહિયારું ચિત્ર.",
+      heroText: "કૉલ, નાગરિકોના રિપોર્ટ, સેન્સર અને ફીલ્ડ ટીમની માહિતી એક જ જગ્યાએ આવે છે. સરખા રિપોર્ટ જોડાઈ જાય છે, ગંભીરતાનું મૂલ્યાંકન થાય છે અને સૌથી નજીકના સંસાધનો થોડી જ સેકંડમાં સૂચવાય છે.",
+      statActive: "સક્રિય ઘટનાઓ", statCrit: "ગંભીર", statTeams: "રસ્તામાં ટીમો",
+      statDispatch: "સરેરાશ ડિસ્પેચ સમય", statDispatchVal: "2 મિ 10 સેકંડ",
+      feedTitle: "લાઇવ ઘટના ફીડ", feedNote: "સિમ્યુલેટેડ ડેટા",
+      signTitle: "કંટ્રોલ રૂમમાં સાઇન ઇન કરો",
+      signSub: "તમારી ભૂમિકા પસંદ કરો, જેથી સાચું પેજ ખુલે.",
+      role_dispatcher: "ડિસ્પેચર", role_field: "ફીલ્ડ ટીમ", role_hospital: "હોસ્પિટલ", role_authority: "સત્તામંડળ",
+      id_dispatcher: "કર્મચારી આઈડી", id_field: "ટીમ કોડ", id_hospital: "સુવિધા આઈડી", id_authority: "વિભાગનો ઈમેલ",
+      ph_dispatcher: "દા.ત. DSP-2041", ph_field: "દા.ત. FIRE-07", ph_hospital: "દા.ત. HSP-118", ph_authority: "name@department.gov.in",
+      hint_dispatcher: "બધી સક્રિય ઘટનાઓ જુઓ અને ટીમો સોંપો.",
+      hint_field: "તમારા અસાઇનમેન્ટ, રૂટ અને સ્ટેટસ અપડેટ મેળવો.",
+      hint_hospital: "બેડ અને ICU ની ઉપલબ્ધતા શેર કરો, આવનારા દર્દીઓ જુઓ.",
+      hint_authority: "એસ્કેલેશન, વિલંબ અને વિસ્તાર મુજબના વિશ્લેષણ પર નજર રાખો.",
+      btn_dispatcher: "ડિસ્પેચર તરીકે સાઇન ઇન કરો", btn_field: "ફીલ્ડ ટીમ તરીકે સાઇન ઇન કરો",
+      btn_hospital: "હોસ્પિટલ તરીકે સાઇન ઇન કરો", btn_authority: "સત્તામંડળ તરીકે સાઇન ઇન કરો",
+      password: "પાસવર્ડ", phPassword: "તમારો પાસવર્ડ દાખલ કરો",
+      keep: "આ ડિવાઇસ પર સાઇન ઇન રાખો", forgot: "પાસવર્ડ ભૂલી ગયા?",
+      otp: "વન-ટાઇમ કોડથી સાઇન ઇન કરો",
+      demoText: "જજ માટે: ડેમો એકાઉન્ટ અજમાવો. પાસવર્ડની જરૂર નથી.",
+      sosTitle: "કટોકટીની જાણ કરો",
+      sosSub: "સાઇન ઇનની જરૂર નથી. લોકેશન આપમેળે મળી જાય છે.",
+      status: "બધી સેવાઓ ચાલુ છે, લાઇવ અપડેટ જોડાયેલા છે",
+      twoStep: "બધા કર્મચારીઓ માટે ટુ-સ્ટેપ વેરિફિકેશન ચાલુ છે",
+      msgDemo: "ડેમો વિગતો ભરાઈ ગઈ છે. આગળ વધવા સાઇન ઇન બટન દબાવો.",
+      msgEnter: "કૃપા કરીને {field} અને પાસવર્ડ દાખલ કરો, અથવા નીચેથી ડેમો એકાઉન્ટ પસંદ કરો.",
+      msgSigning: "સાઇન ઇન થઈ રહ્યું છે...",
+      msgSignedIn: "{name} તરીકે સાઇન ઇન થયું.",
+      msgOtp: "તમારા નોંધાયેલા ફોન પર 6 અંકનો કોડ મોકલવામાં આવશે.",
+      msgSos: "આ જાહેર રિપોર્ટ ફોર્મ ખોલશે (ફોટો, લોકેશન, વર્ણન).",
+      msgNoServer: "સર્વર સાથે સંપર્ક થઈ શકતો નથી. તપાસો કે સર્વર ચાલુ છે.",
+      errInvalid: "આઈડી અથવા પાસવર્ડ ખોટો છે",
+      errRole: "આ એકાઉન્ટ બીજી ભૂમિકાનું છે. સાચો ટૅબ પસંદ કરો.",
+      errServer: "સર્વરમાં સમસ્યા આવી. ફરી પ્રયત્ન કરો.",
+      mapFlood: "પૂર, સેક્ટર 4", mapFloodSub: "ગંભીર, 2 ટીમ તૈનાત",
+      mapCrash: "અનેક વાહનોનો અકસ્માત, NH48", mapCrashSub: "ગંભીર, એમ્બ્યુલન્સની રાહ",
+      mapGas: "ગેસ લીક, ઔદ્યોગિક વિસ્તાર",
+      mapFire: "ગોડાઉનમાં આગ", mapFireSub: "3 રિપોર્ટ જોડાઈને 1 બન્યો",
+      f1: "સેક્ટર 4માં પૂરનું પાણી વધી રહ્યું છે",
+      f2: "ઔદ્યોગિક વિસ્તારમાં ગેસ લીકની જાણ",
+      f3: "ગોડાઉનની આગના 3 સરખા રિપોર્ટ જોડાયા",
+      f4: "એમ્બ્યુલન્સ A-12 રિંગ રોડ અકસ્માત સ્થળે પહોંચી",
+      p1: "NH48 પર અનેક વાહનોનો અકસ્માત, 4 ઘાયલ",
+      p2: "નદી સેન્સર S-07 જોખમના સ્તરથી ઉપર",
+      p3: "ઝાડ પડવાથી માર્કેટ રોડ બંધ",
+      p4: "રસાયણ સંગ્રહ પાસે ધુમાડો દેખાયો",
+      p5: "ફાયર ટીમ F-03 એ સ્થળ સુરક્ષિત જાહેર કર્યું",
+      p6: "નજીકના ICU બેડ મળ્યા: સિટી હોસ્પિટલ, 6",
+      p7: "જિલ્લા સત્તામંડળને એસ્કેલેટ કર્યું: પૂર",
+      agoNow: "હમણાં જ", agoMin: "{n} મિનિટ પહેલાં"
+    }
+  };
+
+  var LANG_KEY = "resqnet_lang";
+  var lang = "en";
+  try { var saved = localStorage.getItem(LANG_KEY); if (saved && I18N[saved]) lang = saved; } catch (e) {}
+
+  function t(key, params) {
+    var s = (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key;
+    if (params) for (var k in params) s = s.replace("{" + k + "}", params[k]);
+    return s;
+  }
+
+  /* =====================================================
+     Role handling
+     ===================================================== */
+  var DEMO_ID = { dispatcher: "DSP-2041", field: "FIRE-07", hospital: "HSP-118", authority: "collector@district.gov.in" };
+  var current = "dispatcher";
+  var uid = document.getElementById("uid"), pw = document.getElementById("pw");
+  var msg = document.getElementById("msg");
+
+  function applyRole() {
+    document.querySelectorAll(".role").forEach(function (b) {
+      b.setAttribute("aria-checked", b.dataset.role === current ? "true" : "false");
+    });
+    document.getElementById("uid-label").textContent = t("id_" + current);
+    uid.placeholder = t("ph_" + current);
+    document.getElementById("role-hint").textContent = t("hint_" + current);
+    document.getElementById("submit-btn").textContent = t("btn_" + current);
+  }
+  function setRole(r) { current = r; applyRole(); }
+
+  /* =====================================================
+     Messages (kept as a key so they re-translate on switch)
+     ===================================================== */
+  var OK = "#3ddc97", WARN = "#ff8a3d", INFO = "#93a4bc";
+  var msgState = null;
+  function setMsg(key, params, color) { msgState = { key: key, params: params || null, color: color }; renderMsg(); }
+  function clearMsg() { msgState = null; renderMsg(); }
+  function renderMsg() {
+    if (!msgState) { msg.textContent = ""; return; }
+    var p = msgState.params;
+    if (p && p.fieldKey) p = { field: t(p.fieldKey) };
+    msg.style.color = msgState.color;
+    msg.textContent = t(msgState.key, p);
+  }
+
+  /* =====================================================
+     Language
+     ===================================================== */
+  function applyLang() {
+    document.documentElement.lang = lang;
+    document.title = t("pageTitle");
+    document.querySelectorAll("[data-i18n]").forEach(function (n) { n.textContent = t(n.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-ph]").forEach(function (n) { n.placeholder = t(n.dataset.i18nPh); });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (n) { n.setAttribute("aria-label", t(n.dataset.i18nAria)); });
+    document.querySelectorAll(".lang button").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.lang === lang ? "true" : "false");
+    });
+    applyRole();
+    renderMsg();
+    renderFeed(false);
+  }
+  document.querySelectorAll(".lang button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      lang = b.dataset.lang;
+      try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+      applyLang();
+    });
+  });
+
+  /* =====================================================
+     Sign in
+     ===================================================== */
+  var API = location.protocol === "file:" ? "http://localhost:5000" : "";
+  // Change these once you build each role's screen.
+  var HOME = { dispatcher: "dispatcher.html", field: "dashboard.html", hospital: "dashboard.html", authority: "dashboard.html" };
+
+  document.querySelectorAll(".role").forEach(function (b) {
+    b.addEventListener("click", function () { setRole(b.dataset.role); clearMsg(); });
+  });
+  document.querySelectorAll(".chip").forEach(function (c) {
+    c.addEventListener("click", function () {
+      setRole(c.dataset.demo);
+      uid.value = DEMO_ID[c.dataset.demo];
+      pw.value = "demo-access";
+      setMsg("msgDemo", null, OK);
+    });
+  });
+
+  document.getElementById("form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (!uid.value || !pw.value) { setMsg("msgEnter", { fieldKey: "id_" + current }, WARN); return; }
+    setMsg("msgSigning", null, INFO);
+
+    var r;
+    try {
+      r = await fetch(API + "/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: uid.value.trim(), password: pw.value, role: current })
+      });
+    } catch (err) { setMsg("msgNoServer", null, WARN); return; }
+
+    var data = {};
+    try { data = await r.json(); } catch (err) {}
+
+    if (!r.ok) {
+      var key = r.status === 401 ? "errInvalid" : r.status === 403 ? "errRole" : r.status === 400 ? "msgEnter" : "errServer";
+      setMsg(key, key === "msgEnter" ? { fieldKey: "id_" + current } : null, WARN);
+      return;
+    }
+    try {
+      localStorage.setItem("resqnet_token", data.token);
+      localStorage.setItem("resqnet_user", JSON.stringify(data.user));
+    } catch (err) {}
+    setMsg("msgSignedIn", { name: data.user.displayName }, OK);
+    setTimeout(function () { location.href = HOME[data.user.role] || "dashboard.html"; }, 700);
+  });
+
+  document.getElementById("otp-btn").addEventListener("click", function () { setMsg("msgOtp", null, OK); });
+document.getElementById("sos").addEventListener("click", function () {
+  window.location.href = "report.html";
+});
+
+  /* =====================================================
+     Live feed simulation
+     ===================================================== */
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) document.querySelectorAll("animateMotion").forEach(function (n) { n.remove(); });
+
+  var items = [
+    { sev: "crit", key: "f1", age: 20 },
+    { sev: "high", key: "f2", age: 95 },
+    { sev: "info", key: "f3", age: 140 },
+    { sev: "ok",   key: "f4", age: 260 }
+  ];
+  var pool = [
+    { sev: "crit", key: "p1" }, { sev: "info", key: "p2" }, { sev: "med", key: "p3" },
+    { sev: "high", key: "p4" }, { sev: "ok", key: "p5" }, { sev: "info", key: "p6" }, { sev: "crit", key: "p7" }
+  ];
+  var active = 14, crit = 3, pi = 0;
+  var feed = document.getElementById("feed");
+
+  function ago(s) { return s < 45 ? t("agoNow") : t("agoMin", { n: Math.round(s / 60) }); }
+  function renderFeed(newFirst) {
+    feed.innerHTML = "";
+    items.forEach(function (it, i) {
+      var li = document.createElement("li");
+      if (newFirst && i === 0) li.className = "enter";
+      li.innerHTML = '<i class="dot ' + it.sev + '"></i><span></span><span class="ago"></span>';
+      li.children[1].textContent = t(it.key);
+      li.children[2].textContent = ago(it.age);
+      feed.appendChild(li);
+    });
+    document.getElementById("s-active").textContent = active;
+    document.getElementById("s-crit").textContent = crit;
+  }
+  setInterval(function () {
+    items.forEach(function (i) { i.age += 4; });
+    var n = pool[pi++ % pool.length];
+    items.unshift({ sev: n.sev, key: n.key, age: 0 });
+    if (items.length > 5) items.pop();
+    if (n.sev === "crit") { crit = Math.min(crit + 1, 6); active++; }
+    else if (n.sev === "ok") { active = Math.max(active - 1, 10); crit = Math.max(crit - 1, 2); }
+    else if (n.sev === "high" || n.sev === "med") { active++; }
+    if (active > 18) active = 14;
+    renderFeed(true);
+  }, 4000);
+
+  /* start */
+  applyLang();
+})();
+</script>
+</body>
+</html>
