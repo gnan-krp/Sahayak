@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>SAHAYAK – Report an Emergency</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    :root {
+      --bg: #0a1424;
+      --panel: #0e1b30;
+      --panel-2: #132340;
+      --line: #22344f;
+
+      --text: #e8eef7;
+      --muted: #93a4bc;
+
+      --crit: #ff4d4d;
+      --high: #ff8a3d;
+      --med: #f5c542;
+
+      --ok: #3ddc97;
+      --info: #4da3ff;
+
+      --display: "Archivo", Arial, sans-serif;
+      --body: "IBM Plex Sans", Arial, sans-serif;
+    }
+
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+
+      font-family: var(--body);
+
+      min-height: 100vh;
+    }
+
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+
+
+    /* ============================
+       TOP BAR
+    ============================ */
+
+    .topbar {
+
+      height: 72px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 5%;
+
+      border-bottom: 1px solid var(--line);
+
+      background: rgba(10, 20, 36, 0.95);
+    }
+
+
+    .brand {
+
+      display: flex;
+      align-items: center;
+
+      gap: 12px;
+    }
+
+
+    .brand-mark {
+
+      width: 40px;
+      height: 40px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 10px;
+
+      background: var(--crit);
+
+      font-family: var(--display);
+      font-weight: 800;
+
+      color: white;
+    }
+
+
+    .brand-text strong {
+
+      display: block;
+
+      font-family: var(--display);
+
+      font-size: 20px;
+
+      letter-spacing: 0.5px;
+    }
+
+
+    .brand-text span {
+
+      color: var(--muted);
+
+      font-size: 12px;
+    }
+
+
+    .system-status {
+
+      display: flex;
+      align-items: center;
+
+      gap: 8px;
+
+      color: var(--muted);
+
+      font-size: 13px;
+    }
+
+
+    .status-dot {
+
+      width: 8px;
+      height: 8px;
+
+      border-radius: 50%;
+
+      background: var(--ok);
+
+      box-shadow:
+        0 0 0 3px rgba(61, 220, 151, 0.15);
+    }
+
+
+
+    /* ============================
+       PAGE
+    ============================ */
+
+    .page {
+
+      max-width: 1100px;
+
+      margin: 0 auto;
+
+      padding: 55px 24px 70px;
+    }
+
+
+
+    /* ============================
+       HEADER
+    ============================ */
+
+    .page-header {
+
+      max-width: 760px;
+
+      margin-bottom: 38px;
+    }
+
+
+    .emergency-label {
+
+      display: inline-flex;
+      align-items: center;
+
+      gap: 8px;
+
+      padding: 7px 12px;
+
+      margin-bottom: 16px;
+
+      border: 1px solid rgba(255, 77, 77, 0.4);
+
+      border-radius: 999px;
+
+      background: rgba(255, 77, 77, 0.08);
+
+      color: #ffb3b3;
+
+      font-size: 13px;
+    }
+
+
+    .page-header h1 {
+
+      margin: 0 0 10px;
+
+      font-family: var(--display);
+
+      font-size: clamp(32px, 5vw, 48px);
+
+      line-height: 1.05;
+    }
+
+
+    .page-header p {
+
+      margin: 0;
+
+      color: var(--muted);
+
+      font-size: 16px;
+
+      max-width: 650px;
+
+      line-height: 1.6;
+    }
+
+
+
+    /* ============================
+       MAIN FORM CARD
+    ============================ */
+
+    .report-card {
+
+      background: var(--panel);
+
+      border: 1px solid var(--line);
+
+      border-radius: 16px;
+
+      overflow: hidden;
+    }
+
+
+    .card-header {
+
+      padding: 22px 26px;
+
+      border-bottom: 1px solid var(--line);
+
+      background: var(--panel-2);
+    }
+
+
+    .card-header h2 {
+
+      margin: 0 0 5px;
+
+      font-family: var(--display);
+
+      font-size: 20px;
+    }
+
+
+    .card-header p {
+
+      margin: 0;
+
+      color: var(--muted);
+
+      font-size: 13px;
+    }
+
+
+    form {
+
+      padding: 28px;
+    }
+
+
+
+    /* ============================
+       FORM SECTIONS
+    ============================ */
+
+    .section {
+
+      padding-bottom: 28px;
+
+      margin-bottom: 28px;
+
+      border-bottom: 1px solid var(--line);
+    }
+
+
+    .section:last-of-type {
+
+      border-bottom: 0;
+
+      margin-bottom: 0;
+    }
+
+
+    .section-title {
+
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+
+      margin-bottom: 18px;
+    }
+
+
+    .step {
+
+      width: 28px;
+      height: 28px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 8px;
+
+      background: var(--panel-2);
+
+      color: var(--info);
+
+      font-size: 13px;
+
+      font-weight: 600;
+    }
+
+
+    .section-title h3 {
+
+      margin: 0;
+
+      font-family: var(--display);
+
+      font-size: 16px;
+    }
+
+
+
+    /* ============================
+       INPUTS
+    ============================ */
+
+    .grid-two {
+
+      display: grid;
+
+      grid-template-columns: 1fr 1fr;
+
+      gap: 18px;
+    }
+
+
+    .field {
+
+      margin-bottom: 18px;
+    }
+
+
+    label {
+
+      display: block;
+
+      margin-bottom: 7px;
+
+      color: var(--muted);
+
+      font-size: 13px;
+    }
+
+
+    input,
+    textarea,
+    select {
+
+      width: 100%;
+
+      border: 1px solid var(--line);
+
+      border-radius: 10px;
+
+      background: var(--bg);
+
+      color: var(--text);
+
+      padding: 13px 14px;
+    }
+
+
+    input,
+    select {
+
+      height: 48px;
+    }
+
+
+    textarea {
+
+      min-height: 130px;
+
+      resize: vertical;
+
+      line-height: 1.5;
+    }
+
+
+    input::placeholder,
+    textarea::placeholder {
+
+      color: #5d7090;
+    }
+
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+
+      outline: none;
+
+      border-color: var(--info);
+
+      box-shadow:
+        0 0 0 3px rgba(77, 163, 255, 0.18);
+    }
+
+
+
+    /* ============================
+       LOCATION
+    ============================ */
+
+    .location-row {
+
+      display: grid;
+
+      grid-template-columns: 1fr auto;
+
+      gap: 10px;
+    }
+
+
+    .location-btn {
+
+      height: 48px;
+
+      padding: 0 18px;
+
+      border: 1px solid var(--info);
+
+      border-radius: 10px;
+
+      background: rgba(77, 163, 255, 0.08);
+
+      color: #9dccff;
+
+      cursor: pointer;
+
+      white-space: nowrap;
+    }
+
+
+    .location-btn:hover {
+
+      background: rgba(77, 163, 255, 0.16);
+    }
+
+
+
+    /* ============================
+       DANGER OPTIONS
+    ============================ */
+
+    .danger-options {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 10px;
+    }
+
+
+    .danger-option {
+
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+
+      padding: 12px 14px;
+
+      border: 1px solid var(--line);
+
+      border-radius: 10px;
+
+      background: var(--bg);
+
+      cursor: pointer;
+    }
+
+
+    .danger-option:hover {
+
+      border-color: #38507a;
+    }
+
+
+    .danger-option input {
+
+      width: auto;
+      height: auto;
+
+      accent-color: var(--crit);
+    }
+
+
+
+    /* ============================
+       FILE UPLOAD
+    ============================ */
+
+    .upload {
+
+      border: 1px dashed #38507a;
+
+      border-radius: 12px;
+
+      padding: 24px;
+
+      text-align: center;
+
+      background: rgba(19, 35, 64, 0.35);
+    }
+
+
+    .upload strong {
+
+      display: block;
+
+      margin-bottom: 5px;
+    }
+
+
+    .upload p {
+
+      margin: 0 0 14px;
+
+      color: var(--muted);
+
+      font-size: 13px;
+    }
+
+
+    .upload input {
+
+      height: auto;
+
+      padding: 8px;
+    }
+
+
+
+    /* ============================
+       SUBMIT
+    ============================ */
+
+    .submit-area {
+
+      margin-top: 28px;
+    }
+
+
+    .submit-btn {
+
+      width: 100%;
+
+      min-height: 54px;
+
+      border: 1px solid transparent;
+
+      border-radius: 11px;
+
+      background: var(--crit);
+
+      color: white;
+
+      font-weight: 600;
+
+      font-size: 15px;
+
+      cursor: pointer;
+
+      transition: 0.2s ease;
+    }
+
+
+    .submit-btn:hover {
+
+      background: #ff6262;
+    }
+
+
+    .privacy {
+
+      margin-top: 12px;
+
+      text-align: center;
+
+      color: var(--muted);
+
+      font-size: 12px;
+    }
+
+
+
+    /* ============================
+       BACK LINK
+    ============================ */
+
+    .back {
+
+      display: inline-block;
+
+      margin-top: 20px;
+
+      color: var(--info);
+
+      text-decoration: none;
+
+      font-size: 13px;
+    }
+
+
+    .back:hover {
+
+      text-decoration: underline;
+    }
+
+
+
+    /* ============================
+       MESSAGE
+    ============================ */
+
+    #message {
+
+      display: none;
+
+      margin-top: 20px;
+
+      padding: 16px;
+
+      border: 1px solid rgba(61, 220, 151, 0.35);
+
+      border-radius: 10px;
+
+      background: rgba(61, 220, 151, 0.08);
+
+      color: #a8f3d1;
+    }
+
+
+
+    /* ============================
+       MOBILE
+    ============================ */
+
+    @media (max-width: 700px) {
+
+      .topbar {
+
+        padding: 0 18px;
+      }
+
+
+      .brand-text span {
+
+        display: none;
+      }
+
+
+      .system-status {
+
+        font-size: 0;
+      }
+
+
+      .grid-two,
+      .danger-options {
+
+        grid-template-columns: 1fr;
+      }
+
+
+      .location-row {
+
+        grid-template-columns: 1fr;
+      }
+
+
+      .location-btn {
+
+        width: 100%;
+      }
+
+
+      form {
+
+        padding: 20px;
+      }
+
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+
+  <!-- TOP BAR -->
+
+  <header class="topbar">
+
+    <div class="brand">
+
+      <div class="brand-mark">
+        +
+      </div>
+
+      <div class="brand-text">
+
+        <strong>SAHAYAK</strong>
+
+        <span>
+          Emergency Response & Resource Coordination
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="system-status">
+
+      <span class="status-dot"></span>
+
+      Emergency Network Online
+
+    </div>
+
+  </header>
+
+
+
+  <!-- PAGE -->
+
+  <main class="page">
+
+
+    <!-- INTRO -->
+
+    <div class="page-header">
+
+      <div class="emergency-label">
+
+        ⚠ Public Emergency Reporting
+
+      </div>
+
+
+      <h1>
+        Report an Emergency
+      </h1>
+
+
+      <p>
+
+        Provide as much information as you safely can.
+        You do not need to sign in to submit an emergency report.
+
+      </p>
+
+    </div>
+
+
+
+    <!-- FORM -->
+
+    <div class="report-card">
+
+
+      <div class="card-header">
+
+        <h2>
+          Emergency Information
+        </h2>
+
+        <p>
+          Fields marked * are required.
+        </p>
+
+      </div>
+
+
+
+      <form id="emergency-form">
+
+
+        <!-- WHAT HAPPENED -->
+
+        <section class="section">
+
+          <div class="section-title">
+
+            <div class="step">1</div>
+
+            <h3>
+              What happened?
+            </h3>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Emergency Type *
+            </label>
+
+            <select required>
+
+              <option value="">
+                Select emergency type
+              </option>
+
+              <option>
+                Fire
+              </option>
+
+              <option>
+                Flood
+              </option>
+
+              <option>
+                Road Accident
+              </option>
+
+              <option>
+                Medical Emergency
+              </option>
+
+              <option>
+                Industrial Accident
+              </option>
+
+              <option>
+                Building Collapse
+              </option>
+
+              <option>
+                Gas / Chemical Leak
+              </option>
+
+              <option>
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+
+
+          <div class="field">
+
+            <label>
+              Describe the emergency *
+            </label>
+
+            <textarea
+              required
+              placeholder="Example: A vehicle has overturned near the highway. Several people appear injured..."
+            ></textarea>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- LOCATION -->
+
+        <section class="section">
+
+          <div class="section-title">
+
+            <div class="step">2</div>
+
+            <h3>
+              Where is the emergency?
+            </h3>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Location *
+            </label>
+
+
+            <div class="location-row">
+
+              <input
+                id="location"
+                type="text"
+                required
+                placeholder="Enter address, landmark or area"
+              >
+
+
+              <button
+                type="button"
+                class="location-btn"
+                id="location-btn"
+              >
+
+                ◎ Use Current Location
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- PEOPLE -->
+
+        <section class="section">
+
+          <div class="section-title">
+
+            <div class="step">3</div>
+
+            <h3>
+              People affected
+            </h3>
+
+          </div>
+
+
+          <div class="grid-two">
+
+
+            <div class="field">
+
+              <label>
+                Approximate number of people affected
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                placeholder="e.g. 4"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Are people injured?
+              </label>
+
+              <select>
+
+                <option>
+                  Unknown
+                </option>
+
+                <option>
+                  No
+                </option>
+
+                <option>
+                  Yes
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- DANGER -->
+
+        <section class="section">
+
+          <div class="section-title">
+
+            <div class="step">4</div>
+
+            <h3>
+              Immediate danger
+            </h3>
+
+          </div>
+
+
+          <div class="danger-options">
+
+
+            <label class="danger-option">
+
+              <input type="checkbox">
+
+              People trapped
+
+            </label>
+
+
+            <label class="danger-option">
+
+              <input type="checkbox">
+
+              Serious injuries
+
+            </label>
+
+
+            <label class="danger-option">
+
+              <input type="checkbox">
+
+              Fire spreading
+
+            </label>
+
+
+            <label class="danger-option">
+
+              <input type="checkbox">
+
+              Gas / Chemical leak
+
+            </label>
+
+
+            <label class="danger-option">
+
+              <input type="checkbox">
+
+              Road blocked
+
+            </label>
+
+
+            <label class="danger-option">
+
+              <input type="checkbox">
+
+              Water level rising
+
+            </label>
+
+
+          </div>
+
+        </section>
+
+
+
+        <!-- MEDIA -->
+
+        <section class="section">
+
+          <div class="section-title">
+
+            <div class="step">5</div>
+
+            <h3>
+              Add evidence
+            </h3>
+
+          </div>
+
+
+          <div class="upload">
+
+            <strong>
+              Upload photo or video
+            </strong>
+
+            <p>
+              Optional — visual evidence may help response teams understand the situation.
+            </p>
+
+            <input
+              type="file"
+              accept="image/*,video/*"
+            >
+
+          </div>
+
+        </section>
+
+
+
+        <!-- CONTACT -->
+
+        <section class="section">
+
+          <div class="section-title">
+
+            <div class="step">6</div>
+
+            <h3>
+              Your contact information
+            </h3>
+
+          </div>
+
+
+          <div class="grid-two">
+
+
+            <div class="field">
+
+              <label>
+                Name
+              </label>
+
+              <input
+                type="text"
+                placeholder="Your name"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label>
+                Phone Number
+              </label>
+
+              <input
+                type="tel"
+                placeholder="Your phone number"
+              >
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- SUBMIT -->
+
+        <div class="submit-area">
+
+          <button
+            type="submit"
+            class="submit-btn"
+          >
+
+            Report Emergency
+
+          </button>
+
+
+          <div class="privacy">
+
+            Your report will be sent to the emergency control room.
+
+          </div>
+
+        </div>
+
+
+        <div id="message">
+
+          Emergency report received successfully.
+
+        </div>
+
+      </form>
+
+    </div>
+
+
+
+    <a
+      href="login.html"
+      class="back"
+    >
+
+      ← Return to staff sign in
+
+    </a>
+
+
+  </main>
+
+
+
+  <script>
+
+    const form =
+      document.getElementById("emergency-form");
+
+
+    const locationButton =
+      document.getElementById("location-btn");
+
+
+    const locationInput =
+      document.getElementById("location");
+
+
+    const message =
+      document.getElementById("message");
+
+
+/* CURRENT LOCATION */
+
+locationButton.addEventListener("click", function () {
+
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by this browser.");
+    return;
+  }
+
+  locationButton.textContent = "Detecting location...";
+
+  navigator.geolocation.getCurrentPosition(
+
+    function (position) {
+
+      const lat = position.coords.latitude.toFixed(6);
+      const lon = position.coords.longitude.toFixed(6);
+
+      locationInput.value = lat + ", " + lon;
+
+      locationButton.textContent = "✓ Location Detected";
+
+      console.log("Latitude:", lat);
+      console.log("Longitude:", lon);
+    },
+
+    function (error) {
+
+      console.log("Location error:", error);
+
+      if (error.code === 1) {
+        alert("Location permission was denied.");
+      }
+
+      else if (error.code === 2) {
+        alert("Your location could not be determined.");
+      }
+
+      else if (error.code === 3) {
+        alert("Location detection timed out.");
+      }
+
+      else {
+        alert("Unable to detect location.");
+      }
+
+      locationButton.textContent = "◎ Use Current Location";
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+
+  );
+
+});
+
+
+
+    /* TEMPORARY FORM SUBMISSION */
+
+    form.addEventListener(
+      "submit",
+      function (event) {
+
+        event.preventDefault();
+
+        message.style.display =
+          "block";
+
+      }
+    );
+
+  </script>
+
+
+</body>
+
+</html>
