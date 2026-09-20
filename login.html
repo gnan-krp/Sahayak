@@ -367,10 +367,9 @@
         </div>
         <div class="hero">
           <h1 data-i18n="heroTitle">One picture of every emergency.</h1>
-          <p data-i18n="heroText">Calls, citizen reports, sensors and field teams land in one place. Duplicates merge, severity is scored, and the nearest resources are suggested within seconds.</p>
+          <p data-i18n="heroText">Calls, citizen reports and sensors land in one place. Duplicates merge, severity is scored, and the nearest resources are suggested within seconds.</p>
           <div class="stats">
             <div class="stat"><b id="s-active">0</b><span data-i18n="statActive">Active incidents</span></div>
-            <div class="stat crit"><b id="s-crit">0</b><span data-i18n="statCrit">Critical</span></div>
             <div class="stat"><b id="s-teams">0</b><span data-i18n="statTeams">Teams en route</span></div>
           </div>
         </div>
@@ -402,10 +401,6 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="4" height="6" rx="1.5"/><rect x="18" y="14" width="4" height="6" rx="1.5"/></svg>
           <span data-i18n="role_dispatcher">Dispatcher</span>
         </button>
-        <button type="button" class="role" role="radio" aria-checked="false" data-role="field">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-          <span data-i18n="role_field">Field team</span>
-        </button>
         <button type="button" class="role" role="radio" aria-checked="false" data-role="hospital">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
           <span data-i18n="role_hospital">Hospital</span>
@@ -431,10 +426,6 @@
           <a href="#" onclick="return false" data-i18n="forgot">Forgot password?</a>
         </div>
         <button class="btn primary" type="submit" id="submit-btn">Sign in as dispatcher</button>
-        <button class="btn ghost" type="button" id="otp-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-          <span data-i18n="otp">Sign in with a one-time code</span>
-        </button>
         <div id="msg" role="status"></div>
       </form>
 
@@ -442,7 +433,6 @@
         <p data-i18n="demoText">Judges, try a demo account. No password needed.</p>
         <div class="chips">
           <button type="button" class="chip" data-demo="dispatcher" data-i18n="role_dispatcher">Dispatcher</button>
-          <button type="button" class="chip" data-demo="field" data-i18n="role_field">Field team</button>
           <button type="button" class="chip" data-demo="hospital" data-i18n="role_hospital">Hospital</button>
           <button type="button" class="chip" data-demo="authority" data-i18n="role_authority">Authority</button>
         </div>
@@ -500,24 +490,22 @@
       langAria: "Language", rolesAria: "Role",
       brandSub: "Emergency coordination",
       heroTitle: "One picture of every emergency.",
-      heroText: "Calls, citizen reports, sensors and field teams land in one place. Duplicates merge, severity is scored, and the nearest resources are suggested within seconds.",
+      heroText: "Calls, citizen reports and sensors land in one place. Duplicates merge, severity is scored, and the nearest resources are suggested within seconds.",
       statActive: "Active incidents", statCrit: "Critical", statTeams: "Teams en route",
       feedTitle: "Live incident feed", feedNote: "Live data",
       feedEmpty: "No active incidents at the moment",
       signTitle: "Sign in to the control room",
       signSub: "Choose your role so you land on the right view.",
-      role_dispatcher: "Dispatcher", role_field: "Field team", role_hospital: "Hospital", role_authority: "Authority",
-      id_dispatcher: "Employee ID", id_field: "Team code", id_hospital: "Facility ID", id_authority: "Department email",
-      ph_dispatcher: "e.g. DSP-2041", ph_field: "e.g. FIRE-07", ph_hospital: "e.g. HSP-118", ph_authority: "name@department.gov.in",
+      role_dispatcher: "Dispatcher", role_hospital: "Hospital", role_authority: "Authority",
+      id_dispatcher: "Employee ID", id_hospital: "Facility ID", id_authority: "Department email",
+      ph_dispatcher: "e.g. DSP-2041", ph_hospital: "e.g. HSP-118", ph_authority: "name@department.gov.in",
       hint_dispatcher: "See every active incident and assign teams.",
-      hint_field: "Get your assignments, route and status updates.",
       hint_hospital: "Share bed and ICU capacity, see incoming patients.",
       hint_authority: "Monitor escalations, delays and area-wide analytics.",
-      btn_dispatcher: "Sign in as dispatcher", btn_field: "Sign in as field team",
+      btn_dispatcher: "Sign in as dispatcher", btn_hospital: "Sign in as hospital", btn_authority: "Sign in as authority",
       btn_hospital: "Sign in as hospital", btn_authority: "Sign in as authority",
       password: "Password", phPassword: "Enter your password",
       keep: "Keep me signed in on this device", forgot: "Forgot password?",
-      otp: "Sign in with a one-time code",
       demoText: "Judges, try a demo account. No password needed.",
       sosTitle: "Report an emergency",
       sosSub: "No sign-in needed. Location is detected automatically.",
@@ -527,7 +515,6 @@
       msgEnter: "Enter your {field} and password, or pick a demo account below.",
       msgSigning: "Signing in...",
       msgSignedIn: "Signed in as {name}.",
-      msgOtp: "A 6-digit code will be sent to your registered phone.",
       msgSos: "This opens the public report form (photo, location, description).",
       msgOffline: "Server offline. Signed in using the demo account.",
       errInvalid: "Invalid ID or password",
@@ -558,24 +545,22 @@
       langAria: "भाषा", rolesAria: "भूमिका",
       brandSub: "आपातकालीन समन्वय",
       heroTitle: "हर आपातकाल की एक साझा तस्वीर।",
-      heroText: "कॉल, नागरिकों की रिपोर्ट, सेंसर और फील्ड टीमों की जानकारी एक ही जगह आती है। एक जैसी रिपोर्ट जुड़ जाती हैं, गंभीरता का आकलन होता है और सबसे नज़दीकी संसाधन कुछ ही सेकंड में सुझाए जाते हैं।",
+      heroText: "कॉल, नागरिकों की रिपोर्ट और सेंसर की जानकारी एक ही जगह आती है। एक जैसी रिपोर्ट जुड़ जाती हैं, गंभीरता का आकलन होता है और सबसे नज़दीकी संसाधन कुछ ही सेकंड में सुझाए जाते हैं।",
       statActive: "सक्रिय घटनाएँ", statCrit: "गंभीर", statTeams: "रास्ते में टीमें",
       feedTitle: "लाइव घटना फ़ीड", feedNote: "लाइव डेटा",
       feedEmpty: "इस समय कोई सक्रिय घटना नहीं है",
       signTitle: "कंट्रोल रूम में साइन इन करें",
       signSub: "अपनी भूमिका चुनें ताकि सही स्क्रीन खुले।",
-      role_dispatcher: "डिस्पैचर", role_field: "फील्ड टीम", role_hospital: "अस्पताल", role_authority: "प्राधिकरण",
-      id_dispatcher: "कर्मचारी आईडी", id_field: "टीम कोड", id_hospital: "सुविधा आईडी", id_authority: "विभाग का ईमेल",
-      ph_dispatcher: "जैसे DSP-2041", ph_field: "जैसे FIRE-07", ph_hospital: "जैसे HSP-118", ph_authority: "name@department.gov.in",
+      role_dispatcher: "डिस्पैचर", role_hospital: "अस्पताल", role_authority: "प्राधिकरण",
+      id_dispatcher: "कर्मचारी आईडी", id_hospital: "सुविधा आईडी", id_authority: "विभाग का ईमेल",
+      ph_dispatcher: "जैसे DSP-2041", ph_hospital: "जैसे HSP-118", ph_authority: "name@department.gov.in",
       hint_dispatcher: "सभी सक्रिय घटनाएँ देखें और टीमें सौंपें।",
-      hint_field: "अपने असाइनमेंट, रूट और स्थिति अपडेट देखें।",
       hint_hospital: "बेड और आईसीयू की उपलब्धता साझा करें, आने वाले मरीज़ देखें।",
       hint_authority: "एस्केलेशन, देरी और क्षेत्रवार विश्लेषण पर नज़र रखें।",
-      btn_dispatcher: "डिस्पैचर के रूप में साइन इन करें", btn_field: "फील्ड टीम के रूप में साइन इन करें",
+      btn_dispatcher: "डिस्पैचर के रूप में साइन इन करें", btn_hospital: "अस्पताल के रूप में साइन इन करें", btn_authority: "प्राधिकरण के रूप में साइन इन करें",
       btn_hospital: "अस्पताल के रूप में साइन इन करें", btn_authority: "प्राधिकरण के रूप में साइन इन करें",
       password: "पासवर्ड", phPassword: "अपना पासवर्ड दर्ज करें",
       keep: "इस डिवाइस पर साइन इन रखें", forgot: "पासवर्ड भूल गए?",
-      otp: "वन-टाइम कोड से साइन इन करें",
       demoText: "जजों के लिए: डेमो अकाउंट आज़माएँ। पासवर्ड की ज़रूरत नहीं।",
       sosTitle: "आपातकाल की सूचना दें",
       sosSub: "साइन इन ज़रूरी नहीं। लोकेशन अपने आप पता चल जाती है।",
@@ -585,7 +570,6 @@
       msgEnter: "कृपया {field} और पासवर्ड दर्ज करें, या नीचे से डेमो अकाउंट चुनें।",
       msgSigning: "साइन इन हो रहा है...",
       msgSignedIn: "{name} के रूप में साइन इन हुआ।",
-      msgOtp: "आपके पंजीकृत फ़ोन पर 6 अंकों का कोड भेजा जाएगा।",
       msgSos: "यह सार्वजनिक रिपोर्ट फ़ॉर्म खोलेगा (फ़ोटो, लोकेशन, विवरण)।",
       msgOffline: "सर्वर बंद है। डेमो अकाउंट से साइन इन किया गया।",
       errInvalid: "आईडी या पासवर्ड गलत है",
@@ -613,24 +597,22 @@
       langAria: "ભાષા", rolesAria: "ભૂમિકા",
       brandSub: "કટોકટી સંકલન",
       heroTitle: "દરેક કટોકટીનું એક સહિયારું ચિત્ર.",
-      heroText: "કૉલ, નાગરિકોના રિપોર્ટ, સેન્સર અને ફીલ્ડ ટીમની માહિતી એક જ જગ્યાએ આવે છે. સરખા રિપોર્ટ જોડાઈ જાય છે, ગંભીરતાનું મૂલ્યાંકન થાય છે અને સૌથી નજીકના સંસાધનો થોડી જ સેકંડમાં સૂચવાય છે.",
+      heroText: "કૉલ, નાગરિકોના રિપોર્ટ અને સેન્સરની માહિતી એક જ જગ્યાએ આવે છે. સરખા રિપોર્ટ જોડાઈ જાય છે, ગંભીરતાનું મૂલ્યાંકન થાય છે અને સૌથી નજીકના સંસાધનો થોડી જ સેકંડમાં સૂચવાય છે.",
       statActive: "સક્રિય ઘટનાઓ", statCrit: "ગંભીર", statTeams: "રસ્તામાં ટીમો",
       feedTitle: "લાઇવ ઘટના ફીડ", feedNote: "લાઇવ ડેટા",
       feedEmpty: "અત્યારે કોઈ સક્રિય ઘટના નથી",
       signTitle: "કંટ્રોલ રૂમમાં સાઇન ઇન કરો",
       signSub: "તમારી ભૂમિકા પસંદ કરો, જેથી સાચું પેજ ખુલે.",
-      role_dispatcher: "ડિસ્પેચર", role_field: "ફીલ્ડ ટીમ", role_hospital: "હોસ્પિટલ", role_authority: "સત્તામંડળ",
-      id_dispatcher: "કર્મચારી આઈડી", id_field: "ટીમ કોડ", id_hospital: "સુવિધા આઈડી", id_authority: "વિભાગનો ઈમેલ",
-      ph_dispatcher: "દા.ત. DSP-2041", ph_field: "દા.ત. FIRE-07", ph_hospital: "દા.ત. HSP-118", ph_authority: "name@department.gov.in",
+      role_dispatcher: "ડિસ્પેચર", role_hospital: "હોસ્પિટલ", role_authority: "સત્તામંડળ",
+      id_dispatcher: "કર્મચારી આઈડી", id_hospital: "સુવિધા આઈડી", id_authority: "વિભાગનો ઈમેલ",
+      ph_dispatcher: "દા.ત. DSP-2041", ph_hospital: "દા.ત. HSP-118", ph_authority: "name@department.gov.in",
       hint_dispatcher: "બધી સક્રિય ઘટનાઓ જુઓ અને ટીમો સોંપો.",
-      hint_field: "તમારા અસાઇનમેન્ટ, રૂટ અને સ્ટેટસ અપડેટ મેળવો.",
       hint_hospital: "બેડ અને ICU ની ઉપલબ્ધતા શેર કરો, આવનારા દર્દીઓ જુઓ.",
       hint_authority: "એસ્કેલેશન, વિલંબ અને વિસ્તાર મુજબના વિશ્લેષણ પર નજર રાખો.",
-      btn_dispatcher: "ડિસ્પેચર તરીકે સાઇન ઇન કરો", btn_field: "ફીલ્ડ ટીમ તરીકે સાઇન ઇન કરો",
+      btn_dispatcher: "ડિસ્પેચર તરીકે સાઇન ઇન કરો", btn_hospital: "હોસ્પિટલ તરીકે સાઇન ઇન કરો", btn_authority: "સત્તામંડળ તરીકે સાઇન ઇન કરો",
       btn_hospital: "હોસ્પિટલ તરીકે સાઇન ઇન કરો", btn_authority: "સત્તામંડળ તરીકે સાઇન ઇન કરો",
       password: "પાસવર્ડ", phPassword: "તમારો પાસવર્ડ દાખલ કરો",
       keep: "આ ડિવાઇસ પર સાઇન ઇન રાખો", forgot: "પાસવર્ડ ભૂલી ગયા?",
-      otp: "વન-ટાઇમ કોડથી સાઇન ઇન કરો",
       demoText: "જજ માટે: ડેમો એકાઉન્ટ અજમાવો. પાસવર્ડની જરૂર નથી.",
       sosTitle: "કટોકટીની જાણ કરો",
       sosSub: "સાઇન ઇનની જરૂર નથી. લોકેશન આપમેળે મળી જાય છે.",
@@ -640,7 +622,6 @@
       msgEnter: "કૃપા કરીને {field} અને પાસવર્ડ દાખલ કરો, અથવા નીચેથી ડેમો એકાઉન્ટ પસંદ કરો.",
       msgSigning: "સાઇન ઇન થઈ રહ્યું છે...",
       msgSignedIn: "{name} તરીકે સાઇન ઇન થયું.",
-      msgOtp: "તમારા નોંધાયેલા ફોન પર 6 અંકનો કોડ મોકલવામાં આવશે.",
       msgSos: "આ જાહેર રિપોર્ટ ફોર્મ ખોલશે (ફોટો, લોકેશન, વર્ણન).",
       msgOffline: "સર્વર બંધ છે. ડેમો એકાઉન્ટથી સાઇન ઇન થયું.",
       errInvalid: "આઈડી અથવા પાસવર્ડ ખોટો છે",
@@ -688,11 +669,10 @@
      ===================================================== */
   var DEMO_ACCOUNTS = {
     "dsp-2041":                  { pw: "demo-access", role: "dispatcher", name: "Dispatcher Mehta" },
-    "fire-07":                   { pw: "demo-access", role: "field",      name: "Fire Team 07" },
     "hsp-118":                   { pw: "demo-access", role: "hospital",   name: "Civil Hospital Nadiad" },
     "collector@district.gov.in": { pw: "demo-access", role: "authority",  name: "District Collector" }
   };
-  var DEMO_ID = { dispatcher: "DSP-2041", field: "FIRE-07", hospital: "HSP-118", authority: "collector@district.gov.in" };
+  var DEMO_ID = { dispatcher: "DSP-2041", hospital: "HSP-118", authority: "collector@district.gov.in" };
 
   var SESSION_HOURS = 8;
   var SESSION_HOURS_LONG = 24 * 14;
@@ -764,7 +744,6 @@
   var API = location.protocol === "file:" ? "http://localhost:5000" : "";
   var HOME = {
     dispatcher: "dispatcher.html",
-    field: "field.html",
     hospital: "hospital.html",
     authority: "authority.html"
   };
@@ -847,7 +826,6 @@
     goHome(data.user.role);
   });
 
-  document.getElementById("otp-btn").addEventListener("click", function () { setMsg("msgOtp", null, OK); });
   document.getElementById("sos").addEventListener("click", function () { location.href = "report.html"; });
 
   /* Show why the user was bounced back here by auth.js */
