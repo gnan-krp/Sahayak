@@ -770,8 +770,15 @@
   }
 
   function goHome(role) {
-    setTimeout(function () { location.href = HOME[role] || "authority.html"; }, 700);
-  }
+  setTimeout(function () {
+
+    const page = HOME[role] || "authority.html";
+
+    // Force a fresh navigation so Chrome does not reuse previous role page
+    window.location.replace(page + "?t=" + Date.now());
+
+  }, 300);
+}
 
   /* Offline / no-backend path: validate against the demo table only */
   function tryDemoLogin(showOfflineNote) {
