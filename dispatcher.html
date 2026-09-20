@@ -1,971 +1,1574 @@
-.search input::placeholder{color:var(--dim)}
-.search kbd{font-family:inherit;font-size:10px;color:var(--muted);background:var(--chip);
-  border:1px solid var(--line2);border-radius:5px;padding:2px 6px}
-.top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
-.clockchip{display:flex;align-items:center;gap:7px;height:32px;padding:0 11px;border:1px solid var(--line2);
-  border-radius:9px;background:var(--bg2);font-size:12px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
-.clockchip b{color:var(--txt);font-weight:700}
-.bellwrap{position:relative}
-.bell{position:relative;width:34px;height:34px;border-radius:9px;border:1px solid var(--line2);background:var(--bg2);
-  display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer}
-.bell:hover{color:var(--txt)}
-.bell i{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:999px;background:var(--red);
-  color:#fff;font-style:normal;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
-  border:2px solid var(--bg1);padding:0 3px}
-.lang{display:flex;align-items:center;gap:2px;border:1px solid var(--line2);border-radius:9px;padding:3px;background:var(--bg2)}
-.lang span{font-size:11.5px;font-weight:600;color:var(--muted);padding:4px 9px;border-radius:6px;cursor:pointer}
-.lang span:hover{color:var(--txt)}
-.lang span.on{background:var(--chip);color:var(--txt)}
-.me{display:flex;align-items:center;gap:9px;padding-left:12px;border-left:1px solid var(--line2)}
-.ava{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#1e7eff,#0f5bd0);
-  display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:#fff}
-.me-t{line-height:1.25}
-.me-t b{display:block;font-size:12px;font-weight:700}
-.me-t span{font-size:10.5px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:4px}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block}
-
-/* ---------- stepper ---------- */
-.stepper{height:46px;flex:none;display:flex;align-items:center;gap:16px;padding:0 16px;
-  background:#0a1526;border-bottom:1px solid var(--line)}
-.steps{display:flex;align-items:center;gap:10px;margin:0 auto}
-.step{display:flex;align-items:center;gap:8px}
-.step .ic{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;
-  border:1px solid var(--line2);color:var(--dim);background:var(--bg2)}
-.step .lb{font-size:10.5px;font-weight:700;letter-spacing:.9px;color:var(--dim);text-transform:uppercase}
-.step.done .ic{background:rgba(58,205,143,.12);border-color:rgba(58,205,143,.45);color:var(--green)}
-.step.done .lb{color:var(--muted)}
-.step.now{background:var(--bg3);border:1px solid rgba(30,126,255,.55);border-radius:999px;padding:4px 12px 4px 5px;
-  box-shadow:0 0 0 3px rgba(30,126,255,.12)}
-.step.now .ic{background:var(--blue);border-color:var(--blue);color:#fff}
-.step.now .lb{color:#fff}
-.step.now .you{font-size:9px;font-weight:800;color:var(--blue2);background:rgba(30,126,255,.16);
-  border-radius:999px;padding:2px 6px;letter-spacing:.6px}
-.conn{color:#31445f;display:flex;align-items:center}
-.step-meta{position:absolute;right:16px;font-size:11px;color:var(--dim);font-weight:600;display:flex;gap:14px;align-items:center}
-.step-meta b{color:var(--muted);font-weight:700}
-.step-meta .sla{color:var(--amber);font-variant-numeric:tabular-nums}
-
-/* ---------- layout ---------- */
-main{flex:1;display:grid;grid-template-columns:296px minmax(0,1fr) 324px;gap:12px;padding:12px;min-height:0}
-.card{background:var(--bg2);border:1px solid var(--line);border-radius:12px}
-.col{display:flex;flex-direction:column;gap:12px;min-height:0}
-.chead{display:flex;align-items:center;gap:8px;padding:11px 13px;border-bottom:1px solid var(--line)}
-.chead h3{font-size:12.5px;font-weight:700;letter-spacing:.1px}
-.chead .sub{margin-left:auto;font-size:10.5px;color:var(--dim);font-weight:600}
-.pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px;white-space:nowrap}
-.pill.red{background:rgba(255,77,77,.14);color:#ff8a8a;border:1px solid rgba(255,77,77,.4)}
-.pill.red.solid{background:var(--red);border-color:var(--red);color:#fff;letter-spacing:.8px}
-.pill.org{background:rgba(255,138,61,.13);color:#ffb27d;border:1px solid rgba(255,138,61,.4)}
-.pill.org.solid{background:var(--orange);border-color:var(--orange);color:#fff;letter-spacing:.8px}
-.pill.amb{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.38)}
-.pill.amb.solid{background:var(--amber);border-color:var(--amber);color:#241a05;letter-spacing:.8px}
-.pill.blu{background:rgba(30,126,255,.13);color:#6fb4ff;border:1px solid rgba(30,126,255,.45)}
-.pill.blu.solid{background:var(--blue);border-color:var(--blue);color:#fff;letter-spacing:.8px}
-.pill.grn{background:rgba(58,205,143,.12);color:#5fe0a8;border:1px solid rgba(58,205,143,.4)}
-.pill.mut{background:rgba(147,163,184,.08);color:var(--muted);border:1px solid var(--line2)}
-
-/* ---------- queue ---------- */
-.queue{flex:1;display:flex;flex-direction:column;min-height:0}
-.filters{display:flex;gap:5px;padding:10px 10px 4px}
-.filters span{font-size:10.5px;font-weight:600;color:var(--muted);padding:4px 8px;border-radius:999px;
-  border:1px solid var(--line2);cursor:pointer;white-space:nowrap}
-.filters span:hover{color:var(--txt)}
-.filters span.on{background:var(--bg3);border-color:rgba(30,126,255,.5);color:#fff}
-.filters span i{font-style:normal;opacity:.75;font-weight:700}
-.qlist{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
-.qlist::-webkit-scrollbar{width:8px}
-.qlist::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
-.q{position:relative;display:flex;gap:10px;padding:10px 10px 10px 13px;border-radius:10px;border:1px solid transparent;cursor:pointer}
-.q:hover{background:#0d1830}
-.q .bar{position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:3px}
-.q.sel{background:var(--bg3);border-color:rgba(30,126,255,.5)}
-.q-top{display:flex;align-items:baseline;gap:8px}
-.q-top b{font-size:12.5px;font-weight:700;letter-spacing:-.1px}
-.q-top .t{margin-left:auto;font-size:10px;color:var(--dim);font-weight:600;white-space:nowrap}
-.q-meta{font-size:11px;color:var(--muted);margin-top:3px;font-weight:500}
-.q-tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
-.qfoot{padding:9px 13px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;
-  font-size:10.5px;color:var(--dim);font-weight:600}
-.qfoot a{margin-left:auto;color:var(--blue2);font-weight:600;text-decoration:none;font-size:11px;cursor:pointer}
-.qfoot a:hover{text-decoration:underline}
-
-/* ---------- incident header ---------- */
-.inc{padding:13px 15px 12px}
-.inc-top{display:flex;align-items:center;gap:10px}
-.inc-top h1{font-size:17.5px;font-weight:800;letter-spacing:-.3px}
-.inc-time{margin-left:auto;text-align:right;font-size:11px;color:var(--muted);font-weight:600;line-height:1.4}
-.inc-time b{color:var(--txt);font-variant-numeric:tabular-nums}
-.ibtn{width:28px;height:28px;border-radius:8px;border:1px solid var(--line2);background:var(--bg1);
-  display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer}
-.ibtn:hover{color:var(--txt);border-color:var(--dim)}
-.incbtns{position:relative;display:flex;gap:6px}
-.inc-meta{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.mchip{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:var(--muted);
-  background:var(--bg1);border:1px solid var(--line);border-radius:7px;padding:5px 9px}
-.mchip b{color:var(--txt)}
-
-/* ---------- AI block ---------- */
-.aigrid{display:grid;grid-template-columns:1fr 1.25fr;min-height:0}
-.aigrid>div{padding:12px 15px}
-.aigrid>div+div{border-left:1px solid var(--line)}
-.h3s{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;letter-spacing:1px;
-  color:var(--muted);text-transform:uppercase;margin-bottom:10px}
-.h3s .sp{color:#8ab4ff}
-.kv{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4.5px 0;font-size:12px}
-.kv span{color:var(--muted);font-weight:500}
-.kv b{font-weight:700;text-align:right}
-.sevbar{height:5px;border-radius:99px;background:#152439;width:96px;position:relative;overflow:hidden;
-  display:inline-block;vertical-align:middle;margin-right:8px}
-.sevbar i{position:absolute;inset:0;width:92%;border-radius:99px;background:linear-gradient(90deg,#ff8a3d,#ff4d4d);transition:width .4s}
-.sum{font-size:12px;line-height:1.62;color:#c3cfdd;font-weight:500}
-.sum b{color:var(--txt)}
-.acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.act{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:#9ec5ff;
-  background:rgba(30,126,255,.1);border:1px solid rgba(30,126,255,.32);border-radius:7px;padding:5px 9px;cursor:pointer}
-.act:hover{background:rgba(30,126,255,.2)}
-.act.done{color:#5fe0a8;background:rgba(58,205,143,.1);border-color:rgba(58,205,143,.45)}
-
-/* ---------- map ---------- */
-.map{position:relative;flex:1;min-height:180px;overflow:hidden;background:var(--bg0)}
-.map svg{position:absolute;inset:0;width:100%;height:100%}
-.mchipabs{position:absolute;display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;
-  background:rgba(10,20,36,.86);border:1px solid var(--line2);border-radius:8px;padding:6px 10px;color:var(--muted);
-  backdrop-filter:blur(4px)}
-.mchipabs b{color:var(--txt)}
-
-/* ---------- resources ---------- */
-.res .chead .ai{color:#8ab4ff}
-.rrow{display:flex;align-items:center;gap:11px;padding:9px 14px;border-top:1px solid var(--line);cursor:pointer}
-.rrow:first-of-type{border-top:0}
-.rrow:hover{background:#0d1830}
-.cb{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--line2);background:var(--bg1);flex:none;
-  display:flex;align-items:center;justify-content:center}
-.cb.on{background:var(--blue);border-color:var(--blue)}
-.cb.lock{opacity:.55;cursor:default}
-.tile{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}
-.tile.red{background:rgba(255,77,77,.13);color:#ff8a8a;border:1px solid rgba(255,77,77,.35)}
-.tile.blu{background:rgba(30,126,255,.13);color:#6fb4ff;border:1px solid rgba(30,126,255,.35)}
-.tile.org{background:rgba(255,138,61,.13);color:#ffb27d;border:1px solid rgba(255,138,61,.35)}
-.tile.amb{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.32)}
-.rname b{display:block;font-size:12.5px;font-weight:700}
-.rname span{display:block;font-size:10.5px;color:var(--muted);font-weight:500;margin-top:2px}
-.rright{margin-left:auto;display:flex;align-items:center;gap:10px}
-.eta{text-align:right;line-height:1.25}
-.eta b{display:block;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums}
-.eta span{font-size:9.5px;color:var(--dim);font-weight:700;letter-spacing:.6px}
-.rfoot{display:flex;align-items:center;gap:9px;padding:11px 14px;border-top:1px solid var(--line);background:#0b1728;
-  border-radius:0 0 12px 12px}
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:36px;border-radius:9px;
-  font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid transparent}
-.btn:disabled{opacity:.45;cursor:default;box-shadow:none}
-.btn.light{background:var(--light);color:#0a1424;padding:0 18px;box-shadow:0 4px 16px rgba(232,238,247,.12)}
-.btn.ghost{background:var(--bg1);border-color:var(--line2);color:var(--txt);padding:0 14px;font-weight:600}
-.btn.danger{background:rgba(255,77,77,.08);border-color:rgba(255,77,77,.4);color:#ff8a8a;padding:0 14px;font-weight:600}
-.rfoot a{margin-left:auto;color:var(--blue2);font-size:11.5px;font-weight:600;text-decoration:none;
-  display:flex;align-items:center;gap:6px;cursor:pointer}
-.rfoot a:hover{text-decoration:underline}
-
-/* ---------- right rail ---------- */
-.feed{flex:1;min-height:0;display:flex;flex-direction:column}
-.flink{padding:4px 13px 10px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
-.fitem{display:flex;gap:9px;align-items:flex-start;animation:tin .25s ease}
-.fitem .d{width:7px;height:7px;border-radius:50%;margin-top:4.5px;flex:none}
-.fitem p{font-size:11.5px;color:#c3cfdd;font-weight:500;line-height:1.45}
-.fitem p b{color:var(--txt)}
-.fitem .t{margin-left:auto;font-size:10px;color:var(--dim);font-weight:600;white-space:nowrap;margin-top:1px}
-.al .arow{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-top:1px solid var(--line)}
-.al .arow:first-of-type{border-top:0}
-.al p{font-size:11.5px;line-height:1.45;color:#c3cfdd;font-weight:500}
-.al p b{color:var(--txt)}
-.mini{height:26px;padding:0 10px;border-radius:7px;font-size:10.5px;font-weight:700;cursor:pointer;
-  display:flex;align-items:center;gap:5px;flex:none;margin-left:auto}
-.mini.red{background:rgba(255,77,77,.12);border:1px solid rgba(255,77,77,.45);color:#ff8a8a}
-.mini.red:hover{background:rgba(255,77,77,.22)}
-.mini.blu{background:rgba(30,126,255,.12);border:1px solid rgba(30,126,255,.45);color:#6fb4ff}
-.mini.blu:hover{background:rgba(30,126,255,.22)}
-.avrow{padding:8px 13px 2px}
-.avrow .l{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px}
-.avrow .l b{color:var(--txt);font-variant-numeric:tabular-nums}
-.track{height:5px;border-radius:99px;background:#152439;overflow:hidden;margin-bottom:9px}
-.track i{display:block;height:100%;border-radius:99px;transition:width .4s}
-.shift{display:flex;align-items:center;gap:10px;padding:11px 13px}
-.avstack{display:flex}
-.avstack .ava{width:26px;height:26px;border-radius:8px;font-size:9.5px;border:2px solid var(--bg2);margin-right:-7px}
-.avstack .ava:nth-child(2){background:linear-gradient(135deg,#3acd8f,#1f8f66)}
-.avstack .ava:nth-child(3){background:linear-gradient(135deg,#ff8a3d,#d96a20)}
-.shift p{font-size:11px;color:var(--muted);font-weight:500;line-height:1.45}
-.shift p b{color:var(--txt)}
-
-/* ---------- status + toast ---------- */
-footer{height:30px;flex:none;display:flex;align-items:center;gap:18px;padding:0 16px;
-  background:var(--bg1);border-top:1px solid var(--line);font-size:11px;color:var(--muted);font-weight:600}
-footer .r{margin-left:auto;display:flex;gap:18px}
-footer .g{color:var(--green)}
-#toasts{position:fixed;right:14px;bottom:42px;display:flex;flex-direction:column;gap:8px;z-index:80}
-.toast{width:332px;background:#0d1a2e;border:1px solid var(--line2);
-  border-radius:12px;padding:11px 12px;display:flex;gap:10px;box-shadow:0 18px 44px rgba(0,0,0,.55);animation:tin .22s ease}
-.toast .tic{width:30px;height:30px;border-radius:9px;background:rgba(30,126,255,.14);border:1px solid rgba(30,126,255,.4);
-  color:#6fb4ff;display:flex;align-items:center;justify-content:center;flex:none}
-.toast.red .tic{background:rgba(255,77,77,.14);border-color:rgba(255,77,77,.4);color:#ff8a8a}
-.toast.grn .tic{background:rgba(58,205,143,.12);border-color:rgba(58,205,143,.4);color:#5fe0a8}
-.toast.amb .tic{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.4);color:#fcd34d}
-.toast p{font-size:11.5px;font-weight:700;line-height:1.4}
-.toast span{display:block;font-size:10.5px;color:var(--muted);font-weight:500;margin-top:3px;line-height:1.45}
-.toast .x{margin-left:auto;color:var(--dim);font-size:13px;cursor:pointer;background:none;border:0}
-@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.pulse{animation:pl 1.1s infinite}
-@keyframes pl{50%{opacity:.45}}
-
-/* ---------- dropdowns / modal ---------- */
-.drop{position:absolute;top:42px;right:0;width:320px;background:#0d1a2e;border:1px solid var(--line2);border-radius:12px;
-  box-shadow:0 18px 44px rgba(0,0,0,.55);z-index:70;display:none}
-.drop.open{display:block;animation:tin .18s ease}
-.drop .dhead{display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700}
-.drop .dhead a{margin-left:auto;color:var(--blue2);font-size:10.5px;font-weight:600;cursor:pointer}
-.nrow{display:flex;gap:9px;padding:10px 12px;border-top:1px solid var(--line);font-size:11.5px;color:#c3cfdd;line-height:1.45}
-.nrow:first-of-type{border-top:0}
-.nrow .d{width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none}
-.nrow b{color:var(--txt)}
-.menu{position:absolute;top:34px;right:0;width:200px;background:#0d1a2e;border:1px solid var(--line2);border-radius:10px;
-  padding:5px;z-index:70;display:none;box-shadow:0 18px 44px rgba(0,0,0,.55)}
-.menu.open{display:block;animation:tin .18s ease}
-.menu button{display:flex;width:100%;gap:8px;align-items:center;background:none;border:0;color:var(--txt);
-  font-size:11.5px;font-weight:600;padding:7px 9px;border-radius:7px;cursor:pointer;text-align:left}
-.menu button:hover{background:#132340}
-.menu button.red{color:#ff8a8a}
-.modal{position:fixed;inset:0;background:rgba(3,8,16,.66);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:90}
-.modal.open{display:flex}
-.mcard{width:840px;max-width:94vw;max-height:88vh;overflow:auto;background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:18px 20px}
-.mhead{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.mhead h2{font-size:15px;font-weight:800}
-.mhead .x{margin-left:auto;width:28px;height:28px;border-radius:8px;border:1px solid var(--line2);background:var(--bg1);
-  color:var(--muted);cursor:pointer;font-size:14px}
-.agrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.acard{background:var(--bg1);border:1px solid var(--line);border-radius:10px;padding:12px}
-.acard h4{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:800}
-.hbar{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:11px}
-.hbar .l{width:92px;color:var(--muted);font-weight:600}
-.hbar .tr{flex:1;height:6px;background:#152439;border-radius:99px;overflow:hidden}
-.hbar .tr i{display:block;height:100%;border-radius:99px}
-.hbar .v{width:34px;text-align:right;font-weight:700;color:var(--txt)}
-.vcols{display:flex;align-items:flex-end;gap:6px;height:96px}
-.vcols .c{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;height:100%}
-.vcols .c i{display:block;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--blue2),var(--blue))}
-.vcols .c span{font-size:9px;color:var(--dim);text-align:center;font-weight:700}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAHAYAK — Dispatcher Console</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --bg:#0b1020;--panel:#121a30;--panel2:#0f1730;--line:#22304f;
+    --txt:#e8eefc;--mut:#8fa3c8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;
+    --crit:#f87171;--high:#fb923c;--purple:#a78bfa;--ai:#c084fc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif}
+  body{background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:16px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#38bdf8,#6366f1);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .brand h1{font-size:17px;letter-spacing:.5px}
+  .hstat{display:flex;gap:18px;margin-left:auto;align-items:center}
+  .hstat .s{text-align:center;min-width:64px}
+  .hstat .s b{font-size:19px;display:block}
+  .hstat .s span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+  .main{flex:1;display:grid;grid-template-columns:340px 280px 1fr 260px;min-height:0}
+  .col{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+  .col:last-child{border-right:none}
+  .col-head{padding:10px 14px;background:var(--panel2);border-bottom:1px solid var(--line);font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .col-body{flex:1;overflow-y:auto;padding:10px;min-height:0}
+  .toolbar{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--panel2);flex-shrink:0}
+  .fbtn{background:#1a2544;border:1px solid var(--line);color:var(--mut);font-size:11px;padding:5px 10px;border-radius:14px;cursor:pointer}
+  .fbtn.active{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
+  .search{width:100%;padding:7px 10px;margin-top:6px;background:#0a1226;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-size:12px;outline:none}
+  .search:focus{border-color:var(--acc)}
+  .bulkbar{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);background:var(--panel2);font-size:11px;color:var(--mut);flex-wrap:wrap;flex-shrink:0}
+  .bulkbar button{background:var(--acc);border:none;color:#04121f;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px}
+  .bulkbar button:disabled{opacity:.4;cursor:not-allowed}
+  .bulkbar button.danger{background:var(--crit);color:#fff}
+  .inc-card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--mut);border-radius:10px;padding:10px 12px;margin-bottom:9px;cursor:pointer;transition:.15s}
+  .inc-card:hover{border-color:var(--acc);transform:translateX(2px)}
+  .inc-card.sel-Critical{border-left-color:var(--crit)}
+  .inc-card.sel-High{border-left-color:var(--high)}
+  .inc-card.sel-Medium{border-left-color:var(--warn)}
+  .inc-card.sel-Low{border-left-color:var(--ok)}
+  .inc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .inc-top input[type=checkbox]{accent-color:var(--acc);width:15px;height:15px;cursor:pointer;flex-shrink:0}
+  .inc-id{font-weight:700;font-size:13px}
+  .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase;white-space:nowrap}
+  .b-Critical{background:rgba(248,113,113,.15);color:var(--crit)}
+  .b-High{background:rgba(251,146,60,.15);color:var(--high)}
+  .b-Medium{background:rgba(251,191,36,.15);color:var(--warn)}
+  .b-Low{background:rgba(52,211,153,.15);color:var(--ok)}
+  .b-status{background:rgba(56,189,248,.13);color:var(--acc)}
+  .b-merged{background:rgba(192,132,252,.15);color:var(--ai);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+  .inc-desc{font-size:12px;color:var(--txt);margin:6px 0 4px;line-height:1.35}
+  .inc-meta{font-size:11px;color:var(--mut);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .sla{font-variant-numeric:tabular-nums}
+  .sla.over{color:var(--crit);font-weight:700}
+  .sla.soon{color:var(--warn);font-weight:600}
+  .sla.ok{color:var(--ok)}
+  .merge-card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ai);border-radius:10px;padding:11px 13px;margin-bottom:9px;cursor:pointer;transition:.15s;position:relative}
+  .merge-card:hover{border-color:var(--ai);transform:translateX(2px)}
+  .merge-card.sel-Critical{border-left-color:var(--crit)}
+  .merge-card.sel-High{border-left-color:var(--high)}
+  .merge-card.sel-Medium{border-left-color:var(--warn)}
+  .merge-card.sel-Low{border-left-color:var(--ok)}
+  .mc-top{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap}
+  .mc-id{font-weight:700;font-size:13px;color:var(--ai)}
+  .mc-count{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(192,132,252,.18);color:var(--ai);font-weight:700}
+  .mc-category{font-size:12px;font-weight:600;color:var(--txt);margin-bottom:3px}
+  .mc-location{font-size:11px;color:var(--mut);margin-bottom:7px}
+  .mc-reports{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+  .mc-report-row{background:var(--panel2);border-radius:7px;padding:7px 9px;font-size:11px;border-left:3px solid var(--ai)}
+  .mc-report-row:first-child{border-left-color:var(--acc)}
+  .mc-report-name{font-weight:600;color:var(--txt);margin-bottom:2px;display:flex;align-items:center;justify-content:space-between}
+  .mc-report-time{color:var(--mut);font-size:10px}
+  .mc-report-msg{color:var(--mut);line-height:1.35;margin-top:2px}
+  .mc-score-bar{height:3px;border-radius:2px;background:var(--line);margin-bottom:6px;overflow:hidden}
+  .mc-score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--ai),var(--acc))}
+  .mc-footer{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}
+  .mc-reason{font-size:10px;color:var(--mut);font-style:italic;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mc-actions{display:flex;gap:6px;flex-shrink:0}
+  .mc-btn{font-size:10px;padding:4px 9px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font-weight:600;white-space:nowrap}
+  .mc-btn:hover{border-color:var(--ai);color:var(--ai)}
+  .mc-btn.open{border-color:var(--acc);color:var(--acc)}
+  .mc-btn.open:hover{background:#0f2038}
+  .mc-empty{color:var(--mut);font-size:12px;padding:28px 14px;text-align:center;line-height:1.6}
+  .mc-empty .mc-empty-icon{font-size:32px;display:block;margin-bottom:8px;opacity:.5}
+  .ai-analysis{background:rgba(192,132,252,.1);border:1px solid rgba(192,132,252,.25);border-radius:8px;padding:7px 9px;margin-bottom:8px;font-size:11px;color:var(--ai);line-height:1.4}
+  .ai-analysis strong{display:block;margin-bottom:2px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;opacity:.8}
+  .merge-hbadge{background:rgba(192,132,252,.2);color:var(--ai);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:auto}
+  #map{flex:1;min-height:0;background:#0a1226}
+  .map-toolbar{display:flex;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--panel2);align-items:center;flex-shrink:0}
+  .map-toolbar button{background:#1a2544;border:1px solid var(--line);color:var(--txt);font-size:11px;padding:6px 11px;border-radius:7px;cursor:pointer}
+  .map-toolbar button:hover{border-color:var(--acc);color:var(--acc)}
+  .legend{position:absolute;bottom:14px;right:10px;z-index:500;background:rgba(10,16,32,.92);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:11px;color:var(--mut)}
+  .legend div{display:flex;align-items:center;gap:7px;margin:3px 0}
+  .legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .map-wrap{position:relative;flex:1;display:flex;min-height:0}
+  .pin-lbl{background:rgba(10,16,32,.9);color:#fff;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:10px;white-space:nowrap}
+  .mapswitch{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+  .mapswitch button{background:rgba(10,16,32,.92);color:var(--mut);border:none;padding:8px 14px;font-size:11px;font-weight:700;cursor:pointer}
+  .mapswitch button.on{background:var(--acc);color:#04121f}
+  /* Units column */
+  .unit-card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:8px;font-size:12px}
+  .unit-card.dispatched{border-left:3px solid var(--warn)}
+  .unit-card.available{border-left:3px solid var(--ok)}
+  .unit-card.onscene{border-left:3px solid var(--crit)}
+  .unit-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .unit-id{font-weight:700;font-size:13px}
+  .unit-status{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .unit-status.ok{color:var(--ok)}
+  .unit-status.warn{color:var(--warn)}
+  .unit-status.crit{color:var(--crit)}
+  .unit-assign{font-size:11px;color:var(--mut);margin-top:2px}
+  /* Hospital sync panel */
+  .hosp-sync{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:11px}
+  .hosp-sync-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-weight:700;color:var(--ok);font-size:12px}
+  .hosp-sync-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(52,211,153,.1)}
+  .hosp-sync-row:last-child{border-bottom:none}
+  .overlay{position:fixed;inset:0;background:rgba(4,8,18,.75);display:none;align-items:center;justify-content:center;z-index:2000}
+  .overlay.show{display:flex}
+  .modal{width:580px;max-width:95vw;max-height:90vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .modal h2{font-size:16px;display:flex;align-items:center;gap:9px;margin-bottom:4px;flex-wrap:wrap}
+  .modal .sub{color:var(--mut);font-size:12px;margin-bottom:14px}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .mbox{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .mbox label{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:3px}
+  .mbox .v{font-size:13px;font-weight:600}
+  .reporter{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:7px;font-size:12px}
+  .reporter .rhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .mrow{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+  select{background:#0a1226;border:1px solid var(--line);color:var(--txt);padding:7px 9px;border-radius:7px;font-size:12px;outline:none}
+  .ulist{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+  .uqty{display:flex;align-items:center;gap:12px;background:#0a1226;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .uqty .uq-name{flex:1;font-size:13px;font-weight:600}
+  .uqty .uq-name small{display:block;color:var(--mut);font-size:10px;font-weight:400}
+  .uq-ctrl{display:flex;align-items:center;gap:9px}
+  .uq-ctrl button{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#1a2544;color:var(--txt);font-size:15px;cursor:pointer;line-height:1}
+  .uq-ctrl button:hover{border-color:var(--acc);color:var(--acc)}
+  .uq-ctrl b{min-width:20px;text-align:center;font-size:16px}
+  .mbtn{border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  .mbtn.pri{background:var(--acc);color:#04121f}
+  .mbtn.ok{background:var(--ok);color:#04121f}
+  .mbtn.ghost{background:none;border:1px solid var(--line);color:var(--mut)}
+  .mbtn:hover{filter:brightness(1.12)}
+  .ai-summary{background:rgba(192,132,252,.08);border:1px solid rgba(192,132,252,.3);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+  .ai-summary .ai-label{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--ai);font-weight:700;margin-bottom:6px}
+  .ai-summary p{font-size:12px;color:var(--txt);line-height:1.55;margin:0}
+  .ai-summary .ai-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .ai-summary .ai-tag{font-size:10px;padding:2px 9px;border-radius:10px;background:rgba(192,132,252,.15);color:var(--ai);font-weight:600}
+  #toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast{background:var(--panel);border:1px solid var(--ai);color:var(--txt);padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:rise .25s;max-width:520px}
+  .toast.info{border-color:var(--acc)}
+  .toast.good{border-color:var(--ok)}
+  .toast.hosp{border-color:var(--ok);background:rgba(52,211,153,.08)}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .col-body::-webkit-scrollbar{width:4px}
+  .col-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
 </style>
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
 <header>
-  <div class="logo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
-  <div class="brand">ResQNet</div>
-  <div class="brand-sub">Dispatcher console · Emergency coordination</div>
-  <div class="search">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-    <input id="qinp" placeholder="Search incidents, units, zones…" autocomplete="off">
-    <kbd>Ctrl K</kbd>
+  <div class="brand">
+    <div class="logo">🛟</div>
+    <div>
+      <h1>SAHAYAK <span style="color:var(--mut);font-weight:400">— Dispatcher Console</span></h1>
+      <small style="color:var(--mut);font-size:11px">Control Room · Nadiad District · Live sync with Hospital Portal</small>
+    </div>
   </div>
-  <div class="top-right">
-    <div class="clockchip">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-      <b id="clock">14:38:06</b> IST
-    </div>
-    <div class="bellwrap">
-      <div class="bell" id="bellBtn">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg>
-        <i id="bellBadge">3</i>
-      </div>
-      <div class="drop" id="bellDrop">
-        <div class="dhead">Notifications <a id="markRead">Mark all read</a></div>
-        <div class="nrow"><span class="d" style="background:var(--amber)"></span><div><b>SLA warning</b> — Flood, Sector 4 · no update from T-06 for 12 min</div></div>
-        <div class="nrow"><span class="d" style="background:var(--orange)"></span><div><b>Approval pending</b> — Gas leak 500 m evacuation radius awaits sign-off</div></div>
-        <div class="nrow"><span class="d" style="background:var(--red)"></span><div><b>Stock alert</b> — foam reserve below 50% at Dock 3</div></div>
-      </div>
-    </div>
-    <div class="lang" id="lang"><span class="on">EN</span><span>हिन्दी</span><span>ગુજરાતી</span></div>
-    <div class="me">
-      <div class="ava">DS</div>
-      <div class="me-t"><b>DSP-2041</b><span><i class="dot"></i>On shift · Dispatcher</span></div>
-    </div>
+  <div class="hstat">
+    <div class="s"><b id="st-active">0</b><span>Active</span></div>
+    <div class="s"><b style="color:var(--crit)" id="st-crit">0</b><span>Critical</span></div>
+    <div class="s"><b style="color:var(--ai)" id="st-merged">0</b><span>Merged</span></div>
+    <div class="s"><b style="color:var(--acc)" id="st-enroute">0</b><span>En route</span></div>
+    <div class="s"><b style="color:var(--ok)" id="st-resolved">0</b><span>Resolved</span></div>
   </div>
 </header>
 
-<!-- ================= WORKFLOW STEPPER ================= -->
-<div class="stepper" style="position:relative">
-  <div class="steps">
-    <div class="step done"><div class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div><div class="lb">New incident</div></div>
-    <div class="conn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
-    <div class="step done"><div class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2 5.6 5.5 1.9-5.5 2-2 5.5-2-5.5-5.5-2 5.5-1.9z"/></svg></div><div class="lb">AI classification</div></div>
-    <div class="conn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
-    <div class="step done"><div class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13.5l9 5 9-5"/></svg></div><div class="lb">Resource recommendation</div></div>
-    <div class="conn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
-    <div class="step now"><div class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 13.5v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.6"/><rect x="17" y="13" width="4" height="6" rx="1.6"/></svg></div><div class="lb">Dispatcher</div><span class="you">YOU</span></div>
-    <div class="conn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></div>
-    <div class="step" id="stepAssign"><div class="ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></div><div class="lb">Assign team</div></div>
+<div class="main">
+
+  <!-- COL 1: QUEUE -->
+  <div class="col">
+    <div class="col-head">📥 Incident Queue <span id="qcount" style="margin-left:auto;color:var(--acc);font-size:11px"></span></div>
+    <div class="toolbar">
+      <button class="fbtn active" data-f="all">All</button>
+      <button class="fbtn" data-f="new">New</button>
+      <button class="fbtn" data-f="active">Active</button>
+      <button class="fbtn" data-f="resolved">Resolved</button>
+      <input class="search" id="search" placeholder="Search location / category / ID…">
+    </div>
+    <div class="bulkbar">
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" id="selAll" style="accent-color:var(--acc)"> Select all
+      </label>
+      <button id="bulkDispatch" disabled>Dispatch selected</button>
+      <button id="btnDeleteResolved" class="danger">🗑 Delete resolved</button>
+      <span id="bulkCount"></span>
+    </div>
+    <div class="col-body" id="queue"></div>
   </div>
-  <div class="step-meta"><span id="stInc">INC-1042 · opened <b>14:32 IST</b></span><span class="sla" id="sla">SLA 00:06:12</span></div>
+
+  <!-- COL 2: MERGED -->
+  <div class="col">
+    <div class="col-head">🤖 AI Merged <span class="merge-hbadge" id="mergeHeaderCount">0</span></div>
+    <div class="col-body" id="mergeCol"></div>
+  </div>
+
+  <!-- COL 3: MAP -->
+  <div class="col">
+    <div class="map-toolbar">
+      <button id="btnRecenter">⌖ Recenter</button>
+      <button id="btnFit">⤢ Fit all</button>
+      <button id="btnToggleRadius">◎ Radii</button>
+      <span style="margin-left:auto;font-size:11px;color:var(--mut)" id="mapClock"></span>
+    </div>
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="legend">
+        <div><i style="background:var(--crit)"></i> Critical</div>
+        <div><i style="background:var(--high)"></i> High</div>
+        <div><i style="background:var(--warn)"></i> Medium</div>
+        <div><i style="background:var(--ok)"></i> Low</div>
+        <div><i style="background:var(--acc)"></i> Ambulance</div>
+        <div><i style="background:var(--ai)"></i> Merged cluster</div>
+        <div><i style="background:var(--ok);border-radius:2px"></i> Hospital</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL 4: UNITS -->
+  <div class="col">
+    <div class="col-head">🚑 Units <span id="unitCount" style="margin-left:auto;color:var(--ok)"></span></div>
+    <div style="padding:10px;flex:1;overflow-y:auto" id="unitsCol"></div>
+  </div>
 </div>
 
-<!-- ================= MAIN ================= -->
-<main>
-
-  <!-- ------- LEFT: INCIDENT QUEUE ------- -->
-  <section class="card queue">
-    <div class="chead"><i class="dot"></i><h3>Incident queue</h3><span class="sub" id="qsub">8 active · 2 critical</span></div>
-    <div class="filters" id="filters">
-      <span class="on" data-f="all">All <i>8</i></span>
-      <span data-f="critical">Critical <i>2</i></span>
-      <span data-f="unassigned">Unassigned <i>2</i></span>
-      <span data-f="merged">Merged <i>3</i></span>
-    </div>
-    <div class="qlist" id="qlist"></div>
-    <div class="qfoot">Median dispatch <b style="color:var(--txt)">2m 10s</b><a id="openAnalytics">Open analytics →</a></div>
-  </section>
-
-  <!-- ------- CENTER: SELECTED INCIDENT ------- -->
-  <section class="col">
-
-    <div class="card inc">
-      <div class="inc-top">
-        <span class="pill red solid" id="incPill">CRITICAL</span>
-        <h1 id="incTitle">…</h1>
-        <div class="inc-time" id="incTime"></div>
-        <div class="incbtns">
-          <div class="ibtn" id="btnCopy" title="Copy incident brief"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div>
-          <div class="ibtn" id="btnMenu" title="More"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></div>
-          <div class="menu" id="menu">
-            <button data-act="copy">📋&nbsp; Copy incident brief</button>
-            <button data-act="export">⬇️&nbsp; Export report (PDF)</button>
-            <button data-act="close" class="red">✔️&nbsp; Close incident</button>
-          </div>
-        </div>
-      </div>
-      <div class="inc-meta" id="incMeta"></div>
-    </div>
-
-    <div class="card aigrid">
-      <div>
-        <div class="h3s"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13.5l9 5 9-5"/></svg>AI classification</div>
-        <div class="kv"><span>Type</span><b id="clsType"></b></div>
-        <div class="kv"><span>Severity score</span><b><span class="sevbar"><i id="sevFill"></i></span><span id="sevVal"></span></b></div>
-        <div class="kv"><span>Priority</span><span class="pill red" id="prioPill"></span></div>
-        <div class="kv"><span>Casualties predicted</span><b id="casVal"></b></div>
-        <div class="kv"><span>Carriageway / access</span><b id="blkVal"></b></div>
-      </div>
-      <div>
-        <div class="h3s"><svg class="sp" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2 5.6 5.5 1.9-5.5 2-2 5.5-2-5.5-5.5-2 5.5-1.9z"/></svg>AI summary &amp; suggested actions</div>
-        <p class="sum" id="sumTxt"></p>
-        <div class="acts" id="actsWrap"></div>
-      </div>
-    </div>
-
-    <div class="card map">
-      <svg viewBox="0 0 800 230" preserveAspectRatio="xMidYMid slice">
-        <defs>
-          <pattern id="grid" width="46" height="46" patternUnits="userSpaceOnUse"><path d="M46 0H0V46" fill="none" stroke="#12203a" stroke-width="1"/></pattern>
-          <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff4d4d" stop-opacity=".45"/><stop offset="100%" stop-color="#ff4d4d" stop-opacity="0"/></radialGradient>
-        </defs>
-        <rect width="800" height="230" fill="#081120"/>
-        <rect width="800" height="230" fill="url(#grid)"/>
-        <path d="M-20 205 C 160 165, 300 215, 470 185 S 760 150, 830 175" fill="none" stroke="#143f68" stroke-width="26" opacity=".75" stroke-linecap="round"/>
-        <path d="M-10 96 C 180 78, 420 112, 810 84" fill="none" stroke="#263d66" stroke-width="9" opacity=".9"/>
-        <path d="M255 -10 C 268 80, 246 160, 262 240" fill="none" stroke="#263d66" stroke-width="6" opacity=".8"/>
-        <path d="M560 -10 C 548 70, 566 150, 552 240" fill="none" stroke="#263d66" stroke-width="6" opacity=".8"/>
-        <path d="M-10 160 C 220 148, 520 168, 810 150" fill="none" stroke="#1d3050" stroke-width="4" opacity=".8"/>
-        <g id="dyn"></g>
-      </svg>
-      <div class="mchipabs" style="left:12px;top:12px"><i class="dot"></i>Live map · <b id="mapZone">NH48 corridor</b></div>
-      <div class="mchipabs" style="right:12px;bottom:12px">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="color:#8ab4ff"><path d="M12 2.5l2 5.6 5.5 1.9-5.5 2-2 5.5-2-5.5-5.5-2 5.5-1.9z"/></svg>
-        <span id="recChip">3 recommended units · <b>12 available in zone</b></span>
-      </div>
-      <div class="mchipabs" style="left:12px;bottom:12px">Impact radius <b id="radiusVal">500 m</b></div>
-    </div>
-
-    <div class="card res">
-      <div class="chead">
-        <svg class="ai" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2 5.6 5.5 1.9-5.5 2-2 5.5-2-5.5-5.5-2 5.5-1.9z"/></svg>
-        <h3>Recommended resources</h3>
-        <span class="sub" id="resSub"></span>
-      </div>
-      <div id="resRows"></div>
-      <div class="rfoot">
-        <button class="btn light" id="assignAll"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg><span id="assignAllLb">Assign all (3)</span></button>
-        <button class="btn ghost" id="assignSel">Assign selected</button>
-        <button class="btn danger" id="escBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v9"/><path d="M12 18.5v.5"/></svg><span id="escLb">Escalate</span></button>
-        <a id="prealert"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg><span id="prealertLb">Pre-alert hospitals</span></a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ------- RIGHT RAIL ------- -->
-  <aside class="col">
-    <div class="card feed">
-      <div class="chead"><i class="dot"></i><h3>Live updates</h3><span class="sub">streaming · ws</span></div>
-      <div class="flink" id="feedList"></div>
-    </div>
-
-    <div class="card al">
-      <div class="chead">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff8a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg>
-        <h3>Alerts &amp; escalation</h3><span class="pill red" id="alCount" style="margin-left:auto">2 action</span>
-      </div>
-      <div class="arow" id="alRow1">
-        <p><b>Flood, Sector 4</b> — no update from Team T-06 for 12 min. SLA breach in 3 min.</p>
-        <button class="mini red" id="alEsc">Escalate</button>
-      </div>
-      <div class="arow" id="alRow2">
-        <p><b>Gas leak</b> — AI proposes 500 m evacuation radius + road closure.</p>
-        <button class="mini blu" id="alApp">Approve</button>
-      </div>
-    </div>
-
-    <div class="card" style="padding-bottom:8px">
-      <div class="chead"><h3>Resource availability</h3><span class="sub">zone: city + NH48</span></div>
-      <div class="avrow" id="availBody"></div>
-    </div>
-
-    <div class="card shift">
-      <div class="avstack"><div class="ava">DS</div><div class="ava">MK</div><div class="ava">AR</div></div>
-      <p><b>3 dispatchers on shift</b> · <span id="notifCount">38</span> notifications sent today (SMS 21 · push 14 · radio 3)</p>
-    </div>
-  </aside>
-</main>
-
-<!-- ================= STATUS BAR ================= -->
-<footer>
-  <span style="display:flex;align-items:center;gap:7px"><i class="dot"></i><span class="g">All services running</span> · live updates connected</span>
-  <span id="sync">Last sync 14:38:06 IST · latency 84 ms</span>
-  <div class="r"><span>Median dispatch <b style="color:var(--txt)">2m 10s</b></span><span>SLA met <b style="color:var(--txt)">96.2%</b></span><span>Simulated data</span></div>
-</footer>
-
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
 <div id="toasts"></div>
 
-<!-- ================= ANALYTICS MODAL ================= -->
-<div class="modal" id="modal">
-  <div class="mcard">
-    <div class="mhead">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8ab4ff" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
-      <h2>Analytics — last 24 h</h2>
-      <button class="x" id="modalX">✕</button>
-    </div>
-    <div class="agrid">
-      <div class="acard">
-        <h4>Emergency types</h4>
-        <div class="hbar"><span class="l">Road accident</span><div class="tr"><i style="width:41%;background:var(--red2)"></i></div><span class="v">9</span></div>
-        <div class="hbar"><span class="l">Flood</span><div class="tr"><i style="width:18%;background:var(--blue)"></i></div><span class="v">4</span></div>
-        <div class="hbar"><span class="l">Fire</span><div class="tr"><i style="width:14%;background:var(--orange)"></i></div><span class="v">3</span></div>
-        <div class="hbar"><span class="l">Hazmat</span><div class="tr"><i style="width:14%;background:var(--amber)"></i></div><span class="v">3</span></div>
-        <div class="hbar"><span class="l">Utility</span><div class="tr"><i style="width:9%;background:var(--sky)"></i></div><span class="v">2</span></div>
-        <div class="hbar"><span class="l">Other</span><div class="tr"><i style="width:5%;background:var(--dim)"></i></div><span class="v">1</span></div>
-      </div>
-      <div class="acard">
-        <h4>Median dispatch time (min) · by hour</h4>
-        <div class="vcols">
-          <div class="c"><i style="height:34%"></i><span>09</span></div>
-          <div class="c"><i style="height:46%"></i><span>10</span></div>
-          <div class="c"><i style="height:30%"></i><span>11</span></div>
-          <div class="c"><i style="height:58%"></i><span>12</span></div>
-          <div class="c"><i style="height:42%"></i><span>13</span></div>
-          <div class="c"><i style="height:26%;background:linear-gradient(180deg,#5fe0a8,var(--green))"></i><span>14</span></div>
-        </div>
-        <p style="font-size:10.5px;color:var(--muted);margin-top:8px">Current hour <b style="color:var(--txt)">2m 10s</b> — 18% faster than daily median.</p>
-      </div>
-      <div class="acard">
-        <h4>Resource pressure</h4>
-        <div class="hbar"><span class="l">Ambulances</span><div class="tr"><i style="width:60%;background:var(--red2)"></i></div><span class="v">6/10</span></div>
-        <div class="hbar"><span class="l">Police</span><div class="tr"><i style="width:50%;background:var(--blue)"></i></div><span class="v">4/8</span></div>
-        <div class="hbar"><span class="l">Fire tenders</span><div class="tr"><i style="width:40%;background:var(--amber)"></i></div><span class="v">2/5</span></div>
-        <div class="hbar"><span class="l">Rescue teams</span><div class="tr"><i style="width:50%;background:var(--orange)"></i></div><span class="v">3/6</span></div>
-        <p style="font-size:10.5px;color:var(--muted);margin-top:4px">⚠ Fire tenders &amp; foam reserve under pressure — reorder advised.</p>
-      </div>
-      <div class="acard">
-        <h4>Frequently affected zones</h4>
-        <div class="hbar"><span class="l">NH48 corridor</span><div class="tr"><i style="width:27%;background:var(--red2)"></i></div><span class="v">27%</span></div>
-        <div class="hbar"><span class="l">Sector 4</span><div class="tr"><i style="width:18%;background:var(--blue)"></i></div><span class="v">18%</span></div>
-        <div class="hbar"><span class="l">Port area</span><div class="tr"><i style="width:15%;background:var(--orange)"></i></div><span class="v">15%</span></div>
-        <div class="hbar"><span class="l">Industrial Zone</span><div class="tr"><i style="width:12%;background:var(--amber)"></i></div><span class="v">12%</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-(function(){
-'use strict';
-var $=function(s){return document.querySelector(s)};
-var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+"use strict";
 
-/* =============== SIMULATED DATA =============== */
-var AVAIL={
-  amb:{f:6,t:10,l:'Ambulances',c:'var(--red2)'},
-  pol:{f:4,t:8,l:'Police units',c:'var(--blue)'},
-  fire:{f:2,t:5,l:'Fire tenders',c:'var(--amber)'},
-  res:{f:3,t:6,l:'Rescue teams',c:'var(--orange)'}
+/* =====================================================
+   STORAGE KEYS — shared with hospital
+===================================================== */
+var K = {
+  QUEUE:      "sahayak_queue",
+  PROCESSED:  "sahayak_dispatcher_processed",
+  STATE:      "sahayak_dispatcher_state",
+  AUTHORITY:  "resqnet_authority_incidents",
+  AMB_STATE:  "sahayak_ambulance_state",   // ← shared with hospital
+  HOSP_CAP:   "sahayak_hospital_capacity"  // ← read from hospital
 };
 
-var INCIDENTS=[
-{ id:'INC-1042', name:'Multi-vehicle crash', title:'Multi-vehicle crash — NH48, km 42 northbound', ml:'crash',
-  bar:'#ff4d4d', prio:'P1', prioCls:'red', critical:true, unassigned:true, merged:4, minAgo:6, reported:'14:32 IST',
-  meta:'NH48 km 42 · 4 injured · 2 lanes blocked', t2:'4 injured · 2 serious', extraTags:[], zone:'NH48 corridor',
-  conf:94, sources:'112 call · 2 citizen · cam C-118', weather:'rain · low visibility',
-  cls:{type:'Road accident · multi-vehicle', sev:9.2, prio:'P1 · respond &lt; 10 min', prioCls:'red', cas:'4 (2 serious)', blocked:'2 of 3 lanes NB'},
-  summary:'Tanker involved with <b>fuel-spill risk</b>; northbound carriageway blocked at km 42. Four casualties, two with suspected fractures. Merge confirmed across 4 reports (91% match). Nearest trauma centre is <b>9 min</b> away — pre-alert advised before assignment.',
-  actions:['Divert NB traffic via exit 4','Request crane + foam unit','Pre-alert trauma centre'],
-  pos:{x:400,y:102}, sub:'NH48 km 42 · 4 injured', hosp:true, radius:500,
-  units:[
-   {id:'A12',name:'Ambulance A12',desc:'EMS Depot 2 · ALS · 2 paramedics · fuel 78%',cls:'red',kind:'amb',status:'Available',eta:6,ck:true,x:232,y:52},
-   {id:'P07',name:'Police P07',desc:'Highway patrol · traffic control + scene security',cls:'blu',kind:'pol',status:'Available',eta:8,ck:true,x:588,y:44},
-   {id:'R03',name:'Rescue Team R03',desc:'Extrication unit · cutter + spreader · 4 personnel',cls:'org',kind:'res',status:'Available',eta:11,ck:true,x:500,y:186},
-   {id:'F02',name:'Fire Tender F02',desc:'Station 4 · foam-capable · optional (fuel-spill risk)',cls:'amb',kind:'fire',status:'Standby',eta:14,ck:false,x:120,y:140}
-  ]},
-{ id:'INC-1038', name:'Flood, Sector 4', title:'Flood — Sector 4, river bank overflow', ml:'flood',
-  bar:'#ff4d4d', prio:'P1', prioCls:'red', critical:true, unassigned:false, merged:2, minAgo:18, reported:'14:20 IST',
-  meta:'River bank overflow · 2 teams assigned', t2:'120 households at risk', extraTags:[{t:'response delayed',c:'amb'}], zone:'Sector 4 · river',
-  conf:91, sources:'sensor S-07 · 2 citizen · field team', weather:'rain · river rising',
-  cls:{type:'Flood · river bank overflow', sev:8.4, prio:'P1 · respond &lt; 10 min', prioCls:'red', cas:'0 (120 hh at risk)', blocked:'Access roads submerged'},
-  summary:'River bank overflow after sustained rainfall; water entering low-lying lanes 1–3. Team <b>T-06</b> on site with no update for 12 min. Pump support requested; evacuate ~120 households if level crosses <b>+0.4 m</b>.',
-  actions:['Dispatch pump unit Q-02','Evacuate low-lying lanes 1–3','Request NDRF boat support'],
-  pos:{x:250,y:178}, sub:'Sector 4 · river bank', hosp:false, radius:650,
-  units:[
-   {id:'T06',name:'Rescue Team T-06',desc:'On site · no update for 12 min · 5 personnel',cls:'org',kind:'res',status:'On site',eta:0,ck:false,x:310,y:140},
-   {id:'Q02',name:'Pump Unit Q02',desc:'Municipal depot · 30k L/h capacity',cls:'blu',kind:'fire',status:'Available',eta:9,ck:true,x:390,y:200},
-   {id:'B01',name:'Boat Team B01',desc:'NDRF base · rescue boat + 4 divers',cls:'org',kind:'res',status:'Standby',eta:16,ck:false,x:140,y:120}
-  ]},
-{ id:'INC-1040', name:'Gas leak, Industrial Zone', title:'Gas leak — Industrial Zone, sensor G-07', ml:'gas leak',
-  bar:'#ff8a3d', prio:'P2', prioCls:'org', critical:false, unassigned:true, merged:0, minAgo:11, reported:'14:27 IST',
-  meta:'Sensor G-07 · evacuation radius proposed', t2:'0 casualties · radius proposed', extraTags:[{t:'awaiting approval',c:'mut'}], zone:'Industrial Zone',
-  conf:88, sources:'sensor G-07 · plant supervisor', weather:'wind 12 km/h SW',
-  cls:{type:'Hazmat · gas leak (chlorine)', sev:6.8, prio:'P2 · respond &lt; 30 min', prioCls:'org', cas:'0 (evac proposed)', blocked:'Road closure proposed'},
-  summary:'Sensor <b>G-07</b> reports chlorine at 8 ppm and rising, wind 12 km/h SW. AI proposes a <b>500 m evacuation radius</b> plus closure of the Zone access road. Awaiting dispatcher approval; HAZMAT staged at Station 1.',
-  actions:['Approve 500 m evacuation radius','Close Industrial Zone access road','Stage HAZMAT at gate 2'],
-  pos:{x:600,y:88}, sub:'Industrial Zone · G-07', hosp:false, radius:500,
-  units:[
-   {id:'H01',name:'HAZMAT H-01',desc:'Station 1 · gas-tight suits · detection kit',cls:'amb',kind:'fire',status:'Available',eta:10,ck:true,x:470,y:50},
-   {id:'P05',name:'Police P05',desc:'Zone patrol · road closure capability',cls:'blu',kind:'pol',status:'Available',eta:7,ck:true,x:690,y:140},
-   {id:'A09',name:'Ambulance A09',desc:'Standby at Civil Hospital · BLS',cls:'red',kind:'amb',status:'Standby',eta:12,ck:false,x:520,y:170}
-  ]},
-{ id:'INC-1035', name:'Warehouse fire', title:'Warehouse fire — Dock 3, port area', ml:'fire',
-  bar:'#ff8a3d', prio:'P2', prioCls:'org', critical:false, unassigned:false, merged:3, minAgo:26, reported:'14:12 IST',
-  meta:'Dock 3 · 3 teams on site · 3 reports merged', t2:'1 treated for smoke', extraTags:[{t:'contained 60%',c:'grn'}], zone:'Port area',
-  conf:97, sources:'3 citizen · cam C-204 · 112 call', weather:'wind 8 km/h N',
-  cls:{type:'Fire · warehouse (packaging)', sev:7.5, prio:'P2 · respond &lt; 30 min', prioCls:'org', cas:'1 (smoke inhalation)', blocked:'Dock 3 closed'},
-  summary:'Three reports merged into one incident (97% match). Fire <b>60% contained</b>; foam reserve at 40% — reorder advised. One worker treated for smoke inhalation; structural inspection pending.',
-  actions:['Reorder foam reserve','Schedule structural inspection','Rotate crew F-01'],
-  pos:{x:520,y:150}, sub:'Dock 3 · port area', hosp:false, radius:400,
-  units:[
-   {id:'F01',name:'Fire Tender F01',desc:'On site · primary attack · crew of 6',cls:'amb',kind:'fire',status:'On site',eta:0,ck:false,x:570,y:110},
-   {id:'F03',name:'Fire Tender F03',desc:'Station 2 · water tanker backup',cls:'amb',kind:'fire',status:'Available',eta:9,ck:true,x:420,y:195},
-   {id:'A04',name:'Ambulance A04',desc:'Stationed at dock gate · BLS',cls:'red',kind:'amb',status:'Available',eta:11,ck:true,x:630,y:185}
-  ]},
-{ id:'INC-1031', name:'Tree fall, Market Road', title:'Tree fall — Market Road, near clock tower', ml:'tree fall',
-  bar:'#fbbf24', prio:'P3', prioCls:'amb', critical:false, unassigned:false, merged:0, minAgo:34, reported:'14:04 IST',
-  meta:'1 team en route · traffic diverted', t2:'no casualties', extraTags:[], zone:'Market Road',
-  conf:82, sources:'citizen app · 2 reports', weather:'gusts 30 km/h',
-  cls:{type:'Obstruction · tree fall', sev:4.1, prio:'P3 · respond &lt; 60 min', prioCls:'amb', cas:'0', blocked:'1 lane + sidewalk'},
-  summary:'Large tree across one lane and sidewalk near clock tower. No casualties; power lines <b>not</b> involved. Utility crew en route with chainsaw unit; traffic diverted via Temple Street.',
-  actions:['Confirm diversion signage','Clear debris after cutting','Inspect adjacent trees'],
-  pos:{x:300,y:92}, sub:'Market Rd · clock tower', hosp:false, radius:150,
-  units:[
-   {id:'U02',name:'Utility U-02',desc:'En route · chainsaw + crane unit',cls:'amb',kind:'res',status:'En route',eta:6,ck:false,x:390,y:55},
-   {id:'P02',name:'Traffic P02',desc:'On site · diversion active',cls:'blu',kind:'pol',status:'On site',eta:0,ck:false,x:235,y:135}
-  ]},
-{ id:'INC-1029', name:'River sensor S-07', title:'River sensor S-07 — danger level crossed', ml:'sensor',
-  bar:'#38bdf8', prio:'P4', prioCls:'blu', critical:false, unassigned:true, merged:0, minAgo:41, reported:'13:57 IST',
-  meta:'Danger level crossed · monitoring', t2:'telemetry alert', extraTags:[{t:'sensor',c:'mut'}], zone:'Upstream gauge',
-  conf:76, sources:'sensor S-07 telemetry', weather:'river +0.2 m over danger',
-  cls:{type:'Sensor alert · river level', sev:3.2, prio:'P4 · monitor', prioCls:'blu', cas:'0', blocked:'—'},
-  summary:'Sensor <b>S-07</b> crossed danger level at 13:57; rate of rise slowing. Correlated with Sector 4 flood (INC-1038). Field verification requested; next telemetry update due in 15 min.',
-  actions:['Schedule field verification','Correlate with INC-1038','Watch alert threshold'],
-  pos:{x:170,y:192}, sub:'S-07 · upstream gauge', hosp:false, radius:100,
-  units:[
-   {id:'V01',name:'Field Team V-01',desc:'Verification visit · 2 personnel',cls:'blu',kind:'res',status:'Available',eta:20,ck:true,x:270,y:150}
-  ]},
-{ id:'INC-1027', name:'Power line down, Ring Rd', title:'Power line down — Ring Rd, exit 7', ml:'power line',
-  bar:'#fbbf24', prio:'P3', prioCls:'amb', critical:false, unassigned:false, merged:0, minAgo:48, reported:'13:50 IST',
-  meta:'Utility crew notified · lane closed', t2:'lane 1 closed', extraTags:[{t:'utility en route',c:'grn'}], zone:'Ring Rd',
-  conf:89, sources:'utility grid alert · citizen', weather:'dry · gusts',
-  cls:{type:'Utility · power line down', sev:4.6, prio:'P3 · respond &lt; 60 min', prioCls:'amb', cas:'0', blocked:'Lane 1 closed'},
-  summary:'Grid alert confirms feeder trip at exit 7; live line on carriageway. Lane 1 closed by police; utility crew <b>U-05</b> en route with isolation checklist, ETA 8 min.',
-  actions:['Maintain 10 m cordon','Confirm feeder isolation','Reroute lane-1 traffic'],
-  pos:{x:560,y:60}, sub:'Ring Rd · exit 7', hosp:false, radius:120,
-  units:[
-   {id:'U05',name:'Utility U-05',desc:'En route · isolation + repair crew',cls:'amb',kind:'res',status:'En route',eta:8,ck:false,x:460,y:35},
-   {id:'P09',name:'Police P09',desc:'On site · cordon maintained',cls:'blu',kind:'pol',status:'On site',eta:0,ck:false,x:645,y:95}
-  ]},
-{ id:'INC-1025', name:'Chemical smell, Dock 5', title:'Chemical smell — Dock 5, container yard', ml:'odour',
-  bar:'#38bdf8', prio:'P4', prioCls:'blu', critical:false, unassigned:true, merged:0, minAgo:52, reported:'13:46 IST',
-  meta:'Field team verifying · no confirmation', t2:'unconfirmed odour', extraTags:[{t:'verifying',c:'mut'}], zone:'Dock 5',
-  conf:64, sources:'3 worker reports', weather:'wind 10 km/h E',
-  cls:{type:'Hazmat · odour (unconfirmed)', sev:2.8, prio:'P4 · verify', prioCls:'blu', cas:'0', blocked:'—'},
-  summary:'Workers report solvent-like odour near container row D. No sensor confirmation yet; field team <b>V-02</b> on site with PID scanner. HAZMAT on standby pending readings.',
-  actions:['Await PID readings','Ventilate row D if confirmed','Check manifest for row D'],
-  pos:{x:680,y:180}, sub:'Dock 5 · row D', hosp:false, radius:200,
-  units:[
-   {id:'V02',name:'Field Team V-02',desc:'On site · PID scanner',cls:'blu',kind:'res',status:'On site',eta:0,ck:false,x:620,y:145},
-   {id:'H02',name:'HAZMAT H-02',desc:'Standby at Station 1',cls:'amb',kind:'fire',status:'Standby',eta:15,ck:false,x:735,y:120}
-  ]}
+var AI_MERGE_ENABLED = true;
+var MERGE_THRESHOLD  = 0.70;
+var NADIAD = [22.6911, 72.8667];
+var HOSPITAL_POS = [22.6911, 72.8667];
+
+/* =====================================================
+   HELPERS
+===================================================== */
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+    return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function shortText(t,n){ t=String(t||""); n=n||44; return t.length>n?t.slice(0,n)+"…":t; }
+function normalize(t){ return String(t||"").toLowerCase().replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim(); }
+function tokenize(t){ return normalize(t).split(" ").filter(function(w){ return w.length>1; }); }
+
+/* =====================================================
+   AI MERGE ENGINE
+===================================================== */
+var TYPE_KEYWORDS = {
+  "Road accident":     ["accident","crash","crashed","collision","collided","truck","bus","car","bike","motorbike","scooter","auto","rickshaw","lorry","vehicle","train","derailed","overturned","pileup","skid","skidded","rammed","hit by"],
+  "Fire":              ["fire","burning","burn","burnt","smoke","flames","blaze","explosion","blast","exploded","ignite"],
+  "Medical":           ["medical","heart","heartattack","unconscious","bleeding","bleed","injured","injury","injuries","fainted","fainting","breathing","stroke","fracture","patient","collapsed","chest pain","unresponsive"],
+  "Flood":             ["flood","flooded","flooding","water","overflow","submerged","drowning","waterlogging","waterlogged","heavy rain","storm"],
+  "Gas leak":          ["gas","leak","leaking","leakage","lpg","cylinder","fumes"],
+  "Building collapse": ["collapse","collapsed","building fell","structure fell","wall fell","debris"],
+  "Crime":             ["robbery","robbed","theft","stolen","assault","murder","kidnap","gun","fight","attack by"],
+  "Electrical":        ["electric","electrical","shock","electrocuted","transformer","short circuit","live wire","power line"]
+};
+var STOP_WORDS = ("near outside at the on in of to from is are was were there here please help urgent and or my our his her its some very big just now close by side front back gate area around next to a an it for with without one two three many people person man woman child kids sir nadiad gujarat india district city town village").split(" ");
+var SEV_CRIT = ["dead","died","death","critical","severe","explosion","blast","collapsed","trapped","fire","unconscious","heavy bleeding","multiple injured","serious"];
+var SEV_HIGH = ["serious","trapped","injured","bleeding","spread","spreading","stuck"];
+var SEV_LOW  = ["minor","small","slight","little"];
+
+function classifyType(text){
+  var toks=tokenize(text), best=null, bestHits=0;
+  Object.keys(TYPE_KEYWORDS).forEach(function(cat){
+    var hits=0;
+    TYPE_KEYWORDS[cat].forEach(function(kw){
+      if(kw.indexOf(" ")>-1){ if(normalize(text).indexOf(kw)>-1) hits++; }
+      else if(toks.indexOf(kw)>-1) hits++;
+    });
+    if(hits>bestHits){ bestHits=hits; best=cat; }
+  });
+  var fireHits=0;
+  TYPE_KEYWORDS["Fire"].forEach(function(kw){ if(toks.indexOf(kw)>-1) fireHits++; });
+  if(fireHits>0&&fireHits>=bestHits) best="Fire";
+  return best||"Other";
+}
+function inferSeverity(text){
+  var n=normalize(text);
+  for(var i=0;i<SEV_CRIT.length;i++) if(n.indexOf(SEV_CRIT[i])>-1) return "Critical";
+  for(i=0;i<SEV_HIGH.length;i++) if(n.indexOf(SEV_HIGH[i])>-1) return "High";
+  for(i=0;i<SEV_LOW.length;i++) if(n.indexOf(SEV_LOW[i])>-1) return "Low";
+  return "Medium";
+}
+function extractLandmarks(text){
+  var typeWords={};
+  Object.keys(TYPE_KEYWORDS).forEach(function(c){ TYPE_KEYWORDS[c].forEach(function(w){ typeWords[w]=1; }); });
+  return tokenize(text).filter(function(w){ return STOP_WORDS.indexOf(w)===-1&&!typeWords[w]&&!/^\d+$/.test(w); });
+}
+function jaccard(a,b){
+  if(!a.length||!b.length) return 0;
+  var A={},B={},inter=0,uni=0;
+  a.forEach(function(x){A[x]=1;}); b.forEach(function(x){B[x]=1;});
+  Object.keys(A).forEach(function(x){ uni++; if(B[x]) inter++; });
+  Object.keys(B).forEach(function(x){ if(!A[x]) uni++; });
+  return uni?inter/uni:0;
+}
+function haversine(p1,p2){
+  var R=6371000,dLat=(p2[0]-p1[0])*Math.PI/180,dLng=(p2[1]-p1[1])*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(p1[0]*Math.PI/180)*Math.cos(p2[0]*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function computeMergeScore(rep,inc){
+  var typeSim=rep.category===inc.category?1:(rep.category==="Other"||inc.category==="Other"?0.5:0);
+  var repLM=extractLandmarks((rep.message||"")+" "+(rep.location||""));
+  var incLM=[];
+  inc.reports.forEach(function(r){ incLM=incLM.concat(extractLandmarks((r.message||"")+" "+(r.location||""))); });
+  var textLoc=jaccard(repLM,incLM);
+  var shared=repLM.filter(function(w){ return incLM.indexOf(w)>-1; });
+  if(shared.length>=2) textLoc=Math.min(1,textLoc+0.30);
+  else if(shared.length===1) textLoc=Math.min(0.6,textLoc+0.15);
+  var geoLoc=0;
+  if(rep.lat&&rep.lng&&inc.lat&&inc.lng){
+    var d=haversine([rep.lat,rep.lng],[inc.lat,inc.lng]);
+    geoLoc=d<200?1:(d<1000?1-(d-200)/800:0);
+  }
+  var locSim=(rep.lat&&inc.lat)?geoLoc:textLoc;
+  if(rep.lat&&inc.lat&&haversine([rep.lat,rep.lng],[inc.lat,inc.lng])>1000) locSim=Math.min(locSim,0.2);
+  var dtMin=(Date.now()-inc.lastReport)/60000;
+  var timeSim=dtMin<=10?1:(dtMin<=60?1-(dtMin-10)/50:0);
+  var score=0.35*typeSim+0.50*locSim+0.15*timeSim;
+  var reasons=[];
+  if(typeSim===1) reasons.push("same type");
+  if(shared.length>=2) reasons.push("landmarks: "+shared.slice(0,3).join(", "));
+  else if(shared.length===1) reasons.push("shared: \""+shared[0]+"\"");
+  if(geoLoc>=0.9) reasons.push("GPS <200m");
+  if(timeSim>0.5) reasons.push(Math.round(dtMin)+"min apart");
+  return{score:score,reason:reasons.join(" + ")||"weak match"};
+}
+function findMergeCandidate(rep){
+  var best=null;
+  STATE.incidents.forEach(function(inc){
+    if(inc.status==="Resolved") return;
+    var s=computeMergeScore(rep,inc);
+    if(!best||s.score>best.info.score) best={inc:inc,info:s};
+  });
+  if(best&&best.info.score>=MERGE_THRESHOLD) return best;
+  return null;
+}
+function severityRank(s){ return{Critical:4,High:3,Medium:2,Low:1}[s]||2; }
+function generateAISummary(inc){
+  if(inc.reports.length<2) return null;
+  var allText=inc.reports.map(function(r){return r.message||"";}).join(" ");
+  var n=normalize(allText);
+  var hasDeath=/(dead|died|death|fatality|killed)/.test(n);
+  var hasInjured=/(injur|bleed|wound|hurt|casualt)/.test(n);
+  var hasTrapped=/(trap|stuck|pinned|rescue)/.test(n);
+  var hasFire=/(fire|burn|flame|blaze|smoke)/.test(n);
+  var hasFlood=/(flood|water|overflow|submerge|drown)/.test(n);
+  var hasGas=/(gas|fume|leak|lpg|cylinder)/.test(n);
+  var loc=inc.reports[0].location||inc.location||"the area";
+  var parts=[inc.reports.length+" independent reports confirm a "+inc.severity.toLowerCase()+" "+inc.category.toLowerCase()+" at "+loc+"."];
+  if(hasDeath) parts.push("⚠️ Fatalities reported.");
+  if(hasInjured) parts.push("Casualties confirmed — immediate medical response required.");
+  if(hasTrapped) parts.push("People reported trapped — rescue equipment needed.");
+  if(hasFire) parts.push("Active fire — fire suppression units critical.");
+  if(hasFlood) parts.push("Flooding reported — water rescue may be needed.");
+  if(hasGas) parts.push("Gas leak suspected — evacuate 200m radius.");
+  var tags=[];
+  if(inc.severity==="Critical") tags.push("Critical");
+  if(hasDeath) tags.push("Fatality");
+  if(hasInjured) tags.push("Casualties");
+  if(hasTrapped) tags.push("Rescue needed");
+  if(hasFire) tags.push("Fire");
+  if(hasFlood) tags.push("Flood");
+  if(inc.reports.length>=3) tags.push("High confidence merge");
+  return{text:parts.join(" "),tags:tags};
+}
+
+/* =====================================================
+   RESOURCE RECOMMENDATION
+===================================================== */
+var UNIT_RULES={
+  "Road accident":["AMB","POL"],
+  "Fire":["FIR","AMB"],
+  "Medical":["AMB"],
+  "Flood":["FIR","POL","AMB"],
+  "Gas leak":["FIR","POL"],
+  "Building collapse":["FIR","AMB","POL"],
+  "Crime":["POL","AMB"],
+  "Electrical":["FIR","AMB"],
+  "Other":["AMB","POL"]
+};
+function recommendTypes(inc){
+  var types=(UNIT_RULES[inc.category]||UNIT_RULES["Other"]).slice();
+  var text=normalize(inc.reports.map(function(r){return r.message;}).join(" "));
+  if(/(trapped|stuck|pinned|rescue)/.test(text)&&types.indexOf("FIR")===-1) types.push("FIR");
+  if(/(injur|bleed|wound|unconscious|pain|dead|died)/.test(text)&&types.indexOf("AMB")===-1) types.push("AMB");
+  if(inc.severity==="Critical"&&types.indexOf("POL")===-1) types.push("POL");
+  return types;
+}
+function unitById(id){ return STATE.units.filter(function(u){return u.id===id;})[0]; }
+var UNIT_META={AMB:{icon:"🚑",label:"Ambulance"},FIR:{icon:"🚒",label:"Fire tender"},POL:{icon:"🚓",label:"Police"}};
+
+function applyQuantities(inc,want){
+  var types=Object.keys(want);
+  inc.assigned.forEach(function(uid){ var u=unitById(uid); if(u&&types.indexOf(u.type)===-1) types.push(u.type); });
+  var picked=[];
+  types.forEach(function(t){
+    var committed=inc.assigned.filter(function(uid){ var u=unitById(uid); return u&&u.type===t; });
+    var n=(t in want)?(want[t]||0):committed.length;
+    var extra=Math.max(0,n-committed.length);
+    var take=STATE.units.filter(function(u){return u.status==="Available"&&u.type===t;}).slice(0,extra);
+    picked=picked.concat(committed,take.map(function(u){return u.id;}));
+  });
+  inc.assigned=picked;
+  picked.forEach(function(uid){ var u=unitById(uid); if(u) u.status="Dispatched"; });
+  return picked;
+}
+
+/* =====================================================
+   STATE
+===================================================== */
+var STATE={incidents:[],units:[],counter:0,selected:{},filter:"all",search:"",showRadius:true};
+
+var UNITS_SEED=[
+  {id:"AMB-01",icon:"🚑",name:"Ambulance 01",type:"AMB",status:"Available",pos:[22.6948,72.8660]},
+  {id:"AMB-02",icon:"🚑",name:"Ambulance 02",type:"AMB",status:"Available",pos:[22.6880,72.8712]},
+  {id:"AMB-03",icon:"🚑",name:"Ambulance 03",type:"AMB",status:"Available",pos:[22.7001,72.8620]},
+  {id:"FIR-01",icon:"🚒",name:"Fire Tender 01",type:"FIR",status:"Available",pos:[22.6860,72.8600]},
+  {id:"FIR-02",icon:"🚒",name:"Fire Tender 02",type:"FIR",status:"Available",pos:[22.6990,72.8750]},
+  {id:"POL-01",icon:"🚓",name:"Police Unit 01",type:"POL",status:"Available",pos:[22.6925,72.8690]},
+  {id:"POL-02",icon:"🚓",name:"Police Unit 02",type:"POL",status:"Available",pos:[22.6840,72.8700]}
 ];
 
-INCIDENTS.forEach(function(i){
-  i.checked=new Set(i.units.filter(function(u){return u.ck}).map(function(u){return u.id}));
-  i.assigned=[]; i.doneActions=new Set(); i.escalated=false; i.closed=false; i.prealerted=false;
-});
-
-var state={ sel:'INC-1042', filter:'all', search:'', t0:Date.now(), unread:3, alerts:2, sent:38,
-  feed:[
-   {c:'var(--blue)',h:'Report <b>#4</b> merged into <b>INC-1042</b> — duplicate (91% match)',t:'now'},
-   {c:'var(--green)',h:'<b>Ambulance A12</b> back in service at Depot 2',t:'1 min'},
-   {c:'var(--orange)',h:'Gas leak: wind <b>12 km/h SW</b> — radius review triggered',t:'2 min'},
-   {c:'var(--red)',h:'<b>INC-1042</b> opened from 112 call — 4 injured reported',t:'6 min'},
-   {c:'var(--amber)',h:'Flood S4: <b>T-06</b> requested pump support',t:'9 min'},
-   {c:'var(--green)',h:'<b>P07</b> cleared at checkpoint 2, resuming patrol',t:'12 min'},
-   {c:'var(--orange)',h:'Warehouse fire: foam reserve at <b>40%</b> — reorder advised',t:'15 min'},
-   {c:'var(--sky)',h:'River sensor <b>S-07</b> crossed danger level',t:'41 min'}
-  ]};
-
-function cur(){ return INCIDENTS.filter(function(i){return i.id===state.sel})[0]; }
-function byId(id){ return INCIDENTS.filter(function(i){return i.id===id})[0]; }
-
-/* =============== TOASTS + FEED =============== */
-function toast(title,sub,tone){
-  var t=document.createElement('div'); t.className='toast '+(tone||'');
-  t.innerHTML='<div class="tic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg></div>'+
-    '<div style="flex:1"><p>'+title+'</p><span>'+sub+'</span></div><button class="x">✕</button>';
-  $('#toasts').appendChild(t);
-  t.querySelector('.x').onclick=function(){t.remove()};
-  setTimeout(function(){ if(t.parentNode) t.remove(); },5200);
-  state.sent++; $('#notifCount').textContent=state.sent;
-}
-function feed(color,html){
-  state.feed.unshift({c:color,h:html,t:'now'});
-  state.feed=state.feed.slice(0,9);
-  renderFeed();
-}
-function renderFeed(){
-  $('#feedList').innerHTML=state.feed.map(function(f){
-    return '<div class="fitem"><span class="d" style="background:'+f.c+'"></span><p>'+f.h+'</p><span class="t">'+f.t+'</span></div>';
-  }).join('');
+function saveState(){
+  try{ localStorage.setItem(K.STATE,JSON.stringify({incidents:STATE.incidents,units:STATE.units,counter:STATE.counter})); }catch(e){}
+  syncAmbulanceState();  // ← always sync ambulance state after every save
 }
 
-/* =============== QUEUE =============== */
-function match(i){
-  if(state.filter==='critical' && !i.critical) return false;
-  if(state.filter==='unassigned' && !(i.unassigned && !i.closed)) return false;
-  if(state.filter==='merged' && !i.merged) return false;
-  var q=state.search.toLowerCase();
-  if(q && (i.name+' '+i.title+' '+i.id).toLowerCase().indexOf(q)===-1) return false;
-  return true;
+/* =====================================================
+   AMBULANCE STATE SYNC — THE BRIDGE TO HOSPITAL
+===================================================== */
+function syncAmbulanceState(){
+  // Build a clean ambulance-only snapshot that the hospital reads
+  var ambUnits = STATE.units.filter(function(u){ return u.type==="AMB"; });
+
+  var snapshot = ambUnits.map(function(u){
+    // Find which incident this ambulance is assigned to
+    var assignedInc = null;
+    STATE.incidents.forEach(function(inc){
+      if(inc.assigned && inc.assigned.indexOf(u.id) > -1 && inc.status !== "Resolved"){
+        assignedInc = inc;
+      }
+    });
+
+    return {
+      id:         u.id,
+      name:       u.name,
+      icon:       u.icon,
+      status:     u.status,                            // Available / Dispatched / On scene
+      pos:        u.pos,
+      incidentId: assignedInc ? assignedInc.id : null,
+      incidentCategory: assignedInc ? assignedInc.category : null,
+      incidentSeverity: assignedInc ? assignedInc.severity : null,
+      incidentLocation: assignedInc ? assignedInc.location : null,
+      incidentLat: assignedInc ? assignedInc.lat : null,
+      incidentLng: assignedInc ? assignedInc.lng : null,
+      dispatchedAt: (u.status !== "Available" && assignedInc) ? assignedInc.lastReport : null
+    };
+  });
+
+  var counts = {
+    total:      ambUnits.length,
+    available:  ambUnits.filter(function(u){ return u.status==="Available"; }).length,
+    dispatched: ambUnits.filter(function(u){ return u.status==="Dispatched"; }).length,
+    onScene:    ambUnits.filter(function(u){ return u.status==="On scene"; }).length,
+    lastSync:   Date.now()
+  };
+
+  try{
+    localStorage.setItem(K.AMB_STATE, JSON.stringify({ units: snapshot, counts: counts }));
+  }catch(e){}
 }
-function tagPills(i){
-  var p=['<span class="pill '+i.prioCls+'">'+i.prio+'</span>'];
-  if(i.merged) p.push('<span class="pill blu">'+i.merged+' reports merged</span>');
-  if(i.closed) p.push('<span class="pill mut">closed</span>');
-  else if(i.assigned.length) p.push('<span class="pill grn">'+i.assigned.length+' unit'+(i.assigned.length>1?'s':'')+' assigned</span>');
-  else if(i.unassigned) p.push('<span class="pill mut">unassigned</span>');
-  i.extraTags.forEach(function(t){p.push('<span class="pill '+t.c+'">'+t.t+'</span>')});
-  if(i.escalated) p.push('<span class="pill red">escalated</span>');
-  return p.join('');
+
+function loadState(){
+  try{
+    var s=JSON.parse(localStorage.getItem(K.STATE)||"null");
+    if(s&&s.incidents){
+      STATE.incidents=s.incidents; STATE.counter=s.counter||0;
+      var units=(s.units&&s.units.length)?s.units:UNITS_SEED;
+      STATE.units=units.map(function(u){
+        return{id:u.id,icon:u.icon,name:u.name,pos:u.pos,
+               type:(u.type==="FIRE")?"FIR":(u.type||"AMB"),
+               status:(u.status==="Dispatched"||u.status==="On scene")?u.status:"Available"};
+      });
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+function processedIds(){
+  try{return JSON.parse(localStorage.getItem(K.PROCESSED)||"[]");}catch(e){return[];}
+}
+function markProcessed(id){
+  var p=processedIds();
+  if(p.indexOf(id)===-1){p.push(id);if(p.length>300)p=p.slice(-300);localStorage.setItem(K.PROCESSED,JSON.stringify(p));}
+}
+function nextId(){ STATE.counter++; return "INC-"+String(1000+STATE.counter); }
+
+function createIncident(rep){
+  var now=Date.now();
+  var inc={
+    id:nextId(),category:rep.category,severity:rep.severity,status:"New",
+    location:rep.location||"Nadiad",
+    lat:rep.lat||(NADIAD[0]+(Math.random()-.5)*.02),
+    lng:rep.lng||(NADIAD[1]+(Math.random()-.5)*.02),
+    created:now,lastReport:now,slaDeadline:now+10*60*1000,
+    assigned:[],mergeScores:[],
+    reports:[{name:rep.name||"Citizen",phone:rep.phone||"—",message:rep.message,location:rep.location||"",time:rep.time||now}]
+  };
+  STATE.incidents.unshift(inc);
+  return inc;
+}
+function mergeReport(inc,rep,score){
+  inc.reports.push({name:rep.name||"Citizen",phone:rep.phone||"—",message:rep.message,location:rep.location||"",time:rep.time||Date.now()});
+  inc.lastReport=Date.now();
+  if(!inc.mergeScores) inc.mergeScores=[];
+  inc.mergeScores.push(score);
+  if(severityRank(rep.severity)>severityRank(inc.severity)) inc.severity=rep.severity;
+}
+function ingestReport(rep){
+  rep.category=rep.category&&TYPE_KEYWORDS[rep.category]?rep.category:classifyType(rep.message);
+  rep.severity=rep.severity||inferSeverity(rep.message);
+  var cand=AI_MERGE_ENABLED?findMergeCandidate(rep):null;
+  if(cand){
+    mergeReport(cand.inc,rep,cand.info.score);
+    toast("🤖 AI merged report into "+cand.inc.id+" (score: "+cand.info.score.toFixed(2)+")", "info");
+  } else {
+    createIncident(rep);
+  }
+  saveState(); renderAll();
+}
+
+/* =====================================================
+   CITIZEN QUEUE INGESTION
+===================================================== */
+function pollQueue(){
+  var raw; try{raw=JSON.parse(localStorage.getItem(K.QUEUE)||"[]");}catch(e){return;}
+  if(raw&&!Array.isArray(raw)) raw=[raw];
+  if(!Array.isArray(raw)||!raw.length) return;
+  var done=processedIds(), found=false;
+  raw.forEach(function(item){
+    if(!item) return;
+    var id=item.id||String("h"+JSON.stringify(item).length+"|"+(item.time||0)+"|"+(item.message||"").slice(0,24));
+    if(done.indexOf(id)>-1) return;
+    var rep={id:id,name:item.name||"Citizen",phone:item.phone||"—",
+              message:item.message||item.text||item.description||"",
+              location:item.location||item.address||"",
+              lat:parseFloat(item.lat||0)||null,
+              lng:parseFloat(item.lng||item.lon||0)||null,
+              category:item.category||null,time:item.time||Date.now()};
+    if(!rep.message) rep.message=rep.category?rep.category+" reported":"Emergency reported";
+    if(typeof rep.category==="string"&&!TYPE_KEYWORDS[rep.category]){
+      var map={"accident":"Road accident","road accident":"Road accident","medical":"Medical","medical emergency":"Medical","fire":"Fire","flood":"Flood","crime":"Crime","gas leak":"Gas leak","building collapse":"Building collapse","electrical":"Electrical","other":"Other"};
+      rep.category=map[normalize(rep.category)]||null;
+    }
+    ingestReport(rep); markProcessed(id); found=true;
+  });
+  if(found){ try{localStorage.setItem(K.QUEUE,JSON.stringify([]));}catch(e){} }
+}
+
+/* =====================================================
+   AUTHORITY SYNC
+===================================================== */
+function syncAuthority(){
+  var list=STATE.incidents.map(function(i){
+    return{id:i.id,category:i.category,severity:i.severity,status:i.status,
+           location:i.location,reports:i.reports.length,created:i.created,
+           lastReport:i.lastReport,assigned:i.assigned.length,lat:i.lat,lng:i.lng};
+  });
+  try{localStorage.setItem(K.AUTHORITY,JSON.stringify(list));}catch(e){}
+}
+
+/* =====================================================
+   HOSPITAL CAPACITY READER — shows in units column
+===================================================== */
+function readHospitalCapacity(){
+  try{
+    var cap=JSON.parse(localStorage.getItem(K.HOSP_CAP)||"null");
+    return cap;
+  }catch(e){ return null; }
+}
+
+/* =====================================================
+   RENDER — STATS
+===================================================== */
+function renderStats(){
+  var act=STATE.incidents.filter(function(i){return i.status!=="Resolved";}).length;
+  var crit=STATE.incidents.filter(function(i){return i.status!=="Resolved"&&i.severity==="Critical";}).length;
+  var merged=STATE.incidents.filter(function(i){return i.reports&&i.reports.length>1&&i.status!=="Resolved";}).length;
+  var enr=STATE.incidents.filter(function(i){return i.status==="En route"||i.status==="Assigned"||i.status==="On scene";}).length;
+  var res=STATE.incidents.filter(function(i){return i.status==="Resolved";}).length;
+  var e;
+  e=document.getElementById("st-active");   if(e) e.textContent=act;
+  e=document.getElementById("st-crit");     if(e) e.textContent=crit;
+  e=document.getElementById("st-merged");   if(e) e.textContent=merged;
+  e=document.getElementById("st-enroute");  if(e) e.textContent=enr;
+  e=document.getElementById("st-resolved"); if(e) e.textContent=res;
+  e=document.getElementById("mapClock");    if(e) e.textContent=new Date().toLocaleTimeString();
+}
+
+/* =====================================================
+   RENDER — QUEUE
+===================================================== */
+function slaInfo(inc){
+  if(inc.status==="Resolved") return{txt:"resolved",cls:"ok"};
+  var left=inc.slaDeadline-Date.now(), over=left<0;
+  var m=Math.floor(Math.abs(left)/60000), s=Math.floor((Math.abs(left)%60000)/1000);
+  return{txt:(over?"SLA +":"SLA ")+m+":"+String(s).padStart(2,"0"), cls:over?"over":(left<180000?"soon":"ok")};
+}
+function filteredIncidents(){
+  var f=STATE.filter, q=normalize(STATE.search);
+  return STATE.incidents.filter(function(i){
+    if(f==="new"&&i.status!=="New") return false;
+    if(f==="active"&&i.status==="Resolved") return false;
+    if(f==="resolved"&&i.status!=="Resolved") return false;
+    if(q&&normalize(i.id+" "+i.category+" "+i.location+" "+i.reports.map(function(r){return r.message;}).join(" ")).indexOf(q)===-1) return false;
+    return true;
+  });
 }
 function renderQueue(){
-  var act=INCIDENTS.filter(function(i){return !i.closed});
-  var crit=act.filter(function(i){return i.critical}).length;
-  $('#qsub').textContent=act.length+' active · '+crit+' critical';
-  var counts={all:act.length,
-    critical:act.filter(function(i){return i.critical}).length,
-    unassigned:act.filter(function(i){return i.unassigned}).length,
-    merged:INCIDENTS.filter(function(i){return i.merged}).length};
-  $$('#filters span').forEach(function(s){ s.querySelector('i').textContent=counts[s.dataset.f]; });
-  var items=INCIDENTS.filter(match);
-  if(!items.length){ $('#qlist').innerHTML='<div style="padding:24px;text-align:center;color:var(--dim);font-size:11.5px">No incidents match this filter.</div>'; return; }
-  $('#qlist').innerHTML=items.map(function(i){
-    return '<div class="q'+(i.id===state.sel?' sel':'')+'" data-id="'+i.id+'">'+
-      '<span class="bar" style="background:'+i.bar+'"></span>'+
-      '<div style="flex:1;min-width:0"><div class="q-top"><b>'+i.name+'</b><span class="t">'+i.minAgo+' min ago</span></div>'+
-      '<div class="q-meta">'+i.meta+'</div><div class="q-tags">'+tagPills(i)+'</div></div></div>';
-  }).join('');
+  var box=document.getElementById("queue"); if(!box) return;
+  var list=filteredIncidents();
+  var ce=document.getElementById("qcount"); if(ce) ce.textContent=list.length+" shown";
+  if(!list.length){ box.innerHTML='<div style="color:var(--mut);font-size:12px;padding:20px;text-align:center">No incidents match.</div>'; return; }
+  box.innerHTML=list.map(function(i){
+    var sla=slaInfo(i);
+    var lastMsg=i.reports&&i.reports.length?i.reports[i.reports.length-1].message:"";
+    var isMerged=i.reports&&i.reports.length>1;
+    return '<div class="inc-card sel-'+i.severity+'" data-id="'+i.id+'">'+
+      '<div class="inc-top">'+
+        '<input type="checkbox" class="incChk" data-id="'+i.id+'" '+(STATE.selected[i.id]?"checked":"")+'>'+
+        '<span class="inc-id">'+esc(i.id)+'</span>'+
+        '<span class="badge b-'+i.severity+'">'+esc(i.severity)+'</span>'+
+        '<span class="badge b-status">'+esc(i.status)+'</span>'+
+        (isMerged?'<span class="b-merged">🤖 '+i.reports.length+' reports</span>':'')+
+      '</div>'+
+      '<div class="inc-desc">'+esc(shortText(lastMsg))+'</div>'+
+      '<div class="inc-meta">'+
+        '<span>📍 '+esc(shortText(i.location,32))+'</span>'+
+        '<span>🗂 '+esc(i.category)+'</span>'+
+        '<span class="sla '+sla.cls+'">⏱ '+sla.txt+'</span>'+
+      '</div>'+
+    '</div>';
+  }).join("");
 }
 
-/* =============== CENTER =============== */
-var CHECK='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
-var ARROW='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M7 17L17 7M9 7h8v8"/></svg>';
-var TICK='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
-
-function statusPill(u){
-  if(u.status==='Available') return '<span class="pill grn">Available</span>';
-  if(u.status==='Standby') return '<span class="pill amb">Standby</span>';
-  if(u.status==='En route') return '<span class="pill blu">En route</span>';
-  return '<span class="pill blu">On site</span>';
-}
-function mapDyn(i){
-  var P=i.pos, s='';
-  s+='<circle cx="'+P.x+'" cy="'+P.y+'" r="52" fill="none" stroke="'+i.bar+'" stroke-opacity=".38" stroke-width="1.4" stroke-dasharray="4 5"/>';
-  if(i.critical) s+='<circle cx="'+P.x+'" cy="'+P.y+'" r="30" fill="url(#glow)"/>';
-  i.units.forEach(function(u){
-    if(u.x==null) return;
-    var mx=(u.x+P.x)/2, my=Math.min(u.y,P.y)-18;
-    s+='<path d="M'+u.x+' '+u.y+' Q '+mx+' '+my+' '+P.x+' '+P.y+'" fill="none" stroke="#9fb3c8" stroke-opacity=".5" stroke-width="1.4" stroke-dasharray="3 5"/>';
-    s+='<rect x="'+(u.x-10)+'" y="'+(u.y-10)+'" width="20" height="20" rx="6" fill="#123528" stroke="#3acd8f" stroke-width="1.4"/>'+
-       '<path d="M'+u.x+' '+(u.y-5)+'v10M'+(u.x-5)+' '+u.y+'h10" stroke="#3acd8f" stroke-width="2" stroke-linecap="round"/>';
-    var lb=u.id+' · '+(u.status==='On site'?'on site':'ETA '+u.eta+' min');
-    s+= u.x>P.x
-      ? '<text x="'+(u.x-16)+'" y="'+(u.y+4)+'" fill="#5fe0a8" font-size="9.5" font-weight="700" font-family="Inter" text-anchor="end">'+lb+'</text>'
-      : '<text x="'+(u.x+16)+'" y="'+(u.y+4)+'" fill="#5fe0a8" font-size="9.5" font-weight="700" font-family="Inter">'+lb+'</text>';
-  });
-  if(i.hosp) s+='<rect x="668" y="120" width="20" height="20" rx="6" fill="#0f2545" stroke="#1e7eff" stroke-width="1.4"/><path d="M678 125v10M673 130h10" stroke="#6fb4ff" stroke-width="2.4" stroke-linecap="round"/><text x="600" y="114" fill="#6fb4ff" font-size="9.5" font-weight="700" font-family="Inter">Trauma centre · 9 min</text>';
-  s+='<circle cx="'+P.x+'" cy="'+P.y+'" r="11" fill="none" stroke="'+i.bar+'" stroke-width="2" opacity=".85"/><circle cx="'+P.x+'" cy="'+P.y+'" r="5" fill="'+i.bar+'"/>';
-  if(P.x>560){
-    s+='<text x="'+(P.x-14)+'" y="'+(P.y-4)+'" fill="#eef3f8" font-size="11" font-weight="700" font-family="Inter" text-anchor="end">'+i.id+' · '+i.ml+'</text>';
-    s+='<text x="'+(P.x-14)+'" y="'+(P.y+10)+'" fill="#93a3b8" font-size="9.5" font-weight="600" font-family="Inter" text-anchor="end">'+i.sub+'</text>';
-  }else{
-    s+='<text x="'+(P.x+14)+'" y="'+(P.y-4)+'" fill="#eef3f8" font-size="11" font-weight="700" font-family="Inter">'+i.id+' · '+i.ml+'</text>';
-    s+='<text x="'+(P.x+14)+'" y="'+(P.y+10)+'" fill="#93a3b8" font-size="9.5" font-weight="600" font-family="Inter">'+i.sub+'</text>';
+/* =====================================================
+   RENDER — MERGED COLUMN
+===================================================== */
+function renderMergeColumn(){
+  var box=document.getElementById("mergeCol"); if(!box) return;
+  var hc=document.getElementById("mergeHeaderCount");
+  var merged=STATE.incidents.filter(function(i){ return i.reports&&i.reports.length>1&&i.status!=="Resolved"; });
+  if(hc) hc.textContent=merged.length;
+  if(!merged.length){
+    box.innerHTML='<div class="mc-empty"><span class="mc-empty-icon">🤖</span>No merged incidents yet.<br><span style="font-size:11px">AI combines similar reports automatically.</span></div>';
+    return;
   }
-  return s;
-}
-function renderCenter(){
-  var i=cur();
-  $('#incPill').className='pill '+i.prioCls+' solid';
-  $('#incPill').textContent=i.critical?'CRITICAL':(i.prio==='P2'?'HIGH':i.prio==='P3'?'MEDIUM':'LOW');
-  $('#incTitle').textContent=i.title+(i.closed?'  (closed)':'');
-  $('#incTime').innerHTML='Reported <b>'+i.reported+'</b> · '+i.minAgo+' min ago<br>'+i.t2;
-  var m='';
-  if(i.merged) m+='<span class="mchip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6fb4ff" stroke-width="2.2" stroke-linejoin="round"><path d="M8 8h8v8H8z"/><path d="M4 12h4M16 12h4M12 4v4M12 16v4"/></svg><b>'+i.merged+' reports</b> merged as duplicates</span>';
-  m+='<span class="mchip"><svg width="11" height="11" viewBox="0 0 24 24" fill="#8ab4ff"><path d="M12 2.5l2 5.6 5.5 1.9-5.5 2-2 5.5-2-5.5-5.5-2 5.5-1.9z"/></svg>AI confidence <b>'+i.conf+'%</b></span>';
-  m+='<span class="mchip">Sources: <b>'+i.sources+'</b></span>';
-  m+='<span class="mchip">Weather: <b>'+i.weather+'</b></span>';
-  $('#incMeta').innerHTML=m;
-  $('#clsType').textContent=i.cls.type;
-  $('#sevFill').style.width=(i.cls.sev*10)+'%';
-  $('#sevVal').textContent=i.cls.sev+' / 10';
-  $('#prioPill').className='pill '+i.cls.prioCls;
-  $('#prioPill').innerHTML=i.cls.prio;
-  $('#casVal').textContent=i.cls.cas;
-  $('#blkVal').textContent=i.cls.blocked;
-  $('#sumTxt').innerHTML=i.summary;
-  $('#actsWrap').innerHTML=i.actions.map(function(a){
-    var done=i.doneActions.has(a);
-    return '<span class="act'+(done?' done':'')+'" data-a="'+a+'">'+(done?TICK:ARROW)+a+'</span>';
-  }).join('');
-  $('#dyn').innerHTML=mapDyn(i);
-  $('#mapZone').textContent=i.zone;
-  $('#radiusVal').textContent=i.radius+' m';
-  var rec=i.units.filter(function(u){return u.status==='Available'||u.status==='Standby'}).length;
-  $('#recChip').innerHTML=rec+' recommended units · <b>12 available in zone</b>';
-  $('#resSub').textContent='AI matched '+rec+' of 12 available units · ranked by ETA & capability';
-  $('#resRows').innerHTML=i.units.map(function(u){
-    var on=i.checked.has(u.id), locked=(u.status==='En route'||u.status==='On site');
-    return '<div class="rrow" data-uid="'+u.id+'">'+
-      '<div class="cb'+(on?' on':'')+(locked?' lock':'')+'">'+(on?CHECK:'')+'</div>'+
-      '<div class="tile '+u.cls+'">'+tileIcon(u.cls)+'</div>'+
-      '<div class="rname"><b>'+u.name+'</b><span>'+u.desc+'</span></div>'+
-      '<div class="rright">'+statusPill(u)+'<div class="eta"><b>'+(u.eta?u.eta+' min':'—')+'</b><span>ETA</span></div></div></div>';
-  }).join('');
-  var avail=i.units.filter(function(u){return u.status==='Available'||u.status==='Standby'}).length;
-  $('#assignAllLb').textContent= i.assigned.length? 'Units dispatched ✓' : 'Assign all ('+avail+')';
-  $('#assignAll').disabled = !!i.closed || avail===0;
-  $('#escLb').textContent= i.escalated? 'Escalated ✓' : 'Escalate';
-  $('#escBtn').disabled = !!i.escalated;
-  $('#prealertLb').textContent= i.prealerted? 'Hospitals pre-alerted ✓' : 'Pre-alert hospitals';
-  $('#stInc').innerHTML=i.id+' · opened <b>'+i.reported+'</b>';
-  $('#stepAssign').className='step'+(i.assigned.length?' done':'');
-}
-function tileIcon(cls){
-  if(cls==='red') return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v5h5v6h-5v5H9v-5H4V9h5z"/></svg>';
-  if(cls==='blu') return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/></svg>';
-  if(cls==='org') return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="M6 6l3.5 3.5M18 6l-3.5 3.5M6 18l3.5-3.5M18 18l-3.5-3.5" stroke-linecap="round"/></svg>';
-  return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3c3.2 4 6 6.6 6 10a6 6 0 0 1-12 0c0-2 1-3.8 2.6-5.6C10.1 5.7 11 4.5 12 3z"/><path d="M12 12c1.2 1.4 2 2.3 2 3.5a2 2 0 0 1-4 0c0-1.2.8-2.1 2-3.5z"/></svg>';
+  box.innerHTML=merged.map(function(inc){
+    var summary=generateAISummary(inc);
+    var avgScore=inc.mergeScores&&inc.mergeScores.length?(inc.mergeScores.reduce(function(a,b){return a+b;},0)/inc.mergeScores.length):0;
+    var scorePct=Math.round(avgScore*100);
+    var previewReports=inc.reports.slice(0,2);
+    var extraCount=inc.reports.length-2;
+    return '<div class="merge-card sel-'+inc.severity+'" data-id="'+inc.id+'">'+
+      '<div class="mc-top"><span class="mc-id">'+esc(inc.id)+'</span><span class="mc-count">'+inc.reports.length+' reports</span><span class="badge b-'+inc.severity+'">'+esc(inc.severity)+'</span></div>'+
+      '<div class="mc-category">'+esc(inc.category)+'</div>'+
+      '<div class="mc-location">📍 '+esc(shortText(inc.location,36))+'</div>'+
+      (scorePct>0?'<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mut);margin-bottom:3px"><span>AI confidence</span><span style="color:var(--ai);font-weight:700">'+scorePct+'%</span></div><div class="mc-score-bar"><div class="mc-score-fill" style="width:'+scorePct+'%"></div></div></div>':'')+
+      (summary?'<div class="ai-analysis"><strong>🤖 AI Analysis</strong>'+esc(summary.text)+(summary.tags.length?'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">'+summary.tags.map(function(tg){return'<span class="ai-summary ai-tag">'+esc(tg)+'</span>';}).join("")+'</div>':'')+'</div>':'')+
+      '<div class="mc-reports">'+
+        previewReports.map(function(r,idx){
+          return '<div class="mc-report-row"><div class="mc-report-name"><span>'+esc(r.name||"Citizen")+(idx===0?' <span style="font-size:9px;color:var(--acc)">FIRST</span>':'')+'</span><span class="mc-report-time">'+new Date(r.time||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})+'</span></div><div class="mc-report-msg">"'+esc(shortText(r.message,68))+'"</div></div>';
+        }).join("")+
+        (extraCount>0?'<div style="font-size:11px;color:var(--mut);text-align:center;padding:5px 0;font-style:italic">+ '+extraCount+' more report'+(extraCount>1?'s':'')+' — click to view all</div>':'')+
+      '</div>'+
+      '<div class="mc-footer">'+
+        '<span class="mc-reason">'+(avgScore?'Score: '+avgScore.toFixed(2):'')+'</span>'+
+        '<div class="mc-actions">'+
+          '<button class="mc-btn open" data-open="'+inc.id+'">Open ↗️</button>'+
+          '<button class="mc-btn" data-dispatch="'+inc.id+'">🚨 Dispatch</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
 }
 
-/* =============== AVAILABILITY =============== */
-function renderAvail(){
-  $('#availBody').innerHTML=Object.keys(AVAIL).map(function(k){
-    var a=AVAIL[k];
-    return '<div class="l"><span>'+a.l+'</span><b>'+a.f+' / '+a.t+' free</b></div>'+
-      '<div class="track"><i style="width:'+(a.f/a.t*100)+'%;background:'+a.c+'"></i></div>';
-  }).join('');
+/* =====================================================
+   RENDER — UNITS COLUMN (with hospital capacity panel)
+===================================================== */
+function renderUnitsColumn(){
+  var col=document.getElementById("unitsCol"); if(!col) return;
+
+  var avail=STATE.units.filter(function(u){return u.status==="Available";});
+  var ambUnits=STATE.units.filter(function(u){return u.type==="AMB";});
+  var ambAvail=ambUnits.filter(function(u){return u.status==="Available";}).length;
+
+  // Count badge
+  var uc=document.getElementById("unitCount");
+  if(uc) uc.textContent=avail.length+" free";
+
+  // Hospital capacity panel
+  var cap=readHospitalCapacity();
+  var hospHtml="";
+  if(cap){
+    hospHtml='<div class="hosp-sync">'+
+      '<div class="hosp-sync-head">🏥 Hospital Capacity Live</div>'+
+      '<div class="hosp-sync-row"><span>General beds free</span><b style="color:var(--ok)">'+cap.generalAvailable+'</b></div>'+
+      '<div class="hosp-sync-row"><span>ICU beds free</span><b style="color:'+(cap.icuAvailable>2?"var(--ok)":"var(--crit)")+'">'+cap.icuAvailable+'</b></div>'+
+      '<div class="hosp-sync-row"><span>Published</span><span style="color:var(--mut);font-size:10px">'+new Date(cap.published).toLocaleTimeString()+'</span></div>'+
+      (cap.notes?'<div style="font-size:10px;color:var(--mut);margin-top:5px;font-style:italic">'+esc(cap.notes)+'</div>':'')+
+    '</div>';
+  }
+
+  // Ambulance summary
+  var ambSummary='<div style="text-align:center;padding:14px 0 10px">'+
+    '<div style="font-size:32px;font-weight:800;color:var(--ok);line-height:1">'+avail.length+'</div>'+
+    '<div style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;margin-top:3px">units available</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px">'+
+      '<div style="background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 12px;text-align:center;font-size:13px;font-weight:700">🚑 '+ambAvail+'<div style="font-size:9px;color:var(--mut);font-weight:400">AMB</div></div>'+
+      '<div style="background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 12px;text-align:center;font-size:13px;font-weight:700">🚒 '+STATE.units.filter(function(u){return u.type==="FIR"&&u.status==="Available";}).length+'<div style="font-size:9px;color:var(--mut);font-weight:400">FIR</div></div>'+
+      '<div style="background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 12px;text-align:center;font-size:13px;font-weight:700">🚓 '+STATE.units.filter(function(u){return u.type==="POL"&&u.status==="Available";}).length+'<div style="font-size:9px;color:var(--mut);font-weight:400">POL</div></div>'+
+    '</div>';
+
+  // Individual unit cards
+  var unitCards=STATE.units.map(function(u){
+    var statusCls=u.status==="Available"?"available":u.status==="On scene"?"onscene":"dispatched";
+    var statusColor=u.status==="Available"?"ok":u.status==="On scene"?"crit":"warn";
+    var assignedInc=STATE.incidents.filter(function(i){return i.assigned&&i.assigned.indexOf(u.id)>-1&&i.status!=="Resolved";})[0];
+    return '<div class="unit-card '+statusCls+'">'+
+      '<div class="unit-top">'+
+        '<span class="unit-id">'+u.icon+' '+esc(u.id)+'</span>'+
+        '<span class="unit-status '+statusColor+'">'+esc(u.status)+'</span>'+
+      '</div>'+
+      (assignedInc?'<div class="unit-assign">→ '+esc(assignedInc.id)+' · '+esc(shortText(assignedInc.location,24))+'</div>':'')+
+    '</div>';
+  }).join("");
+
+  col.innerHTML=hospHtml+ambSummary+unitCards;
 }
 
-function renderAll(){ renderQueue(); renderCenter(); renderFeed(); renderAvail(); }
+/* =====================================================
+   MAP
+===================================================== */
+var map=null, layerInc=null, layerUnit=null, mapFitted=false;
 
-/* =============== ACTIONS =============== */
-function assign(units){
-  var i=cur();
-  var go=units.filter(function(u){return u.status==='Available'||u.status==='Standby'});
-  if(!go.length){ toast('Nothing to assign','Tick available units first, or use Assign all.','amb'); return; }
-  go.forEach(function(u){
-    u.status='En route'; i.assigned.push(u.id); i.unassigned=false;
-    AVAIL[u.kind].f=Math.max(0,AVAIL[u.kind].f-1);
-    feed('var(--green)','<b>'+u.id+'</b> assigned to '+i.id+' — en route ('+u.eta+' min)');
+function initMap(){
+  if(typeof L==="undefined"){ var me=document.getElementById("map"); if(me) me.innerHTML='<div style="padding:30px;color:var(--mut)">Map unavailable.</div>'; return; }
+  var me=document.getElementById("map"); if(!me) return;
+  try{
+    map=L.map("map",{zoomControl:true}).setView(NADIAD,13);
+    var road=L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",{maxZoom:20}).addTo(map);
+    var sat=L.layerGroup([
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:20}),
+      L.tileLayer("https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}",{maxZoom:20})
+    ]);
+    var sw=L.control({position:"bottomleft"});
+    sw.onAdd=function(){
+      var d=L.DomUtil.create("div","mapswitch");
+      d.innerHTML='<button data-m="map" class="on">Map</button><button data-m="sat">Satellite</button>';
+      L.DomEvent.disableClickPropagation(d);
+      d.addEventListener("click",function(e){
+        var b=e.target.closest("button"); if(!b) return;
+        if(b.getAttribute("data-m")==="sat"){map.removeLayer(road);sat.addTo(map);}
+        else{map.removeLayer(sat);road.addTo(map);}
+        Array.prototype.forEach.call(d.querySelectorAll("button"),function(x){x.classList.toggle("on",x===b);});
+      });
+      return d;
+    };
+    sw.addTo(map);
+    layerInc=L.layerGroup().addTo(map);
+    layerUnit=L.layerGroup().addTo(map);
+  }catch(e){}
+}
+
+function sevColor(s){ return s==="Critical"?"#f87171":s==="High"?"#fb923c":s==="Medium"?"#fbbf24":"#34d399"; }
+
+function renderMap(){
+  if(!map||!layerInc||!layerUnit) return;
+  layerInc.clearLayers(); layerUnit.clearLayers();
+  var bounds=[];
+
+  // Hospital marker
+  L.marker(HOSPITAL_POS,{
+    icon:L.divIcon({html:'<div style="background:#34d399;border:2px solid #fff;border-radius:4px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px">🏥</div>',className:"",iconSize:[22,22]})
+  }).bindTooltip('<span class="pin-lbl">Civil Hospital Nadiad</span>').addTo(layerInc);
+
+  STATE.incidents.forEach(function(i){
+    if(!i.lat||!i.lng||i.status==="Resolved") return;
+    var color=sevColor(i.severity);
+    var isMerged=i.reports&&i.reports.length>1;
+    var m=L.circleMarker([i.lat,i.lng],{radius:isMerged?11:9,color:isMerged?"#c084fc":color,weight:isMerged?3:2,fillColor:color,fillOpacity:.85})
+      .bindTooltip('<span class="pin-lbl">'+esc(i.id)+' · '+esc(i.category)+' · '+esc(i.severity)+(isMerged?' · 🤖 '+i.reports.length+' reports':'')+'</span>')
+      .on("click",function(){openModal(i.id);});
+    layerInc.addLayer(m);
+    bounds.push([i.lat,i.lng]);
+    if(STATE.showRadius&&(i.severity==="Critical"||i.severity==="High")){
+      layerInc.addLayer(L.circle([i.lat,i.lng],{radius:i.severity==="Critical"?400:250,color:isMerged?"#c084fc":color,weight:1,fillColor:isMerged?"#c084fc":color,fillOpacity:.1}));
+    }
+    i.assigned.forEach(function(uid){
+      var u=STATE.units.filter(function(x){return x.id===uid;})[0];
+      if(!u||!u.pos||u.pos.length<2) return;
+      var to=(i.status==="On scene")?[i.lat,i.lng]:(i.status==="En route"?[(u.pos[0]+i.lat)/2,(u.pos[1]+i.lng)/2]:u.pos);
+      // Draw route from unit to incident AND from incident to hospital (for ambulances)
+      layerInc.addLayer(L.polyline([u.pos,to],{color:"#38bdf8",weight:2,dashArray:"6 8"}));
+      if(u.type==="AMB"){
+        // Extra dashed line from incident to hospital showing patient journey
+        layerInc.addLayer(L.polyline([[i.lat,i.lng],HOSPITAL_POS],{color:"#34d399",weight:1.5,dashArray:"4 8",opacity:.6}));
+      }
+      var um=L.marker(to,{
+        icon:L.divIcon({html:'<div style="font-size:18px">'+u.icon+'</div>',className:"",iconSize:[24,24]})
+      }).bindTooltip('<span class="pin-lbl">'+esc(u.id)+' → '+esc(i.id)+'</span>');
+      layerUnit.addLayer(um);
+    });
   });
-  toast(go.length+' unit'+(go.length>1?'s':'')+' assigned ✔', go.map(function(u){return u.id}).join(', ')+' → '+i.id+' · crews notified by SMS + radio','grn');
-  renderAll();
+
+  if(!mapFitted&&bounds.length){ mapFitted=true; try{map.fitBounds(bounds,{padding:[40,40]});}catch(e){} }
 }
 
-$('#qlist').addEventListener('click',function(e){
-  var q=e.target.closest('.q'); if(!q||!q.dataset.id) return;
-  state.sel=q.dataset.id; renderQueue(); renderCenter();
-});
-$('#filters').addEventListener('click',function(e){
-  var s=e.target.closest('span'); if(!s) return;
-  state.filter=s.dataset.f;
-  $$('#filters span').forEach(function(x){x.classList.toggle('on',x===s)});
-  renderQueue();
-});
-$('#qinp').addEventListener('input',function(e){ state.search=e.target.value; renderQueue(); });
-document.addEventListener('keydown',function(e){
-  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); $('#qinp').focus(); }
-  if(e.key==='Escape'){ $('#modal').classList.remove('open'); $('#bellDrop').classList.remove('open'); $('#menu').classList.remove('open'); }
-});
-
-$('#actsWrap').addEventListener('click',function(e){
-  var a=e.target.closest('.act'); if(!a) return;
-  var i=cur(), name=a.dataset.a;
-  if(i.doneActions.has(name)) return;
-  i.doneActions.add(name);
-  feed('var(--blue)','Action dispatched on '+i.id+': <b>'+name+'</b>');
-  toast('Action dispatched',name+' · '+i.id,'');
-  renderCenter();
-});
-
-$('#resRows').addEventListener('click',function(e){
-  var row=e.target.closest('.rrow'); if(!row) return;
-  var i=cur(), u=i.units.filter(function(x){return x.id===row.dataset.uid})[0];
-  if(u.status==='En route'||u.status==='On site'){ toast(u.id+' already committed',u.status+' — cannot toggle selection.','amb'); return; }
-  if(i.checked.has(u.id)) i.checked.delete(u.id); else i.checked.add(u.id);
-  renderCenter();
-});
-
-$('#assignAll').addEventListener('click',function(){ assign(cur().units); });
-$('#assignSel').addEventListener('click',function(){
-  var i=cur();
-  assign(i.units.filter(function(u){return i.checked.has(u.id)}));
-});
-$('#escBtn').addEventListener('click',function(){
-  var i=cur(); if(i.escalated) return;
-  i.escalated=true;
-  feed('var(--red)','<b>'+i.id+'</b> escalated to duty officer by DSP-2041');
-  toast('Incident escalated',i.id+' flagged to duty officer MK · priority slot granted','red');
-  renderAll();
-});
-$('#prealert').addEventListener('click',function(){
-  var i=cur(); if(i.prealerted) return;
-  i.prealerted=true;
-  feed('var(--sky)','Trauma centre pre-alerted for <b>'+i.id+'</b> — bay + OR held');
-  toast('Hospitals pre-alerted','Nearest trauma centre · 9 min · casualty details shared','');
-  renderCenter();
-});
-
-/* header buttons */
-function copyBrief(){
-  var i=cur();
-  var txt=i.id+' — '+i.title+'. Severity '+i.cls.sev+'/10. '+i.cls.type+'. Casualties: '+i.cls.cas+'. Sources: '+i.sources+'.';
-  if(navigator.clipboard){ navigator.clipboard.writeText(txt).catch(function(){}); }
-  toast('Brief copied to clipboard',i.id+' summary ready to paste','');
+/* =====================================================
+   TOAST
+===================================================== */
+function toast(html,cls){
+  var t=document.createElement("div");
+  t.className="toast "+(cls||"");
+  t.textContent=html;
+  var tc=document.getElementById("toasts"); if(tc) tc.appendChild(t);
+  setTimeout(function(){t.style.opacity="0";t.style.transition=".4s";},3800);
+  setTimeout(function(){if(t.parentNode)t.remove();},4300);
 }
-$('#btnCopy').addEventListener('click',copyBrief);
-$('#btnMenu').addEventListener('click',function(e){ e.stopPropagation(); $('#menu').classList.toggle('open'); });
-$('#menu').addEventListener('click',function(e){
-  var b=e.target.closest('button'); if(!b) return;
-  $('#menu').classList.remove('open');
-  var i=cur();
-  if(b.dataset.act==='copy') copyBrief();
-  if(b.dataset.act==='export') toast('Report exported (demo)',i.id+'_brief.pdf saved to records','');
-  if(b.dataset.act==='close'){
-    if(i.closed) return;
-    i.closed=true;
-    feed('var(--green)','<b>'+i.id+'</b> closed by DSP-2041 — final report filed');
-    toast('Incident closed',i.id+' moved to archive · analytics updated','grn');
-    renderAll();
+
+/* =====================================================
+   MODAL
+===================================================== */
+function openModal(id){
+  var inc=STATE.incidents.filter(function(i){return i.id===id;})[0]; if(!inc) return;
+  var sla=slaInfo(inc);
+  var statuses=["New","Assigned","En route","On scene","Resolved"];
+  var me=document.getElementById("modal"); if(!me) return;
+  var isMerged=inc.reports&&inc.reports.length>1;
+  var summary=isMerged?generateAISummary(inc):null;
+
+  me.innerHTML=
+    '<h2>'+esc(inc.id)+
+      ' <span class="badge b-'+inc.severity+'">'+esc(inc.severity)+'</span>'+
+      ' <span class="badge b-status">'+esc(inc.status)+'</span>'+
+      (isMerged?'<span class="b-merged">🤖 '+inc.reports.length+' reports merged</span>':'')+
+    '</h2>'+
+    '<div class="sub">'+esc(inc.category)+' · 📍 '+esc(inc.location)+' · <span class="sla '+sla.cls+'">'+sla.txt+'</span></div>'+
+    '<div class="mgrid">'+
+      '<div class="mbox"><label>Reported</label><div class="v">'+new Date(inc.created).toLocaleTimeString()+'</div></div>'+
+      '<div class="mbox"><label>Last report</label><div class="v">'+new Date(inc.lastReport).toLocaleTimeString()+'</div></div>'+
+    '</div>'+
+    (summary?'<div class="ai-summary"><div class="ai-label">🤖 AI Incident Summary</div><p>'+esc(summary.text)+'</p>'+(summary.tags.length?'<div class="ai-tags">'+summary.tags.map(function(tg){return'<span class="ai-tag">'+esc(tg)+'</span>';}).join("")+'</div>':'')+'</div>':'')+
+    '<label style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px">Citizen reports ('+inc.reports.length+')'+(isMerged?' <span style="color:var(--ai)">— AI merged</span>':'')+'</label>'+
+    '<div style="margin:6px 0 12px">'+
+      inc.reports.map(function(r,idx){
+        return '<div class="reporter"><div class="rhead"><b>'+esc(r.name)+(idx===0&&isMerged?' <span style="font-size:10px;color:var(--acc);font-weight:400">(first)</span>':'')+'</b><span style="color:var(--mut);font-size:10px">'+new Date(r.time).toLocaleTimeString()+' · '+esc(r.phone)+'</span></div><div style="margin-top:3px">"'+esc(r.message)+'"'+(r.location?'<span style="color:var(--mut)"> — '+esc(r.location)+'</span>':'')+'</div></div>';
+      }).join("")+
+    '</div>'+
+    '<div class="mrow" style="align-items:center"><label style="font-size:11px;color:var(--mut)">Status:</label><select id="mStatus">'+statuses.map(function(s){return'<option '+(s===inc.status?"selected":"")+'>'+s+'</option>';}).join("")+'</select></div>'+
+    '<label style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;display:block;margin-top:12px">Units for '+esc(inc.category)+' ('+recommendTypes(inc).join(" + ")+')</label>'+
+    '<div class="ulist" id="mUnits">'+
+      recommendTypes(inc).map(function(t){
+        var meta=UNIT_META[t]||{icon:"🚑",label:t};
+        var avail=STATE.units.filter(function(u){return u.type===t&&u.status==="Available";}).length;
+        var cur=inc.assigned.filter(function(uid){var u=unitById(uid);return u&&u.type===t;}).length;
+        var max=avail+cur;
+        var def=cur>0?cur:(max>0?1:0);
+        return '<div class="uqty"><span style="font-size:18px">'+meta.icon+'</span><span class="uq-name">'+meta.label+'<small>'+avail+' available</small></span><span class="uq-ctrl"><button data-d="-1" type="button">−</button><b class="uq-n" data-type="'+t+'" data-max="'+max+'">'+def+'</b><button data-d="1" type="button">+</button></span></div>';
+      }).join("")+
+    '</div>'+
+    '<div class="mrow" style="margin-top:16px"><button class="mbtn pri" id="mDispatch">🚨 Dispatch units</button><button class="mbtn ok" id="mResolve">✅ Mark resolved</button><button class="mbtn ghost" id="mClose">Close</button></div>';
+
+  document.getElementById("overlay").classList.add("show");
+
+  var mu=document.getElementById("mUnits");
+  if(mu){
+    mu.addEventListener("click",function(e){
+      var b=e.target.closest("button[data-d]"); if(!b) return;
+      var n=b.parentNode.querySelector(".uq-n"); if(!n) return;
+      var v=(parseInt(n.textContent,10)||0)+parseInt(b.getAttribute("data-d"),10);
+      v=Math.max(0,Math.min(parseInt(n.getAttribute("data-max"),10),v));
+      n.textContent=v;
+    });
+  }
+  document.getElementById("mClose").onclick=closeModal;
+  document.getElementById("mStatus").onchange=function(){
+    var oldStatus=inc.status;
+    inc.status=this.value;
+    if(inc.status==="Resolved"||inc.status==="New") freeUnits(inc);
+    else if(inc.status==="On scene") STATE.units.forEach(function(u){if(inc.assigned.indexOf(u.id)>-1)u.status="On scene";});
+    saveState(); renderAll();
+    if(inc.status==="Resolved"){ closeModal(); toast("✅ "+inc.id+" resolved — ambulances returned to hospital","good"); }
+    else openModal(id);
+  };
+  document.getElementById("mResolve").onclick=function(){
+    inc.status="Resolved";
+    freeUnits(inc);
+    saveState(); renderAll(); closeModal();
+    toast("✅ "+inc.id+" resolved — ambulances returning to base","good");
+  };
+  document.getElementById("mDispatch").onclick=function(){
+    var want={};
+    document.querySelectorAll("#mUnits .uq-n").forEach(function(n){ want[n.getAttribute("data-type")]=parseInt(n.textContent,10)||0; });
+    var prevAmb=inc.assigned.filter(function(uid){var u=unitById(uid);return u&&u.type==="AMB";}).length;
+    var picked=applyQuantities(inc,want);
+    if(!picked.length){toast("Set at least one unit quantity","info");return;}
+    inc.status="En route";
+
+    // Count new ambulances dispatched
+    var newAmb=inc.assigned.filter(function(uid){var u=unitById(uid);return u&&u.type==="AMB";}).length - prevAmb;
+
+    saveState(); renderAll(); closeModal();
+    toast("🚨 "+inc.id+" dispatched — "+picked.join(", ")+" en route to "+inc.location,"info");
+
+    // Hospital gets notified via ambulance state sync (already done in saveState)
+    if(newAmb>0){
+      toast("🏥 Hospital notified: "+newAmb+" ambulance"+(newAmb>1?"s":"")+" dispatched to "+inc.location,"hosp");
+    }
+  };
+}
+
+function closeModal(){ document.getElementById("overlay").classList.remove("show"); }
+
+function freeUnits(inc){
+  inc.assigned.forEach(function(uid){
+    var u=STATE.units.filter(function(x){return x.id===uid;})[0];
+    var busy=STATE.incidents.some(function(o){return o!==inc&&o.status!=="Resolved"&&o.assigned.indexOf(uid)>-1;});
+    if(u&&!busy) u.status="Available";
+  });
+  inc.assigned=[];
+}
+
+/* =====================================================
+   RENDER ALL
+===================================================== */
+function renderAll(){ renderStats(); renderQueue(); renderMergeColumn(); renderUnitsColumn(); renderMap(); }
+
+/* =====================================================
+   EVENTS
+===================================================== */
+document.querySelectorAll(".fbtn").forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll(".fbtn").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active"); STATE.filter=b.getAttribute("data-f"); renderQueue();
+  };
+});
+var se=document.getElementById("search");
+if(se) se.oninput=function(){STATE.search=this.value;renderQueue();};
+
+document.getElementById("queue").addEventListener("click",function(e){
+  if(e.target.classList.contains("incChk")){
+    var id=e.target.getAttribute("data-id");
+    if(e.target.checked)STATE.selected[id]=1; else delete STATE.selected[id];
+    updateBulk(); return;
+  }
+  var card=e.target.closest(".inc-card");
+  if(card) openModal(card.getAttribute("data-id"));
+});
+
+document.getElementById("mergeCol").addEventListener("click",function(e){
+  var ob=e.target.closest("[data-open]");
+  if(ob){ openModal(ob.getAttribute("data-open")); return; }
+  var db=e.target.closest("[data-dispatch]");
+  if(db){
+    var inc=STATE.incidents.filter(function(i){return i.id===db.getAttribute("data-dispatch");})[0];
+    if(!inc||inc.status==="Resolved") return;
+    var want={};
+    recommendTypes(inc).forEach(function(t){want[t]=1;});
+    var picked=applyQuantities(inc,want);
+    if(picked.length){ inc.status="En route"; saveState(); renderAll(); toast("🚨 "+inc.id+" dispatched — "+picked.join(", "),"info"); }
+    else { toast("No available units","info"); }
+    return;
+  }
+  var card=e.target.closest(".merge-card");
+  if(card) openModal(card.getAttribute("data-id"));
+});
+
+document.getElementById("selAll").onchange=function(){
+  var on=this.checked;
+  filteredIncidents().forEach(function(i){if(on)STATE.selected[i.id]=1;else delete STATE.selected[i.id];});
+  renderQueue(); updateBulk();
+};
+function updateBulk(){
+  var n=Object.keys(STATE.selected).length;
+  var bd=document.getElementById("bulkDispatch"); if(bd) bd.disabled=!n;
+  var bc=document.getElementById("bulkCount"); if(bc) bc.textContent=n?n+" selected":"";
+}
+
+document.getElementById("bulkDispatch").onclick=function(){
+  var ids=Object.keys(STATE.selected);
+  ids.forEach(function(id){
+    var inc=STATE.incidents.filter(function(i){return i.id===id;})[0];
+    if(!inc||inc.status==="Resolved") return;
+    if(!inc.assigned.length){
+      var want=recommendTypes(inc);
+      var free=STATE.units.filter(function(u){return u.status==="Available"&&want.indexOf(u.type)>-1;})[0]||
+               STATE.units.filter(function(u){return u.status==="Available";})[0];
+      if(free){inc.assigned=[free.id];free.status="Dispatched";}
+    }
+    if(inc.assigned.length) inc.status="En route";
+  });
+  STATE.selected={}; saveState(); renderAll(); updateBulk();
+  toast("🚨 Dispatched "+ids.length+" incident(s)","info");
+};
+
+document.getElementById("btnDeleteResolved").onclick=function(){
+  var n=STATE.incidents.filter(function(i){return i.status==="Resolved";}).length;
+  if(!n){toast("No resolved incidents","info");return;}
+  if(!confirm("Delete all "+n+" resolved incident(s)?")) return;
+  STATE.incidents=STATE.incidents.filter(function(i){return i.status!=="Resolved";});
+  Object.keys(STATE.selected).forEach(function(id){
+    if(!STATE.incidents.some(function(i){return i.id===id;})) delete STATE.selected[id];
+  });
+  saveState(); renderAll(); updateBulk();
+  toast("🗑 Deleted "+n+" resolved incident(s)","good");
+};
+
+document.getElementById("btnRecenter").onclick=function(){if(map)map.setView(NADIAD,13);};
+document.getElementById("btnFit").onclick=function(){
+  if(!map) return;
+  var b=STATE.incidents.filter(function(i){return i.lat&&i.lng&&i.status!=="Resolved";}).map(function(i){return[i.lat,i.lng];});
+  if(b.length) map.fitBounds(b,{padding:[40,40]});
+};
+document.getElementById("btnToggleRadius").onclick=function(){STATE.showRadius=!STATE.showRadius;renderMap();};
+document.getElementById("overlay").addEventListener("click",function(e){if(e.target===this)closeModal();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeModal();});
+
+// Listen for hospital capacity changes
+window.addEventListener("storage",function(e){
+  if(e.key===K.HOSP_CAP){
+    renderUnitsColumn();
+    toast("🏥 Hospital capacity updated","hosp");
   }
 });
-document.addEventListener('click',function(e){
-  if(!e.target.closest('.incbtns')) $('#menu').classList.remove('open');
-  if(!e.target.closest('.bellwrap')) $('#bellDrop').classList.remove('open');
-});
 
-/* bell */
-$('#bellBtn').addEventListener('click',function(e){ e.stopPropagation(); $('#bellDrop').classList.toggle('open'); });
-$('#markRead').addEventListener('click',function(){
-  state.unread=0; $('#bellBadge').style.display='none';
-  toast('Notifications cleared','All 3 notifications marked as read','');
-});
-
-/* language */
-$('#lang').addEventListener('click',function(e){
-  var s=e.target.closest('span'); if(!s) return;
-  $$('#lang span').forEach(function(x){x.classList.toggle('on',x===s)});
-  if(s.textContent!=='EN') toast('Language: '+s.textContent,'Console chrome translated · incident data stays in English (demo)','');
-});
-
-/* alerts panel */
-function decAlert(){
-  state.alerts=Math.max(0,state.alerts-1);
-  var p=$('#alCount');
-  if(state.alerts===0){ p.className='pill grn'; p.style.marginLeft='auto'; p.textContent='all clear'; }
-  else p.textContent=state.alerts+' action';
+/* =====================================================
+   SEED
+===================================================== */
+function seed(){
+  var now=Date.now();
+  function mk(cat,sev,loc,lat,lng,msgs){
+    var inc={id:nextId(),category:cat,severity:sev,status:"New",location:loc,lat:lat,lng:lng,
+             created:now,lastReport:now,slaDeadline:now+10*60*1000,assigned:[],mergeScores:[],reports:[]};
+    msgs.forEach(function(m,i){ inc.reports.push({name:m[0],phone:"—",message:m[1],location:loc,time:now-(msgs.length-i)*60000}); });
+    return inc;
+  }
+  STATE.incidents=[
+    mk("Road accident","High","Station Road, Nadiad",22.6942,72.8626,
+      [["Ramesh","Two bike riders fell near station road, one unconscious"],
+       ["Priya","Bike accident outside railway station, need ambulance"],
+       ["Sunil","Major accident at station road crossing, traffic blocked"]]),
+    mk("Flood","Critical","Sector 4 low-lying area",22.6842,72.8588,
+      [["Amit","Water logging very high in sector 4, water entering houses"],
+       ["Nita","Flood water rising fast in sector 4, families trapped"]]),
+    mk("Medical","Medium","Santram Road, Nadiad",22.6976,72.8701,
+      [["Kiran","Elderly man feeling dizzy on santram road"]]),
+    mk("Fire","Critical","Vithal Udyognagar GIDC",22.6901,72.8801,
+      [["Dhruv","Huge fire at chemical factory in GIDC, thick black smoke"],
+       ["Meera","GIDC factory on fire, workers may be trapped inside"],
+       ["Raj","Explosion sound from GIDC factory, fire spreading fast"]])
+  ];
+  STATE.incidents[0].mergeScores=[0.82,0.78];
+  STATE.incidents[1].mergeScores=[0.91];
+  STATE.incidents[3].mergeScores=[0.88,0.85];
+  saveState();
 }
-$('#alEsc').addEventListener('click',function(){
-  var f=byId('INC-1038');
-  f.extraTags=f.extraTags.filter(function(t){return t.t!=='response delayed'});
-  f.escalated=true;
-  $('#alRow1').innerHTML='<p style="color:var(--muted)">Flood S4 escalated — duty officer <b>MK</b> acknowledged · just now</p><span class="pill grn">done</span>';
-  decAlert();
-  feed('var(--red)','Flood S4 escalated — <b>duty officer acknowledged</b>');
-  toast('Escalation sent','Flood, Sector 4 → duty officer MK','red');
-  renderQueue();
-});
-$('#alApp').addEventListener('click',function(){
-  var g=byId('INC-1040');
-  g.extraTags=[{t:'radius approved',c:'grn'}];
-  $('#alRow2').innerHTML='<p style="color:var(--muted)">500 m evacuation radius <b style="color:var(--txt)">approved</b> · road closure active · just now</p><span class="pill grn">done</span>';
-  decAlert();
-  feed('var(--blue)','Gas leak: <b>500 m radius approved</b> — sirens + SMS broadcast sent');
-  toast('Evacuation radius approved','500 m radius + road closure now active in Industrial Zone','grn');
-  renderQueue();
-});
 
-/* analytics modal */
-$('#openAnalytics').addEventListener('click',function(e){ e.preventDefault(); $('#modal').classList.add('open'); });
-$('#modalX').addEventListener('click',function(){ $('#modal').classList.remove('open'); });
-$('#modal').addEventListener('click',function(e){ if(e.target.id==='modal') $('#modal').classList.remove('open'); });
+/* =====================================================
+   BOOT
+===================================================== */
+initMap();
+if(!loadState()) seed();
+if(!STATE.units||!STATE.units.length) STATE.units=UNITS_SEED;
+STATE.incidents.forEach(function(i){ if(!i.mergeScores) i.mergeScores=[]; });
+renderAll(); updateBulk(); syncAuthority(); syncAmbulanceState();
 
-/* =============== CLOCK + SLA =============== */
-function fmt(s){
-  var h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
-  function p(n){return (n<10?'0':'')+n}
-  return p(h)+':'+p(m)+':'+p(x);
-}
-function tick(){
-  var s;
-  try{ s=new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Kolkata',hour12:false}); }
-  catch(e){ s=new Date().toLocaleTimeString('en-GB',{hour12:false}); }
-  $('#clock').textContent=s;
-  $('#sync').textContent='Last sync '+s+' IST · latency 84 ms';
-  var i=cur(), el=Math.floor((Date.now()-state.t0)/1000);
-  var base=i.minAgo*60+12+el;
-  var sla=$('#sla');
-  sla.textContent='SLA '+fmt(base);
-  sla.classList.toggle('pulse', i.critical && base>600);
-}
-setInterval(tick,1000);
+setInterval(pollQueue,1200);
+setInterval(function(){ renderStats(); renderQueue(); renderMergeColumn(); },2000);
+setInterval(syncAuthority,2000);
+setInterval(syncAmbulanceState,2000);
+setInterval(renderUnitsColumn,4000);  // refresh hospital capacity panel
+</script>
 
-/* =============== SIMULATED LIVE STREAM =============== */
-var POOL=[
- ['var(--green)','<b>A12</b> paramedic update: casualty 1 stabilised'],
- ['var(--sky)','Cam C-118: queue length growing — 1.2 km NB'],
- ['var(--amber)','Sensor G-07: chlorine 8.4 ppm (+0.4)'],
- ['var(--green)','<b>F03</b> arrived at Dock 3 — foam top-up started'],
- ['var(--blue)','Citizen app: 2 new photos attached to INC-1042'],
- ['var(--orange)','Wind shift SW → S at Industrial Zone']
-];
-var pi=0;
-setInterval(function(){ var p=POOL[pi++%POOL.length]; feed(p[0],p[1]); },22000);
 
-/* =============== INIT =============== */
-renderAll(); tick();
+
+<script>
+/* =====================================================
+   SAHAYAK REPORT LEVEL ADD-ON
+   ADD-ONLY: no existing Dispatcher code is changed.
+   Fixes Fire / Flood / Road accident reports that were
+   otherwise falling back to Medium.
+===================================================== */
+(function () {
+  "use strict";
+
+  function hasPhrase(text, phrases) {
+    var value = normalize(text || "");
+    for (var i = 0; i < phrases.length; i++) {
+      if (value.indexOf(normalize(phrases[i])) !== -1) return true;
+    }
+    return false;
+  }
+
+  var CRITICAL_CUES = [
+    "dead", "died", "death", "fatal", "killed",
+    "unconscious", "unresponsive", "not breathing",
+    "heavy bleeding", "severe bleeding",
+    "trapped", "pinned", "drowning",
+    "explosion", "blast", "multiple injured",
+    "many injured", "multiple casualties"
+  ];
+
+  var HIGH_CUES = [
+    "injured", "bleeding", "fracture", "broken bone",
+    "overturned", "vehicle overturned", "traffic blocked",
+    "heavy smoke", "spreading", "spread",
+    "water rising", "water entering houses",
+    "people stranded", "stuck"
+  ];
+
+  var LOW_CUES = [
+    "minor", "small", "slight",
+    "contained", "under control",
+    "no injury", "no injuries",
+    "nobody injured", "no one injured",
+    "everyone safe", "all safe"
+  ];
+
+  function assessReportLevel(rep) {
+    var category = String(rep && rep.category || "");
+    var text = String(rep && rep.message || "");
+
+    /* Explicit danger wording always has highest priority. */
+    if (hasPhrase(text, CRITICAL_CUES)) return "Critical";
+
+    /* FIRE */
+    if (category === "Fire") {
+      if (hasPhrase(text, LOW_CUES)) return "Low";
+      if (hasPhrase(text, HIGH_CUES)) return "High";
+      return "High";
+    }
+
+    /* FLOOD */
+    if (category === "Flood") {
+      if (hasPhrase(text, LOW_CUES)) return "Low";
+      if (hasPhrase(text, ["drowning", "trapped", "water rising fast", "families trapped"])) {
+        return "Critical";
+      }
+      return "High";
+    }
+
+    /* ROAD ACCIDENT */
+    if (category === "Road accident") {
+      if (hasPhrase(text, LOW_CUES)) return "Low";
+      if (hasPhrase(text, HIGH_CUES)) return "High";
+      return "Medium";
+    }
+
+    /*
+      For every other emergency type, do nothing.
+      Your original Dispatcher severity logic remains in control.
+    */
+    return null;
+  }
+
+  /*
+    Wrap the existing ingestReport() instead of editing it.
+    The original function still runs exactly as written.
+  */
+  if (typeof window.ingestReport === "function") {
+    var originalIngestReportForLevel = window.ingestReport;
+
+    window.ingestReport = function (rep) {
+      var level = assessReportLevel(rep);
+
+      if (level) {
+        rep.severity = level;
+      }
+
+      return originalIngestReportForLevel(rep);
+    };
+  }
 })();
 </script>
+
+
+
+<style>
+/* SAHAYAK NORMAL PRIORITY — ADD-ONLY */
+.inc-card.sel-Normal { border-left-color: var(--ok); }
+.merge-card.sel-Normal { border-left-color: var(--ok); }
+.b-Normal { background: rgba(52,211,153,.15); color: var(--ok); }
+</style>
+
+<script>
+/* =====================================================
+   SAHAYAK PRIORITY BRIDGE
+   ADD-ONLY: no existing Dispatcher code is changed.
+
+   The Report page already decides the automatic priority.
+   This bridge preserves that value when the Dispatcher
+   processes the existing "sahayak_queue".
+===================================================== */
+(function () {
+  "use strict";
+
+  function priorityRank(value) {
+    return {
+      Critical: 4,
+      High: 3,
+      Medium: 2,
+      Normal: 1,
+      Low: 1
+    }[value] || 0;
+  }
+
+  function queuedPriority(reportId) {
+    try {
+      var queue = JSON.parse(localStorage.getItem("sahayak_queue") || "[]");
+      if (!Array.isArray(queue)) queue = [queue];
+
+      for (var i = 0; i < queue.length; i++) {
+        if (
+          queue[i] &&
+          String(queue[i].id) === String(reportId) &&
+          (queue[i].aiPriority || queue[i].severity)
+        ) {
+          return queue[i].aiPriority || queue[i].severity;
+        }
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
+  function findIncidentContainingReport(rep) {
+    var best = null;
+
+    STATE.incidents.forEach(function (inc) {
+      if (!inc || !Array.isArray(inc.reports)) return;
+
+      var matched = inc.reports.some(function (r) {
+        return (
+          String(r.message || "") === String(rep.message || "") &&
+          String(r.location || "") === String(rep.location || "")
+        );
+      });
+
+      if (matched && (!best || inc.lastReport > best.lastReport)) {
+        best = inc;
+      }
+    });
+
+    return best;
+  }
+
+  /*
+    Teach the existing merge severity comparison that
+    "Normal" is below Medium.
+  */
+  if (typeof window.severityRank === "function") {
+    var originalSeverityRankForPriority = window.severityRank;
+
+    window.severityRank = function (severity) {
+      if (severity === "Normal") return 1;
+      return originalSeverityRankForPriority(severity);
+    };
+  }
+
+  /*
+    Wrap the CURRENT ingestReport(), including every existing
+    add-on already in the uploaded Dispatcher.
+  */
+  if (typeof window.ingestReport === "function") {
+    var originalIngestReportForAutoPriority = window.ingestReport;
+
+    window.ingestReport = function (rep) {
+      var desiredPriority = queuedPriority(rep && rep.id);
+
+      var existingIds = {};
+      STATE.incidents.forEach(function (inc) {
+        existingIds[inc.id] = true;
+      });
+
+      var result = originalIngestReportForAutoPriority(rep);
+
+      if (!desiredPriority) return result;
+
+      var target = null;
+      var isNewIncident = false;
+
+      for (var i = 0; i < STATE.incidents.length; i++) {
+        if (!existingIds[STATE.incidents[i].id]) {
+          target = STATE.incidents[i];
+          isNewIncident = true;
+          break;
+        }
+      }
+
+      if (!target) {
+        target = findIncidentContainingReport(rep);
+      }
+
+      if (!target) return result;
+
+      /*
+        A brand-new incident gets exactly the automatically
+        assessed priority.
+
+        If the report was merged into an existing incident,
+        it may only increase the incident priority — never lower it.
+      */
+      if (
+        isNewIncident ||
+        priorityRank(desiredPriority) > priorityRank(target.severity)
+      ) {
+        target.severity = desiredPriority;
+
+        if (typeof saveState === "function") saveState();
+        if (typeof renderAll === "function") renderAll();
+      }
+
+      return result;
+    };
+  }
+})();
+</script>
+
+
+
+<script>
+/* =====================================================
+   SAHAYAK SIMILAR REPORT MERGE ADD-ON
+   ADD-ONLY: no existing Dispatcher code is changed.
+
+   Purpose:
+   If the original merge engine does not merge a new report,
+   this add-on performs a conservative fallback check so that
+   clearly similar reports appear in the existing "AI Merged"
+   column instead of becoming separate incidents.
+===================================================== */
+(function () {
+  "use strict";
+
+  function mergeNorm(value) {
+    return String(value == null ? "" : value)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  var MERGE_STOP_WORDS = {
+    "the":1,"a":1,"an":1,"is":1,"are":1,"was":1,"were":1,
+    "at":1,"in":1,"on":1,"near":1,"to":1,"from":1,"of":1,
+    "and":1,"or":1,"for":1,"with":1,"this":1,"that":1,
+    "there":1,"here":1,"please":1,"help":1,"urgent":1,
+    "people":1,"person":1,"nadiad":1,"gujarat":1
+  };
+
+  function mergeTokens(value) {
+    return mergeNorm(value)
+      .split(" ")
+      .filter(function (word) {
+        return word.length > 2 && !MERGE_STOP_WORDS[word];
+      });
+  }
+
+  function tokenSimilarity(a, b) {
+    var A = mergeTokens(a);
+    var B = mergeTokens(b);
+
+    if (!A.length || !B.length) return 0;
+
+    var seenA = {};
+    var seenB = {};
+    var intersection = 0;
+    var union = 0;
+
+    A.forEach(function (word) { seenA[word] = 1; });
+    B.forEach(function (word) { seenB[word] = 1; });
+
+    Object.keys(seenA).forEach(function (word) {
+      union++;
+      if (seenB[word]) intersection++;
+    });
+
+    Object.keys(seenB).forEach(function (word) {
+      if (!seenA[word]) union++;
+    });
+
+    return union ? intersection / union : 0;
+  }
+
+  function locationMatch(rep, inc) {
+    var repLocation = mergeNorm(rep.location || "");
+    var incLocation = mergeNorm(inc.location || "");
+
+    /* Exact / contained location text is a strong match. */
+    if (repLocation && incLocation) {
+      if (repLocation === incLocation) return 1;
+
+      if (
+        repLocation.length >= 5 &&
+        incLocation.length >= 5 &&
+        (repLocation.indexOf(incLocation) !== -1 ||
+         incLocation.indexOf(repLocation) !== -1)
+      ) {
+        return 0.95;
+      }
+    }
+
+    /* Reuse your existing GPS-distance helper when coordinates exist. */
+    if (
+      rep.lat && rep.lng &&
+      inc.lat && inc.lng &&
+      typeof haversine === "function"
+    ) {
+      var metres = haversine(
+        [Number(rep.lat), Number(rep.lng)],
+        [Number(inc.lat), Number(inc.lng)]
+      );
+
+      if (metres <= 200) return 1;
+      if (metres <= 500) return 0.90;
+      if (metres <= 800) return 0.75;
+    }
+
+    /* Fallback to location-token similarity. */
+    return tokenSimilarity(repLocation, incLocation);
+  }
+
+  function incidentText(inc) {
+    var parts = [];
+
+    if (inc.location) parts.push(inc.location);
+
+    if (Array.isArray(inc.reports)) {
+      inc.reports.forEach(function (report) {
+        if (report && report.message) parts.push(report.message);
+      });
+    }
+
+    return parts.join(" ");
+  }
+
+  function fallbackMergeCandidate(rep) {
+    if (!rep || !Array.isArray(STATE.incidents)) return null;
+
+    var best = null;
+
+    STATE.incidents.forEach(function (inc) {
+      if (!inc || inc.status === "Resolved") return;
+
+      /*
+        Same emergency type is required for this fallback.
+        This prevents a fire and a road accident at the same place
+        from being merged just because their locations match.
+      */
+      if (
+        rep.category &&
+        inc.category &&
+        rep.category !== inc.category
+      ) {
+        return;
+      }
+
+      var ageMinutes = (Date.now() - Number(inc.lastReport || inc.created || 0)) / 60000;
+
+      /* Do not merge very old incidents through the fallback rule. */
+      if (ageMinutes > 45) return;
+
+      var locScore = locationMatch(rep, inc);
+      var textScore = tokenSimilarity(
+        (rep.message || "") + " " + (rep.location || ""),
+        incidentText(inc)
+      );
+
+      /*
+        Conservative merge rules:
+
+        1. Same category + nearly identical location
+           -> merge even when citizens describe the event differently.
+
+        2. Same category + nearby GPS/location + similar wording
+           -> merge.
+
+        3. Very similar wording + at least some location agreement
+           -> merge.
+      */
+      var qualifies =
+        (locScore >= 0.95) ||
+        (locScore >= 0.75 && textScore >= 0.18) ||
+        (locScore >= 0.35 && textScore >= 0.42);
+
+      if (!qualifies) return;
+
+      var combinedScore =
+        (0.65 * locScore) +
+        (0.25 * textScore) +
+        (0.10 * Math.max(0, 1 - (ageMinutes / 45)));
+
+      if (!best || combinedScore > best.info.score) {
+        best = {
+          inc: inc,
+          info: {
+            score: Math.min(0.99, combinedScore),
+            reason:
+              "similar report fallback: same type + location/message match"
+          }
+        };
+      }
+    });
+
+    return best;
+  }
+
+  /*
+    Keep the original AI merge engine first.
+    Only if it returns no candidate do we try the conservative
+    fallback above. Nothing from the original logic is removed.
+  */
+  if (typeof window.findMergeCandidate === "function") {
+    var originalFindMergeCandidate = window.findMergeCandidate;
+
+    window.findMergeCandidate = function (rep) {
+      var originalCandidate = originalFindMergeCandidate(rep);
+
+      if (originalCandidate) {
+        return originalCandidate;
+      }
+
+      return fallbackMergeCandidate(rep);
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
