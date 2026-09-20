@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ResQNet – Control room sign in</title>
+<title>SAHAYAK – Control room sign in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -105,7 +105,7 @@
   }
   .hero p { color: #b4c2d6; margin: 0; max-width: 42ch; }
 
-  .stats { display: flex; gap: 28px; margin-top: 26px; flex-wrap: wrap; }
+  .stats { display: flex; gap: 32px; margin-top: 26px; flex-wrap: wrap; }
   .stat b { display: block; font-family: var(--display); font-size: 28px; font-weight: 700; line-height: 1.2; }
   .stat span { font-size: 13px; color: var(--muted); }
   .stat.crit b { color: var(--crit); }
@@ -127,12 +127,13 @@
   }
   .live { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-weight: 500; }
   .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: blink 1.6s ease-in-out infinite; }
-  #feed { list-style: none; margin: 0; padding: 4px 0; }
+  #feed { list-style: none; margin: 0; padding: 4px 0; max-height: 280px; overflow-y: auto; }
   #feed li {
     display: grid; grid-template-columns: 12px 1fr auto; gap: 10px; align-items: center;
     padding: 7px 14px; font-size: 13.5px;
   }
   #feed li.enter { animation: enter .5s ease-out; }
+  #feed li.empty { display: block; padding: 20px; text-align: center; color: var(--muted); }
   #feed .dot { width: 9px; height: 9px; border-radius: 50%; }
   .dot.crit { background: var(--crit); } .dot.high { background: var(--high); }
   .dot.med { background: var(--med); } .dot.ok { background: var(--ok); } .dot.info { background: var(--info); }
@@ -148,6 +149,8 @@
   @keyframes dash { to { stroke-dashoffset: -26; } }
   @keyframes blink { 50% { opacity: .35; } }
   @keyframes enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100px); } }
 
   /* ---------- Right: sign in ---------- */
   .signin {
@@ -200,6 +203,7 @@
   }
   .btn.primary { background: var(--text); color: #0a1424; }
   .btn.primary:hover { background: #fff; }
+  .btn.primary:disabled { opacity: .55; cursor: not-allowed; }
   .btn.ghost { background: transparent; border-color: var(--line); color: var(--text); margin-top: 10px; }
   .btn.ghost:hover { border-color: #38507a; background: var(--panel-2); }
 
@@ -228,6 +232,14 @@
   .status { display: inline-flex; align-items: center; gap: 8px; }
   .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgba(61,220,151,.18); flex: none; }
 
+  .toast-host { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+  .toast {
+    background: rgba(10,16,32,.96); border: 1px solid var(--crit); border-radius: 12px;
+    padding: 14px 18px; color: var(--text); font-size: 14px; max-width: 340px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.5); animation: slideIn .3s ease-out;
+  }
+  .toast.out { animation: slideOut .3s ease-in forwards; }
+
   @media (max-width: 960px) {
     .shell { grid-template-columns: 1fr; }
     .stage { min-height: 420px; }
@@ -240,7 +252,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .pulse, .route, .live i { animation: none; }
-    #feed li.enter { animation: none; }
+    #feed li.enter, .toast { animation: none; }
   }
 </style>
 </head>
@@ -351,22 +363,21 @@
           <div class="brand-mark" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
           </div>
-          <div><span class="brand-name">ResQNet</span><span class="brand-sub" data-i18n="brandSub">Emergency coordination</span></div>
+          <div><span class="brand-name">SAHAYAK</span><span class="brand-sub" data-i18n="brandSub">Emergency coordination</span></div>
         </div>
         <div class="hero">
           <h1 data-i18n="heroTitle">One picture of every emergency.</h1>
           <p data-i18n="heroText">Calls, citizen reports, sensors and field teams land in one place. Duplicates merge, severity is scored, and the nearest resources are suggested within seconds.</p>
           <div class="stats">
-            <div class="stat"><b id="s-active">14</b><span data-i18n="statActive">Active incidents</span></div>
-            <div class="stat crit"><b id="s-crit">3</b><span data-i18n="statCrit">Critical</span></div>
-            <div class="stat"><b>9</b><span data-i18n="statTeams">Teams en route</span></div>
-            <div class="stat"><b data-i18n="statDispatchVal">2m 10s</b><span data-i18n="statDispatch">Median dispatch time</span></div>
+            <div class="stat"><b id="s-active">0</b><span data-i18n="statActive">Active incidents</span></div>
+            <div class="stat crit"><b id="s-crit">0</b><span data-i18n="statCrit">Critical</span></div>
+            <div class="stat"><b id="s-teams">0</b><span data-i18n="statTeams">Teams en route</span></div>
           </div>
         </div>
       </div>
 
       <div class="feed-card">
-        <div class="feed-head"><span class="live"><i></i><span data-i18n="feedTitle">Live incident feed</span></span><span data-i18n="feedNote">Simulated data</span></div>
+        <div class="feed-head"><span class="live"><i></i><span data-i18n="feedTitle">Live incident feed</span></span><span data-i18n="feedNote">Live data</span></div>
         <ul id="feed" aria-live="off"></ul>
       </div>
     </div>
@@ -416,7 +427,7 @@
           <input id="pw" type="password" autocomplete="current-password" placeholder="Enter your password" data-i18n-ph="phPassword">
         </div>
         <div class="row">
-          <label class="check"><input type="checkbox" style="accent-color:#4da3ff"> <span data-i18n="keep">Keep me signed in on this device</span></label>
+          <label class="check"><input type="checkbox" id="keep" style="accent-color:#4da3ff"> <span data-i18n="keep">Keep me signed in on this device</span></label>
           <a href="#" onclick="return false" data-i18n="forgot">Forgot password?</a>
         </div>
         <button class="btn primary" type="submit" id="submit-btn">Sign in as dispatcher</button>
@@ -452,21 +463,47 @@
   </main>
 </div>
 
+<div class="toast-host" id="toast-host"></div>
+
 <script>
 (function () {
+  "use strict";
+
   /* =====================================================
-     TRANSLATIONS: edit the text here to change any wording
+     0) SHARED HELPERS
+     ===================================================== */
+
+  /* FIX #2 — escape all untrusted incident text before innerHTML */
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* FIX #8 — one shared localStorage reader instead of three */
+  var STORAGE_KEY = "resqnet_authority_incidents";
+  function readIncidents() {
+    try {
+      var list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /* =====================================================
+     1) TRANSLATIONS
      ===================================================== */
   var I18N = {
     en: {
-      pageTitle: "ResQNet – Control room sign in",
+      pageTitle: "SAHAYAK – Control room sign in",
       langAria: "Language", rolesAria: "Role",
       brandSub: "Emergency coordination",
       heroTitle: "One picture of every emergency.",
       heroText: "Calls, citizen reports, sensors and field teams land in one place. Duplicates merge, severity is scored, and the nearest resources are suggested within seconds.",
       statActive: "Active incidents", statCrit: "Critical", statTeams: "Teams en route",
-      statDispatch: "Median dispatch time", statDispatchVal: "2m 10s",
-      feedTitle: "Live incident feed", feedNote: "Simulated data",
+      feedTitle: "Live incident feed", feedNote: "Live data",
+      feedEmpty: "No active incidents at the moment",
       signTitle: "Sign in to the control room",
       signSub: "Choose your role so you land on the right view.",
       role_dispatcher: "Dispatcher", role_field: "Field team", role_hospital: "Hospital", role_authority: "Authority",
@@ -492,37 +529,39 @@
       msgSignedIn: "Signed in as {name}.",
       msgOtp: "A 6-digit code will be sent to your registered phone.",
       msgSos: "This opens the public report form (photo, location, description).",
-      msgNoServer: "Cannot reach the server. Check that it is running.",
+      msgOffline: "Server offline. Signed in using the demo account.",
       errInvalid: "Invalid ID or password",
       errRole: "This account belongs to a different role. Pick the correct tab.",
       errServer: "Server error. Please try again.",
+      errExpired: "Your session expired. Please sign in again.",
+      errNoAccess: "Please sign in to open that page.",
+      errWrongRole: "That page is for a different role.",
       mapFlood: "Flood, Sector 4", mapFloodSub: "Critical, 2 teams assigned",
       mapCrash: "Multi-vehicle crash, NH48", mapCrashSub: "Critical, awaiting ambulance",
       mapGas: "Gas leak, Industrial Zone",
       mapFire: "Warehouse fire", mapFireSub: "3 reports merged into 1",
-      f1: "Flood water rising, Sector 4",
-      f2: "Gas leak reported, Industrial Zone",
-      f3: "3 duplicate reports merged, Warehouse fire",
-      f4: "Ambulance A-12 reached Ring Road crash",
-      p1: "Multi-vehicle crash, NH48, 4 injured",
-      p2: "River sensor S-07 crossed danger level",
-      p3: "Tree fall blocking Market Road",
-      p4: "Smoke seen near chemical storage",
-      p5: "Fire team F-03 marked scene safe",
-      p6: "Nearest ICU beds found: City Hospital, 6",
-      p7: "Escalated to district authority: flood",
-      agoNow: "just now", agoMin: "{n} min ago"
+      agoNow: "just now", agoMin: "{n} min ago", agoHr: "{n} hr ago",
+      toastNew: "New {sev} incident: {cat} — {loc}",
+      /* FIX #10 — live data categories */
+      "cat_Road accident": "Road accident", cat_Fire: "Fire", cat_Medical: "Medical",
+      cat_Flood: "Flood", "cat_Gas leak": "Gas leak", "cat_Building collapse": "Building collapse",
+      cat_Crime: "Crime", cat_Electrical: "Electrical", cat_Other: "Other",
+      /* live data statuses */
+      st_New: "New", st_Assigned: "Assigned", "st_En route": "En route",
+      "st_On scene": "On scene", st_Resolved: "Resolved",
+      /* live data severities */
+      sev_Critical: "Critical", sev_High: "High", sev_Medium: "Medium", sev_Low: "Low"
     },
 
     hi: {
-      pageTitle: "ResQNet – कंट्रोल रूम साइन इन",
+      pageTitle: "SAHAYAK – कंट्रोल रूम साइन इन",
       langAria: "भाषा", rolesAria: "भूमिका",
       brandSub: "आपातकालीन समन्वय",
       heroTitle: "हर आपातकाल की एक साझा तस्वीर।",
       heroText: "कॉल, नागरिकों की रिपोर्ट, सेंसर और फील्ड टीमों की जानकारी एक ही जगह आती है। एक जैसी रिपोर्ट जुड़ जाती हैं, गंभीरता का आकलन होता है और सबसे नज़दीकी संसाधन कुछ ही सेकंड में सुझाए जाते हैं।",
       statActive: "सक्रिय घटनाएँ", statCrit: "गंभीर", statTeams: "रास्ते में टीमें",
-      statDispatch: "औसत डिस्पैच समय", statDispatchVal: "2 मि 10 सेकंड",
-      feedTitle: "लाइव घटना फ़ीड", feedNote: "नकली (सिम्युलेटेड) डेटा",
+      feedTitle: "लाइव घटना फ़ीड", feedNote: "लाइव डेटा",
+      feedEmpty: "इस समय कोई सक्रिय घटना नहीं है",
       signTitle: "कंट्रोल रूम में साइन इन करें",
       signSub: "अपनी भूमिका चुनें ताकि सही स्क्रीन खुले।",
       role_dispatcher: "डिस्पैचर", role_field: "फील्ड टीम", role_hospital: "अस्पताल", role_authority: "प्राधिकरण",
@@ -548,37 +587,36 @@
       msgSignedIn: "{name} के रूप में साइन इन हुआ।",
       msgOtp: "आपके पंजीकृत फ़ोन पर 6 अंकों का कोड भेजा जाएगा।",
       msgSos: "यह सार्वजनिक रिपोर्ट फ़ॉर्म खोलेगा (फ़ोटो, लोकेशन, विवरण)।",
-      msgNoServer: "सर्वर से संपर्क नहीं हो पा रहा। जाँचें कि सर्वर चल रहा है।",
+      msgOffline: "सर्वर बंद है। डेमो अकाउंट से साइन इन किया गया।",
       errInvalid: "आईडी या पासवर्ड गलत है",
       errRole: "यह खाता किसी दूसरी भूमिका का है। सही टैब चुनें।",
       errServer: "सर्वर में समस्या है। कृपया फिर कोशिश करें।",
+      errExpired: "आपका सत्र समाप्त हो गया। कृपया फिर साइन इन करें।",
+      errNoAccess: "वह पेज खोलने के लिए साइन इन करें।",
+      errWrongRole: "वह पेज किसी दूसरी भूमिका के लिए है।",
       mapFlood: "बाढ़, सेक्टर 4", mapFloodSub: "गंभीर, 2 टीमें तैनात",
       mapCrash: "कई वाहनों की टक्कर, NH48", mapCrashSub: "गंभीर, एम्बुलेंस का इंतज़ार",
       mapGas: "गैस रिसाव, औद्योगिक क्षेत्र",
       mapFire: "गोदाम में आग", mapFireSub: "3 रिपोर्ट जुड़कर 1 बनीं",
-      f1: "सेक्टर 4 में बाढ़ का पानी बढ़ रहा है",
-      f2: "औद्योगिक क्षेत्र में गैस रिसाव की सूचना",
-      f3: "गोदाम की आग की 3 एक जैसी रिपोर्ट जुड़ीं",
-      f4: "एम्बुलेंस A-12 रिंग रोड दुर्घटना स्थल पर पहुँची",
-      p1: "NH48 पर कई वाहनों की टक्कर, 4 घायल",
-      p2: "नदी सेंसर S-07 ख़तरे के स्तर से ऊपर",
-      p3: "पेड़ गिरने से मार्केट रोड बंद",
-      p4: "रसायन भंडार के पास धुआँ दिखा",
-      p5: "फायर टीम F-03 ने स्थान को सुरक्षित बताया",
-      p6: "नज़दीकी आईसीयू बेड मिले: सिटी हॉस्पिटल, 6",
-      p7: "ज़िला प्राधिकरण को एस्केलेट किया गया: बाढ़",
-      agoNow: "अभी-अभी", agoMin: "{n} मिनट पहले"
+      agoNow: "अभी-अभी", agoMin: "{n} मिनट पहले", agoHr: "{n} घंटे पहले",
+      toastNew: "नई {sev} घटना: {cat} — {loc}",
+      "cat_Road accident": "सड़क दुर्घटना", cat_Fire: "आग", cat_Medical: "चिकित्सा",
+      cat_Flood: "बाढ़", "cat_Gas leak": "गैस रिसाव", "cat_Building collapse": "इमारत ढहना",
+      cat_Crime: "अपराध", cat_Electrical: "बिजली", cat_Other: "अन्य",
+      st_New: "नया", st_Assigned: "सौंपा गया", "st_En route": "रास्ते में",
+      "st_On scene": "मौके पर", st_Resolved: "सुलझाया गया",
+      sev_Critical: "गंभीर", sev_High: "उच्च", sev_Medium: "मध्यम", sev_Low: "कम"
     },
 
     gu: {
-      pageTitle: "ResQNet – કંટ્રોલ રૂમ સાઇન ઇન",
+      pageTitle: "SAHAYAK – કંટ્રોલ રૂમ સાઇન ઇન",
       langAria: "ભાષા", rolesAria: "ભૂમિકા",
       brandSub: "કટોકટી સંકલન",
       heroTitle: "દરેક કટોકટીનું એક સહિયારું ચિત્ર.",
       heroText: "કૉલ, નાગરિકોના રિપોર્ટ, સેન્સર અને ફીલ્ડ ટીમની માહિતી એક જ જગ્યાએ આવે છે. સરખા રિપોર્ટ જોડાઈ જાય છે, ગંભીરતાનું મૂલ્યાંકન થાય છે અને સૌથી નજીકના સંસાધનો થોડી જ સેકંડમાં સૂચવાય છે.",
       statActive: "સક્રિય ઘટનાઓ", statCrit: "ગંભીર", statTeams: "રસ્તામાં ટીમો",
-      statDispatch: "સરેરાશ ડિસ્પેચ સમય", statDispatchVal: "2 મિ 10 સેકંડ",
-      feedTitle: "લાઇવ ઘટના ફીડ", feedNote: "સિમ્યુલેટેડ ડેટા",
+      feedTitle: "લાઇવ ઘટના ફીડ", feedNote: "લાઇવ ડેટા",
+      feedEmpty: "અત્યારે કોઈ સક્રિય ઘટના નથી",
       signTitle: "કંટ્રોલ રૂમમાં સાઇન ઇન કરો",
       signSub: "તમારી ભૂમિકા પસંદ કરો, જેથી સાચું પેજ ખુલે.",
       role_dispatcher: "ડિસ્પેચર", role_field: "ફીલ્ડ ટીમ", role_hospital: "હોસ્પિટલ", role_authority: "સત્તામંડળ",
@@ -604,26 +642,25 @@
       msgSignedIn: "{name} તરીકે સાઇન ઇન થયું.",
       msgOtp: "તમારા નોંધાયેલા ફોન પર 6 અંકનો કોડ મોકલવામાં આવશે.",
       msgSos: "આ જાહેર રિપોર્ટ ફોર્મ ખોલશે (ફોટો, લોકેશન, વર્ણન).",
-      msgNoServer: "સર્વર સાથે સંપર્ક થઈ શકતો નથી. તપાસો કે સર્વર ચાલુ છે.",
+      msgOffline: "સર્વર બંધ છે. ડેમો એકાઉન્ટથી સાઇન ઇન થયું.",
       errInvalid: "આઈડી અથવા પાસવર્ડ ખોટો છે",
       errRole: "આ એકાઉન્ટ બીજી ભૂમિકાનું છે. સાચો ટૅબ પસંદ કરો.",
       errServer: "સર્વરમાં સમસ્યા આવી. ફરી પ્રયત્ન કરો.",
+      errExpired: "તમારું સેશન પૂરું થયું. ફરી સાઇન ઇન કરો.",
+      errNoAccess: "તે પેજ ખોલવા સાઇન ઇન કરો.",
+      errWrongRole: "તે પેજ બીજી ભૂમિકા માટે છે.",
       mapFlood: "પૂર, સેક્ટર 4", mapFloodSub: "ગંભીર, 2 ટીમ તૈનાત",
       mapCrash: "અનેક વાહનોનો અકસ્માત, NH48", mapCrashSub: "ગંભીર, એમ્બ્યુલન્સની રાહ",
       mapGas: "ગેસ લીક, ઔદ્યોગિક વિસ્તાર",
       mapFire: "ગોડાઉનમાં આગ", mapFireSub: "3 રિપોર્ટ જોડાઈને 1 બન્યો",
-      f1: "સેક્ટર 4માં પૂરનું પાણી વધી રહ્યું છે",
-      f2: "ઔદ્યોગિક વિસ્તારમાં ગેસ લીકની જાણ",
-      f3: "ગોડાઉનની આગના 3 સરખા રિપોર્ટ જોડાયા",
-      f4: "એમ્બ્યુલન્સ A-12 રિંગ રોડ અકસ્માત સ્થળે પહોંચી",
-      p1: "NH48 પર અનેક વાહનોનો અકસ્માત, 4 ઘાયલ",
-      p2: "નદી સેન્સર S-07 જોખમના સ્તરથી ઉપર",
-      p3: "ઝાડ પડવાથી માર્કેટ રોડ બંધ",
-      p4: "રસાયણ સંગ્રહ પાસે ધુમાડો દેખાયો",
-      p5: "ફાયર ટીમ F-03 એ સ્થળ સુરક્ષિત જાહેર કર્યું",
-      p6: "નજીકના ICU બેડ મળ્યા: સિટી હોસ્પિટલ, 6",
-      p7: "જિલ્લા સત્તામંડળને એસ્કેલેટ કર્યું: પૂર",
-      agoNow: "હમણાં જ", agoMin: "{n} મિનિટ પહેલાં"
+      agoNow: "હમણાં જ", agoMin: "{n} મિનિટ પહેલાં", agoHr: "{n} કલાક પહેલાં",
+      toastNew: "નવી {sev} ઘટના: {cat} — {loc}",
+      "cat_Road accident": "માર્ગ અકસ્માત", cat_Fire: "આગ", cat_Medical: "તબીબી",
+      cat_Flood: "પૂર", "cat_Gas leak": "ગેસ લીક", "cat_Building collapse": "ઇમારત ધરાશાયી",
+      cat_Crime: "ગુનો", cat_Electrical: "વીજળી", cat_Other: "અન્ય",
+      st_New: "નવું", st_Assigned: "સોંપાયું", "st_En route": "રસ્તામાં",
+      "st_On scene": "સ્થળ પર", st_Resolved: "ઉકેલાયું",
+      sev_Critical: "ગંભીર", sev_High: "ઊંચી", sev_Medium: "મધ્યમ", sev_Low: "ઓછી"
     }
   };
 
@@ -633,17 +670,42 @@
 
   function t(key, params) {
     var s = (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key;
-    if (params) for (var k in params) s = s.replace("{" + k + "}", params[k]);
+    if (params) for (var k in params) s = s.split("{" + k + "}").join(params[k]);
     return s;
+  }
+  /* translate live data safely — unknown values fall back to the raw string */
+  function tData(prefix, value) {
+    if (!value) return "";
+    var key = prefix + "_" + value;
+    var pack = I18N[lang] || I18N.en;
+    if (pack[key]) return pack[key];
+    if (I18N.en[key]) return I18N.en[key];
+    return value;
   }
 
   /* =====================================================
-     Role handling
+     2) DEMO ACCOUNTS  (FIX #1 — no more "any 4 chars" bypass)
      ===================================================== */
+  var DEMO_ACCOUNTS = {
+    "dsp-2041":                  { pw: "demo-access", role: "dispatcher", name: "Dispatcher Mehta" },
+    "fire-07":                   { pw: "demo-access", role: "field",      name: "Fire Team 07" },
+    "hsp-118":                   { pw: "demo-access", role: "hospital",   name: "Civil Hospital Nadiad" },
+    "collector@district.gov.in": { pw: "demo-access", role: "authority",  name: "District Collector" }
+  };
   var DEMO_ID = { dispatcher: "DSP-2041", field: "FIRE-07", hospital: "HSP-118", authority: "collector@district.gov.in" };
+
+  var SESSION_HOURS = 8;
+  var SESSION_HOURS_LONG = 24 * 14;
+
+  /* =====================================================
+     3) ROLE HANDLING
+     ===================================================== */
   var current = "dispatcher";
-  var uid = document.getElementById("uid"), pw = document.getElementById("pw");
+  var uid = document.getElementById("uid");
+  var pw = document.getElementById("pw");
+  var keepEl = document.getElementById("keep");
   var msg = document.getElementById("msg");
+  var submitBtn = document.getElementById("submit-btn");
 
   function applyRole() {
     document.querySelectorAll(".role").forEach(function (b) {
@@ -652,12 +714,12 @@
     document.getElementById("uid-label").textContent = t("id_" + current);
     uid.placeholder = t("ph_" + current);
     document.getElementById("role-hint").textContent = t("hint_" + current);
-    document.getElementById("submit-btn").textContent = t("btn_" + current);
+    submitBtn.textContent = t("btn_" + current);
   }
   function setRole(r) { current = r; applyRole(); }
 
   /* =====================================================
-     Messages (kept as a key so they re-translate on switch)
+     4) MESSAGES
      ===================================================== */
   var OK = "#3ddc97", WARN = "#ff8a3d", INFO = "#93a4bc";
   var msgState = null;
@@ -672,7 +734,7 @@
   }
 
   /* =====================================================
-     Language
+     5) LANGUAGE
      ===================================================== */
   function applyLang() {
     document.documentElement.lang = lang;
@@ -685,7 +747,8 @@
     });
     applyRole();
     renderMsg();
-    renderFeed(false);
+    lastFeedHash = "";   /* force a re-render in the new language */
+    renderFeed();
   }
   document.querySelectorAll(".lang button").forEach(function (b) {
     b.addEventListener("click", function () {
@@ -696,11 +759,15 @@
   });
 
   /* =====================================================
-     Sign in
+     6) SIGN IN
      ===================================================== */
   var API = location.protocol === "file:" ? "http://localhost:5000" : "";
-  // Change these once you build each role's screen.
-  var HOME = { dispatcher: "dispatcher.html", field: "dashboard.html", hospital: "dashboard.html", authority: "dashboard.html" };
+  var HOME = {
+    dispatcher: "dispatcher.html",
+    field: "field.html",
+    hospital: "hospital.html",
+    authority: "authority.html"
+  };
 
   document.querySelectorAll(".role").forEach(function (b) {
     b.addEventListener("click", function () { setRole(b.dataset.role); clearMsg(); });
@@ -714,9 +781,37 @@
     });
   });
 
+  function saveSession(user, token) {
+    var hours = keepEl && keepEl.checked ? SESSION_HOURS_LONG : SESSION_HOURS;
+    try {
+      localStorage.setItem("resqnet_token", token);
+      localStorage.setItem("resqnet_user", JSON.stringify(user));
+      localStorage.setItem("resqnet_session_expiry", String(Date.now() + hours * 3600 * 1000));
+    } catch (e) {}
+  }
+
+  function goHome(role) {
+    setTimeout(function () { location.href = HOME[role] || "authority.html"; }, 700);
+  }
+
+  /* Offline / no-backend path: validate against the demo table only */
+  function tryDemoLogin(showOfflineNote) {
+    var acct = DEMO_ACCOUNTS[uid.value.trim().toLowerCase()];
+    if (!acct || acct.pw !== pw.value) { setMsg("errInvalid", null, WARN); return false; }
+    if (acct.role !== current)         { setMsg("errRole", null, WARN);    return false; }
+
+    var user = { username: uid.value.trim(), displayName: acct.name, role: acct.role };
+    saveSession(user, "demo-" + Date.now());
+    setMsg(showOfflineNote ? "msgOffline" : "msgSignedIn", { name: user.displayName }, OK);
+    goHome(acct.role);
+    return true;
+  }
+
   document.getElementById("form").addEventListener("submit", async function (e) {
     e.preventDefault();
     if (!uid.value || !pw.value) { setMsg("msgEnter", { fieldKey: "id_" + current }, WARN); return; }
+
+    submitBtn.disabled = true;
     setMsg("msgSigning", null, INFO);
 
     var r;
@@ -726,76 +821,197 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: uid.value.trim(), password: pw.value, role: current })
       });
-    } catch (err) { setMsg("msgNoServer", null, WARN); return; }
+    } catch (err) {
+      tryDemoLogin(true);          /* server unreachable → demo table only */
+      submitBtn.disabled = false;
+      return;
+    }
 
     var data = {};
     try { data = await r.json(); } catch (err) {}
 
     if (!r.ok) {
-      var key = r.status === 401 ? "errInvalid" : r.status === 403 ? "errRole" : r.status === 400 ? "msgEnter" : "errServer";
+      var key = r.status === 401 ? "errInvalid"
+              : r.status === 403 ? "errRole"
+              : r.status === 400 ? "msgEnter"
+              : "errServer";
       setMsg(key, key === "msgEnter" ? { fieldKey: "id_" + current } : null, WARN);
+      submitBtn.disabled = false;
       return;
     }
-    try {
-      localStorage.setItem("resqnet_token", data.token);
-      localStorage.setItem("resqnet_user", JSON.stringify(data.user));
-    } catch (err) {}
+
+    if (!data.user || !data.token) { setMsg("errServer", null, WARN); submitBtn.disabled = false; return; }
+
+    saveSession(data.user, data.token);
     setMsg("msgSignedIn", { name: data.user.displayName }, OK);
-    setTimeout(function () { location.href = HOME[data.user.role] || "dashboard.html"; }, 700);
+    goHome(data.user.role);
   });
 
   document.getElementById("otp-btn").addEventListener("click", function () { setMsg("msgOtp", null, OK); });
-document.getElementById("sos").addEventListener("click", function () {
-  window.location.href = "report.html";
-});
+  document.getElementById("sos").addEventListener("click", function () { location.href = "report.html"; });
+
+  /* Show why the user was bounced back here by auth.js */
+  (function showKickReason() {
+    var reason;
+    try { reason = localStorage.getItem("resqnet_login_reason"); localStorage.removeItem("resqnet_login_reason"); } catch (e) {}
+    if (reason === "session-expired") setMsg("errExpired", null, WARN);
+    else if (reason === "wrong-role") setMsg("errWrongRole", null, WARN);
+    else if (reason === "not-signed-in" || reason === "bad-session") setMsg("errNoAccess", null, WARN);
+  })();
 
   /* =====================================================
-     Live feed simulation
+     7) LIVE STATS
      ===================================================== */
-  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce) document.querySelectorAll("animateMotion").forEach(function (n) { n.remove(); });
-
-  var items = [
-    { sev: "crit", key: "f1", age: 20 },
-    { sev: "high", key: "f2", age: 95 },
-    { sev: "info", key: "f3", age: 140 },
-    { sev: "ok",   key: "f4", age: 260 }
-  ];
-  var pool = [
-    { sev: "crit", key: "p1" }, { sev: "info", key: "p2" }, { sev: "med", key: "p3" },
-    { sev: "high", key: "p4" }, { sev: "ok", key: "p5" }, { sev: "info", key: "p6" }, { sev: "crit", key: "p7" }
-  ];
-  var active = 14, crit = 3, pi = 0;
-  var feed = document.getElementById("feed");
-
-  function ago(s) { return s < 45 ? t("agoNow") : t("agoMin", { n: Math.round(s / 60) }); }
-  function renderFeed(newFirst) {
-    feed.innerHTML = "";
-    items.forEach(function (it, i) {
-      var li = document.createElement("li");
-      if (newFirst && i === 0) li.className = "enter";
-      li.innerHTML = '<i class="dot ' + it.sev + '"></i><span></span><span class="ago"></span>';
-      li.children[1].textContent = t(it.key);
-      li.children[2].textContent = ago(it.age);
-      feed.appendChild(li);
-    });
-    document.getElementById("s-active").textContent = active;
-    document.getElementById("s-crit").textContent = crit;
+  function severityToDot(sev) {
+    sev = String(sev || "").toLowerCase();
+    if (sev === "critical") return "crit";
+    if (sev === "high") return "high";
+    if (sev === "medium") return "med";
+    if (sev === "low" || sev === "resolved") return "ok";
+    return "info";
   }
-  setInterval(function () {
-    items.forEach(function (i) { i.age += 4; });
-    var n = pool[pi++ % pool.length];
-    items.unshift({ sev: n.sev, key: n.key, age: 0 });
-    if (items.length > 5) items.pop();
-    if (n.sev === "crit") { crit = Math.min(crit + 1, 6); active++; }
-    else if (n.sev === "ok") { active = Math.max(active - 1, 10); crit = Math.max(crit - 1, 2); }
-    else if (n.sev === "high" || n.sev === "med") { active++; }
-    if (active > 18) active = 14;
-    renderFeed(true);
-  }, 4000);
 
-  /* start */
+  /* FIX #6 — ago is computed from a real timestamp, no DOM parsing */
+  function getTimeAgo(ts) {
+    if (!ts) return t("agoNow");
+    var mins = Math.floor((Date.now() - ts) / 60000);
+    if (mins < 1) return t("agoNow");
+    if (mins < 60) return t("agoMin", { n: mins });
+    return t("agoHr", { n: Math.floor(mins / 60) });
+  }
+
+  function syncLiveStats() {
+    var list = readIncidents();
+
+    var activeCount  = list.filter(function (i) { return i.status !== "Resolved"; }).length;
+    var criticalCount = list.filter(function (i) {
+      return i.status !== "Resolved" && String(i.severity).toLowerCase() === "critical";
+    }).length;
+    var enRouteCount = list.filter(function (i) {
+      return i.status === "En route" || i.status === "Assigned" || i.status === "On scene";
+    }).length;
+
+    var a = document.getElementById("s-active");
+    var c = document.getElementById("s-crit");
+    var m = document.getElementById("s-teams");
+    if (a) a.textContent = activeCount;
+    if (c) c.textContent = criticalCount;
+    if (m) m.textContent = enRouteCount;
+  }
+
+  /* =====================================================
+     8) LIVE FEED  (FIX #9 — skip identical re-renders)
+     ===================================================== */
+  var lastFeedHash = "";
+
+  function renderFeed() {
+    var feed = document.getElementById("feed");
+    if (!feed) return;
+
+    var displayList = readIncidents()
+      .filter(function (i) { return i.status !== "Resolved"; })
+      .sort(function (a, b) {
+        return (b.lastReport || b.created || 0) - (a.lastReport || a.created || 0);
+      })
+      .slice(0, 6);
+
+    var hash = lang + "|" + displayList.map(function (i) {
+      return i.id + ":" + i.status + ":" + i.severity + ":" + i.category + ":" + i.location;
+    }).join("|");
+    if (hash === lastFeedHash) return;
+    lastFeedHash = hash;
+
+    if (!displayList.length) {
+      feed.innerHTML = '<li class="empty">' + esc(t("feedEmpty")) + '</li>';
+      return;
+    }
+
+    feed.innerHTML = displayList.map(function (item) {
+      var ts = item.lastReport || item.created || Date.now();
+      return '<li class="enter">' +
+        '<i class="dot ' + severityToDot(item.severity) + '"></i>' +
+        '<span><b>#' + esc(item.id || "—") + '</b> ' +
+          esc(tData("cat", item.category) || t("cat_Other")) + ' — ' +
+          esc(item.location || "—") +
+          ' (' + esc(tData("st", item.status) || t("st_New")) + ')</span>' +
+        '<span class="ago" data-ts="' + ts + '">' + esc(getTimeAgo(ts)) + '</span>' +
+      '</li>';
+    }).join("");
+  }
+
+  /* =====================================================
+     9) TOASTS  (FIX #7 — track IDs, not counts)
+     ===================================================== */
+  var seenIds = null;   /* null on first run so we do not toast the backlog */
+  var toastHost = document.getElementById("toast-host");
+
+  function showToast(text) {
+    if (!toastHost) return;
+    var el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = text;                  /* textContent = XSS safe */
+    toastHost.appendChild(el);
+    if (toastHost.children.length > 3) toastHost.removeChild(toastHost.firstChild);
+    setTimeout(function () {
+      el.classList.add("out");
+      setTimeout(function () { if (el.parentNode) el.remove(); }, 320);
+    }, 4200);
+  }
+
+  function checkForNewIncidents() {
+    var active = readIncidents().filter(function (i) { return i.status !== "Resolved"; });
+
+    var nowIds = {};
+    active.forEach(function (i) { if (i && i.id) nowIds[i.id] = i; });
+
+    if (seenIds !== null) {
+      Object.keys(nowIds).forEach(function (id) {
+        if (!seenIds[id]) {
+          var inc = nowIds[id];
+          showToast(t("toastNew", {
+            sev: tData("sev", inc.severity) || "",
+            cat: tData("cat", inc.category) || t("cat_Other"),
+            loc: inc.location || "—"
+          }));
+        }
+      });
+    }
+    seenIds = nowIds;
+  }
+
+  /* =====================================================
+     10) SYNC LOOP  (FIX #4 — storage event + slow safety poll)
+     ===================================================== */
+  function refreshAll() {
+    syncLiveStats();
+    renderFeed();
+    checkForNewIncidents();
+  }
+
+  window.addEventListener("storage", function (e) {
+    if (e.key === STORAGE_KEY) refreshAll();
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) refreshAll();
+  });
+
+  setInterval(refreshAll, 5000);
+
+  /* refresh only the relative timestamps, cheap and safe */
+  setInterval(function () {
+    document.querySelectorAll("#feed .ago[data-ts]").forEach(function (el) {
+      el.textContent = getTimeAgo(parseInt(el.dataset.ts, 10));
+    });
+  }, 10000);
+
+  /* =====================================================
+     11) INIT
+     ===================================================== */
   applyLang();
+  syncLiveStats();
+  renderFeed();
+  checkForNewIncidents();   /* seeds seenIds without toasting */
 })();
 </script>
 </body>
