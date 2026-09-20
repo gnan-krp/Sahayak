@@ -120,10 +120,23 @@ async function initDb() {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     channel TEXT, recipient TEXT, message TEXT, incident_id INTEGER, created_at TEXT
   )`);
-
+await run(`CREATE TABLE IF NOT EXISTS hospital_cases (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  incident_id INTEGER NOT NULL,
+  facility_id TEXT NOT NULL,
+  status TEXT DEFAULT 'pre-alert',
+  triage TEXT DEFAULT 'unknown',
+  department TEXT DEFAULT 'Emergency',
+  beds_requested INTEGER DEFAULT 0,
+  notes TEXT DEFAULT '',
+  created_at TEXT,
+  updated_at TEXT,
+  UNIQUE(incident_id, facility_id)
+)`);
   // Upgrade an existing emergency.db from older versions without deleting it
-  await addColumnIfMissing('users', 'role', "TEXT DEFAULT 'dispatcher'");
-  await addColumnIfMissing('users', 'display_name', 'TEXT');
+await addColumnIfMissing('users', 'role', "TEXT DEFAULT 'dispatcher'");
+await addColumnIfMissing('users', 'display_name', 'TEXT');
+await addColumnIfMissing('users', 'facility_id', 'TEXT');
   await addColumnIfMissing('incidents', 'summary', 'TEXT');
   await addColumnIfMissing('incidents', 'priority', 'INTEGER DEFAULT 3');
   await addColumnIfMissing('incidents', 'status', "TEXT DEFAULT 'New'");
@@ -160,6 +173,12 @@ async function seedDemoUsers() {
       [username, hash, role, displayName]
     );
   }
+  await run(`
+  UPDATE users
+  SET facility_id = 'H01'
+  WHERE username = 'HSP-118'
+    AND role = 'hospital'
+`);
 }
 
 /* Synthetic world seed — only when the DB is empty (first run / fresh demo) */
@@ -623,6 +642,16 @@ wss.on('connection', (socket, req) => {
 /* ------------------------------------------------------------------ */
 /* Notifications                                                       */
 /* ------------------------------------------------------------------ */
+async function getHospitalFacility(req) {
+  return await get(`
+    SELECT f.*
+    FROM users u
+    JOIN facilities f ON f.id = u.facility_id
+    WHERE u.id = ?
+      AND u.role = 'hospital'
+  `, [req.user.id]);
+}
+
 async function notify(channel, recipient, message, incidentId = null) {
   const r = await run(
     `INSERT INTO notifications (channel, recipient, message, incident_id, created_at) VALUES (?,?,?,?,?)`,
@@ -897,7 +926,63 @@ app.get('/api/resources', auth(), async (_req, res) => {
 });
 
 app.get('/api/hospitals', auth(), async (_req, res) => res.json(await all(`SELECT * FROM facilities`)));
+// ==================== HOSPITAL DASHBOARD ====================
 
+app.get('/api/hospital/dashboard', auth(['hospital']), async (req, res) => {
+  try {
+    const hospital = await getHospitalFacility(req);
+
+    if (!hospital) {
+      return res.status(404).json({
+        error: 'Hospital not linked to a facility'
+      });
+    }
+
+    const cases = await all(`
+      SELECT
+        hc.*,
+        i.title,
+        i.description,
+        i.summary,
+        i.category,
+        i.severity,
+        i.status AS incident_status,
+        i.casualties_total,
+        i.casualties_serious,
+        i.created_at AS incident_created_at
+      FROM hospital_cases hc
+      JOIN incidents i ON i.id = hc.incident_id
+      WHERE hc.facility_id = ?
+      ORDER BY hc.id DESC
+    `, [hospital.id]);
+
+    res.json({
+      hospital,
+      stats: {
+        incoming: cases.filter(c =>
+          ['pre-alert', 'accepted', 'ready', 'arrived'].includes(c.status)
+        ).length,
+
+        critical: cases.filter(c =>
+          c.severity === 'Critical'
+        ).length,
+
+        totalCases: cases.length,
+
+        beds: hospital.beds
+      },
+
+      cases
+    });
+
+  } catch (err) {
+    console.error('Hospital dashboard error:', err);
+
+    res.status(500).json({
+      error: 'Failed to load hospital dashboard'
+    });
+  }
+});
 app.get('/api/notifications', auth(), async (req, res) => {
   const limit = parseInt(req.query.limit || '20', 10);
   const counters = {};
