@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAHAYAK – Hospital Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root {
+    --bg: #0a1424;
+    --panel: #0e1b30;
+    --panel-2: #132340;
+    --line: #22344f;
+    --text: #e8eef7;
+    --muted: #93a4bc;
+    --crit: #ff4d4d;
+    --high: #ff8a3d;
+    --med: #f5c542;
+    --ok: #3ddc97;
+    --info: #4da3ff;
+    --purple: #c084fc;
+    --display: "Archivo", sans-serif;
+    --body: "IBM Plex Sans", sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    gap: 16px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: var(--crit);
+    display: grid; place-items: center;
+  }
+  .brand-name { font-family: var(--display); font-weight: 800; font-size: 20px; }
+  .brand-sub { color: var(--muted); font-size: 12px; }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--ok); font-weight: 600;
+  }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--ok);
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink { 50% { opacity: .3; } }
+  .user-chip {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 12px;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  }
+  .user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--info); display: grid; place-items: center;
+    font-size: 14px; font-weight: 700; color: #051326;
+  }
+  .btn-logout {
+    background: transparent; border: 1px solid var(--line);
+    border-radius: 7px; padding: 7px 14px;
+    cursor: pointer; font-size: 13px; color: var(--muted);
+  }
+  .btn-logout:hover { border-color: var(--crit); color: var(--crit); }
+
+  /* ===== LAYOUT ===== */
+  .layout {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    min-height: calc(100vh - 62px);
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    padding: 18px 0;
+    position: sticky;
+    top: 62px;
+    height: calc(100vh - 62px);
+    overflow-y: auto;
+  }
+  .side-label {
+    padding: 0 18px 8px;
+    font-size: 11px; color: #617493;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .nav-item {
+    width: 100%; display: flex; align-items: center; gap: 12px;
+    padding: 11px 20px; border: none; border-radius: 0;
+    background: transparent; color: var(--muted);
+    text-align: left; cursor: pointer; font-size: 14px;
+    border-left: 3px solid transparent; transition: .15s;
+  }
+  .nav-item:hover { background: var(--panel-2); color: var(--text); }
+  .nav-item.active { background: var(--panel-2); color: var(--text); border-left-color: var(--info); }
+  .nav-icon { font-size: 17px; }
+  .nav-badge {
+    margin-left: auto; font-size: 10px; padding: 2px 7px;
+    border-radius: 10px; background: rgba(255,77,77,.2); color: var(--crit); font-weight: 700;
+  }
+
+  /* ===== MAIN ===== */
+  .main { padding: 24px; overflow-y: auto; }
+  .page-section { display: none; }
+  .page-section.active { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  .page-header { margin-bottom: 22px; }
+  .page-title { font-family: var(--display); font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .page-subtitle { color: var(--muted); font-size: 13px; }
+
+  /* ===== STATS ===== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin-bottom: 22px;
+  }
+  .stat-card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 18px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .stat-icon {
+    width: 46px; height: 46px; border-radius: 10px;
+    display: grid; place-items: center; font-size: 22px; flex-shrink: 0;
+  }
+  .stat-icon.ok   { background: rgba(61,220,151,.15); }
+  .stat-icon.crit { background: rgba(255,77,77,.15); }
+  .stat-icon.info { background: rgba(77,163,255,.15); }
+  .stat-icon.med  { background: rgba(245,197,66,.15); }
+  .stat-icon.pur  { background: rgba(192,132,252,.15); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .5px; }
+  .stat-value { font-family: var(--display); font-size: 28px; font-weight: 700; line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; margin-bottom: 18px; overflow: hidden;
+  }
+  .card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid var(--line);
+    background: var(--panel-2); gap: 12px;
+  }
+  .card-title { font-family: var(--display); font-size: 15px; font-weight: 700; }
+  .card-body { padding: 18px; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    padding: 8px 15px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--text); cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 6px; transition: .15s;
+  }
+  .btn:hover { border-color: var(--info); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: var(--info); color: #051326; border-color: var(--info); font-weight: 700; }
+  .btn-primary:hover { background: #3a90e8; border-color: #3a90e8; }
+  .btn-success { background: var(--ok); color: #051326; border-color: var(--ok); font-weight: 700; }
+  .btn-success:hover { background: #2cc985; }
+  .btn-danger  { background: transparent; color: var(--crit); border-color: var(--crit); }
+  .btn-danger:hover { background: rgba(255,77,77,.12); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* ===== BADGES ===== */
+  .badge {
+    display: inline-flex; padding: 3px 9px;
+    border-radius: 10px; font-size: 11px; font-weight: 600;
+  }
+  .badge-ok   { background: rgba(61,220,151,.15); color: var(--ok); }
+  .badge-crit { background: rgba(255,77,77,.15);  color: var(--crit); }
+  .badge-high { background: rgba(255,138,61,.15); color: var(--high); }
+  .badge-med  { background: rgba(245,197,66,.15); color: var(--med); }
+  .badge-info { background: rgba(77,163,255,.15); color: var(--info); }
+  .badge-pur  { background: rgba(192,132,252,.15); color: var(--purple); }
+
+  /* ===== TABLE ===== */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 11px 14px; border-bottom: 1px solid var(--line); text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; background: var(--panel-2); }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  tbody tr:hover { background: var(--panel-2); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ===== MODAL ===== */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,20,36,.82); backdrop-filter: blur(4px);
+    z-index: 1000; padding: 20px;
+    align-items: center; justify-content: center;
+  }
+  .overlay.show { display: flex; }
+  .modal-box {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
+  }
+  .modal-head {
+    padding: 18px 22px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-family: var(--display); font-size: 18px; font-weight: 700; }
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 7px;
+    background: transparent; border: 1px solid var(--line);
+    cursor: pointer; color: var(--muted); font-size: 18px;
+    display: grid; place-items: center;
+  }
+  .modal-close:hover { background: var(--panel-2); color: var(--text); }
+  .modal-body { padding: 22px; }
+  .modal-foot {
+    padding: 14px 22px; border-top: 1px solid var(--line);
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+
+  /* ===== FORM ===== */
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px; }
+  .form-control {
+    width: 100%; padding: 9px 13px;
+    background: var(--bg); border: 1px solid var(--line);
+    border-radius: 8px; color: var(--text); font-size: 13px;
+  }
+  .form-control:focus { outline: none; border-color: var(--info); box-shadow: 0 0 0 3px rgba(77,163,255,.18); }
+  .form-control::placeholder { color: #5d7090; }
+  textarea.form-control { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ===== BED GRID ===== */
+  .bed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px; padding: 18px;
+  }
+  .bed-item {
+    background: var(--panel-2); border: 2px solid var(--line);
+    border-radius: 10px; padding: 14px 10px;
+    text-align: center; cursor: pointer; transition: .15s;
+  }
+  .bed-item:hover { transform: translateY(-2px); border-color: var(--info); }
+  .bed-item.available { border-color: var(--ok); background: rgba(61,220,151,.07); }
+  .bed-item.occupied  { border-color: var(--crit); background: rgba(255,77,77,.07); }
+  .bed-item.icu-avail { border-color: var(--med); background: rgba(245,197,66,.07); }
+  .bed-item.icu-occ   { border-color: var(--crit); background: rgba(255,77,77,.1); }
+  .bed-num { font-family: var(--display); font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .bed-lbl { font-size: 10px; color: var(--muted); }
+
+  /* ===== SEARCH ===== */
+  .search-wrap { position: relative; }
+  .search-wrap input {
+    width: 100%; max-width: 380px; padding: 9px 13px 9px 36px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; color: var(--text); font-size: 13px;
+  }
+  .search-wrap input:focus { outline: none; border-color: var(--info); }
+  .search-wrap::before {
+    content: "🔍"; position: absolute; left: 11px; top: 50%;
+    transform: translateY(-50%); font-size: 14px;
+  }
+
+  /* ===== PATIENT CARD ===== */
+  .patient-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 18px; border-bottom: 1px solid var(--line);
+    transition: .12s;
+  }
+  .patient-row:hover { background: var(--panel-2); }
+  .patient-row:last-child { border-bottom: none; }
+  .pat-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--panel-2); border: 2px solid var(--line);
+    display: grid; place-items: center; font-size: 18px; flex-shrink: 0;
+  }
+  .pat-details { flex: 1; }
+  .pat-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .pat-meta { font-size: 12px; color: var(--muted); }
+
+  /* ===== ACTIVITY FEED ===== */
+  .activity-item {
+    display: flex; gap: 12px; padding: 11px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .act-dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+  .act-text { font-size: 13px; margin-bottom: 2px; }
+  .act-time { font-size: 11px; color: var(--muted); }
+
+  /* ===== MAP ===== */
+  #liveMap { height: 360px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: var(--bg); }
+  .map-legend { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .ldot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  /* ===== PROGRESS BAR ===== */
+  .prog-bar { height: 7px; border-radius: 99px; background: var(--bg); overflow: hidden; margin-top: 5px; }
+  .prog-fill { height: 100%; border-radius: 99px; }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed; bottom: 22px; right: 22px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-left: 4px solid var(--ok); color: var(--text);
+    padding: 13px 17px; border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    font-size: 13px; max-width: 320px;
+    transform: translateY(16px); opacity: 0;
+    transition: .25s ease; z-index: 3000; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-left-color: var(--crit); }
+
+  /* ===== CAPACITY INDICATOR ===== */
+  .capacity-ring {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 4px solid var(--line); font-family: var(--display); font-size: 18px; font-weight: 800;
+    position: relative; flex-shrink: 0;
+  }
+
+  /* ===== INVENTORY LEVEL ===== */
+  .inv-level { font-size: 12px; }
+  .inv-level.low { color: var(--crit); }
+  .inv-level.med { color: var(--med); }
+  .inv-level.ok  { color: var(--ok); }
+
+  /* RESPONSIVE */
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 10px 0; }
+    .nav-item { display: inline-flex; border-left: none; border-bottom: 3px solid transparent; flex-direction: column; gap: 3px; padding: 8px 16px; font-size: 12px; }
+    .nav-item.active { border-bottom-color: var(--info); }
+    .sidebar ul { display: flex; overflow-x: auto; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 540px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .main { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
+    </div>
+    <div>
+      <span class="brand-name">SAHAYAK</span>
+      <span class="brand-sub"> · Hospital Portal</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="live-badge"><i class="live-dot"></i>Live Feed Active</span>
+    <div class="user-chip">
+      <div class="user-avatar">🏥</div>
+      <span id="userName" style="font-size:13px;font-weight:500">Civil Hospital Nadiad</span>
+    </div>
+    <button class="btn-logout" id="logoutBtn">Sign Out</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="side-label">Hospital Portal</div>
+    <ul style="list-style:none">
+      <li class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">📊</span><span>Dashboard</span>
+      </li>
+      <li class="nav-item" data-page="patients">
+        <span class="nav-icon">👥</span><span>Patients</span>
+        <span class="nav-badge" id="patNavBadge" style="display:none">0</span>
+      </li>
+      <li class="nav-item" data-page="beds">
+        <span class="nav-icon">🛏️</span><span>Bed Status</span>
+      </li>
+      <li class="nav-item" data-page="emergency">
+        <span class="nav-icon">🚑</span><span>Emergency</span>
+        <span class="nav-badge" id="empNavBadge" style="display:none">0</span>
+      </li>
+      <li class="nav-item" data-page="staff">
+        <span class="nav-icon">👨‍⚕️</span><span>Staff</span>
+      </li>
+      <li class="nav-item" data-page="inventory">
+        <span class="nav-icon">💊</span><span>Inventory</span>
+      </li>
+      <li class="nav-item" data-page="capacity">
+        <span class="nav-icon">📡</span><span>Share Capacity</span>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- =============== DASHBOARD =============== -->
+    <section class="page-section active" id="dashboard">
+      <div class="page-header">
+        <div class="page-title">Hospital Dashboard</div>
+        <div class="page-subtitle">Real-time operations overview · Civil Hospital Nadiad</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon ok">🛏️</div>
+          <div>
+            <div class="stat-label">Available Beds</div>
+            <div class="stat-value" id="d-avail">—</div>
+            <div class="stat-sub" id="d-bed-sub">of — total</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon crit">🆘</div>
+          <div>
+            <div class="stat-label">ICU Occupied</div>
+            <div class="stat-value" id="d-icu">—</div>
+            <div class="stat-sub" id="d-icu-sub">of 20 ICU beds</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon info">👥</div>
+          <div>
+            <div class="stat-label">Total Patients</div>
+            <div class="stat-value" id="d-total">—</div>
+            <div class="stat-sub">Admitted</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon med">🚑</div>
+          <div>
+            <div class="stat-label">Incoming Ambulances</div>
+            <div class="stat-value" id="d-amb">—</div>
+            <div class="stat-sub">From dispatcher</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pur">👨‍⚕️</div>
+          <div>
+            <div class="stat-label">Staff On Duty</div>
+            <div class="stat-value" id="d-staff">42</div>
+            <div class="stat-sub">Day shift</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live ambulance map -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Live Ambulance Tracking</span>
+          <span class="badge badge-info" id="mapAmbCount">0 en route</span>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div id="liveMap"></div>
+          <div class="card-body" style="padding-top:10px">
+            <div class="map-legend">
+              <span><span class="ldot" style="background:var(--info)"></span>This hospital</span>
+              <span><span class="ldot" style="background:var(--crit)"></span>Critical / incoming</span>
+              <span><span class="ldot" style="background:var(--high)"></span>High priority</span>
+              <span><span class="ldot" style="background:var(--ok)"></span>Resolved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Incoming from dispatcher -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Incoming Incidents from Dispatcher</span>
+          <span class="badge badge-crit" id="incomingBadge">0 active</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Incident ID</th><th>Category</th><th>Severity</th><th>Location</th><th>Status</th><th>Reports</th></tr>
+            </thead>
+            <tbody id="incomingTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">Recent Activity</span></div>
+        <div class="card-body">
+          <div id="activityFeed"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== PATIENTS =============== -->
+    <section class="page-section" id="patients">
+      <div class="page-header">
+        <div class="page-title">Patient Management</div>
+        <div class="page-subtitle">Track and manage admitted patients</div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+        <div class="search-wrap">
+          <input type="text" id="patSearch" placeholder="Search patients by name or ID…">
+        </div>
+        <button class="btn btn-primary" id="addPatBtn">+ Admit Patient</button>
+      </div>
+
+      <div class="card">
+        <div id="patientList"></div>
+      </div>
+    </section>
+
+    <!-- =============== BEDS =============== -->
+    <section class="page-section" id="beds">
+      <div class="page-header">
+        <div class="page-title">Bed Management</div>
+        <div class="page-subtitle">Click any bed to toggle availability</div>
+      </div>
+
+      <!-- Capacity summary -->
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-icon ok">✅</div>
+          <div>
+            <div class="stat-label">General Available</div>
+            <div class="stat-value" id="gen-avail">—</div>
+            <div class="stat-sub">of 60 beds</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon crit">⛔</div>
+          <div>
+            <div class="stat-label">ICU Available</div>
+            <div class="stat-value" id="icu-avail">—</div>
+            <div class="stat-sub">of 20 beds</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">General Ward — 60 Beds</span>
+          <span class="badge badge-ok" id="genBadge">— free</span>
+        </div>
+        <div class="bed-grid" id="generalWard"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">ICU — 20 Beds</span>
+          <span class="badge badge-crit" id="icuBadge">— free</span>
+        </div>
+        <div class="bed-grid" id="icuWard"></div>
+      </div>
+    </section>
+
+    <!-- =============== EMERGENCY =============== -->
+    <section class="page-section" id="emergency">
+      <div class="page-header">
+        <div class="page-title">Emergency Department</div>
+        <div class="page-subtitle">Live incidents and incoming ambulances from SAHAYAK dispatcher</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Active Dispatcher Incidents</span>
+          <button class="btn btn-success btn-sm" id="readyBtn">✓ Confirm ER Ready</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Category</th><th>Severity</th><th>Location</th><th>Status</th><th>Reports</th><th>Action</th></tr>
+            </thead>
+            <tbody id="empTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== STAFF =============== -->
+    <section class="page-section" id="staff">
+      <div class="page-header">
+        <div class="page-title">Staff Management</div>
+        <div class="page-subtitle">On-duty roster and department assignments</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Current Duty Roster</span>
+          <button class="btn btn-primary btn-sm" id="addStaffBtn">+ Add Staff</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Role</th><th>Department</th><th>Shift</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="staffTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== INVENTORY =============== -->
+    <section class="page-section" id="inventory">
+      <div class="page-header">
+        <div class="page-title">Medical Inventory</div>
+        <div class="page-subtitle">Stock levels for medicines and equipment</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Stock Register</span>
+          <button class="btn btn-primary btn-sm" id="addInvBtn">+ Add Item</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Item</th><th>Category</th><th>Current Stock</th><th>Min Required</th><th>Level</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="invTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== SHARE CAPACITY =============== -->
+    <section class="page-section" id="capacity">
+      <div class="page-header">
+        <div class="page-title">Share Capacity with Dispatcher</div>
+        <div class="page-subtitle">Publish real-time bed and ICU availability to the SAHAYAK network</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">Current Published Status</span></div>
+        <div class="card-body">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon ok">🛏️</div>
+              <div>
+                <div class="stat-label">General Beds Published</div>
+                <div class="stat-value" id="pub-gen">—</div>
+                <div class="stat-sub">available right now</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon crit">🆘</div>
+              <div>
+                <div class="stat-label">ICU Beds Published</div>
+                <div class="stat-value" id="pub-icu">—</div>
+                <div class="stat-sub">available right now</div>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+            This information is visible to the dispatcher console and authority panel. Update whenever capacity changes.
+          </p>
+          <div class="form-row" style="margin-bottom:16px">
+            <div class="form-group">
+              <label class="form-label">Override General Available</label>
+              <input class="form-control" type="number" id="overGen" min="0" max="60" placeholder="Auto from bed grid">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Override ICU Available</label>
+              <input class="form-control" type="number" id="overIcu" min="0" max="20" placeholder="Auto from bed grid">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Special notes for dispatcher</label>
+            <textarea class="form-control" id="capNotes" placeholder="e.g. Trauma bay ready, no burns unit available…"></textarea>
+          </div>
+          <button class="btn btn-primary" id="publishBtn">📡 Publish to SAHAYAK Network</button>
+          <span style="font-size:12px;color:var(--muted);margin-left:12px" id="pubTimestamp"></span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Patient Modal -->
+<div class="overlay" id="patOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="patModalTitle">Admit New Patient</span>
+      <button class="modal-close" data-close="patOverlay">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-control" id="pName" placeholder="Patient full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Age</label>
+          <input class="form-control" type="number" id="pAge" placeholder="Age">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Gender</label>
+          <select class="form-control" id="pGender">
+            <option>Male</option><option>Female</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ward</label>
+          <select class="form-control" id="pWard">
+            <option value="general">General Ward</option>
+            <option value="icu">ICU</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Condition</label>
+          <select class="form-control" id="pCondition">
+            <option>Stable</option><option>Serious</option><option>Critical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Diagnosis</label>
+          <input class="form-control" id="pDiag" placeholder="e.g. Road accident trauma">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Attending Doctor</label>
+        <input class="form-control" id="pDoctor" placeholder="Dr. Name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-control" id="pNotes" placeholder="Additional notes…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="patOverlay">Cancel</button>
+      <button class="btn btn-primary" id="savePatBtn">Admit Patient</button>
+    </div>
+  </div>
+</div>
+
+<!-- Staff Modal -->
+<div class="overlay" id="staffOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">Add Staff Member</span>
+      <button class="modal-close" data-close="staffOverlay">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-control" id="sName" placeholder="Dr. / Nurse name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <input class="form-control" id="sRole" placeholder="e.g. Cardiologist">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <input class="form-control" id="sDept" placeholder="e.g. ICU">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Shift</label>
+          <select class="form-control" id="sShift">
+            <option>Day (8 AM – 4 PM)</option>
+            <option>Evening (4 PM – 12 AM)</option>
+            <option>Night (12 AM – 8 AM)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="staffOverlay">Cancel</button>
+      <button class="btn btn-primary" id="saveStaffBtn">Add Staff</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inventory Modal -->
+<div class="overlay" id="invOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">Add Inventory Item</span>
+      <button class="modal-close" data-close="invOverlay">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Item Name</label>
+          <input class="form-control" id="iName" placeholder="e.g. Paracetamol 500mg">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-control" id="iCat">
+            <option>Medicine</option><option>Equipment</option>
+            <option>PPE</option><option>Blood</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Current Stock</label>
+          <input class="form-control" type="number" id="iStock" placeholder="Units">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Minimum Required</label>
+          <input class="form-control" type="number" id="iMin" placeholder="Alert threshold">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close="invOverlay">Cancel</button>
+      <button class="btn btn-primary" id="saveInvBtn">Add Item</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* =====================================================
+   AUTH
+===================================================== */
+(function(){
+  const t = localStorage.getItem("resqnet_token");
+  const u = localStorage.getItem("resqnet_user");
+  if(!t || !u){ location.replace("login.html"); return; }
+  try {
+    const user = JSON.parse(u);
+    const el = document.getElementById("userName");
+    if(el) el.textContent = user.displayName || user.username || "Civil Hospital Nadiad";
+  } catch(e){}
+})();
+
+/* =====================================================
+   STORAGE KEYS — shared with dispatcher
+===================================================== */
+const K = {
+  HOSP_STATE:   "sahayak_hospital_state",
+  DISP_STATE:   "sahayak_dispatcher_state",
+  AUTHORITY:    "resqnet_authority_incidents",
+  HOSP_CAP:     "sahayak_hospital_capacity",
+  AMB_STATE:    "sahayak_ambulance_state"   // ← THE BRIDGE
+};
+
+const HOSPITAL_POS = [22.6911, 72.8667];
+
+/* =====================================================
+   HELPERS
+===================================================== */
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function short(t, n=34){ t=String(t||""); return t.length>n?t.slice(0,n)+"…":t; }
+function timeAgo(ts){
+  const d = Date.now()-ts, m = Math.floor(d/60000);
+  if(m<1) return "just now";
+  if(m<60) return m+"m ago";
+  return Math.floor(m/60)+"h ago";
+}
+function sevBadge(s){
+  const cls = s==="Critical"?"badge-crit":s==="High"?"badge-high":s==="Low"?"badge-ok":"badge-med";
+  return `<span class="badge ${cls}">${esc(s)}</span>`;
+}
+function showToast(msg, err=false){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show" + (err?" error":"");
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>{ t.classList.remove("show"); }, 4000);
+}
+
+/* =====================================================
+   READ AMBULANCE STATE FROM DISPATCHER
+===================================================== */
+function readAmbulanceState(){
+  try{
+    const raw = localStorage.getItem(K.AMB_STATE);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  } catch(e){ return null; }
+}
+
+/* =====================================================
+   STATE
+===================================================== */
+function defaultState(){
+  return {
+    patients:[
+      {id:"PAT-001",name:"Ramesh Patel",  age:45,gender:"Male",  ward:"general",condition:"Stable",  diag:"Road accident",  doctor:"Dr. Kumar", notes:"",admitted:Date.now()-3600000},
+      {id:"PAT-002",name:"Sita Joshi",    age:32,gender:"Female",ward:"icu",    condition:"Critical",diag:"Cardiac arrest", doctor:"Dr. Sharma",notes:"",admitted:Date.now()-7200000},
+      {id:"PAT-003",name:"Ankit Mehta",   age:28,gender:"Male",  ward:"general",condition:"Serious", diag:"Flood rescue",   doctor:"Dr. Kumar", notes:"",admitted:Date.now()-1800000},
+      {id:"PAT-004",name:"Ritu Shah",     age:60,gender:"Female",ward:"icu",    condition:"Critical",diag:"Burn injuries",  doctor:"Dr. Singh", notes:"",admitted:Date.now()-900000 }
+    ],
+    beds:{
+      general:Array.from({length:60},(_,i)=>({num:i+1,occupied:i<36})),
+      icu:    Array.from({length:20},(_,i)=>({num:i+1,occupied:i<12}))
+    },
+    staff:[
+      {id:"STF-001",name:"Dr. Rajesh Kumar",  role:"Cardiologist",    dept:"Cardiology",shift:"Day (8 AM – 4 PM)",   status:"On Duty"},
+      {id:"STF-002",name:"Dr. Priya Sharma",  role:"Pediatrician",    dept:"Pediatrics",shift:"Day (8 AM – 4 PM)",   status:"On Duty"},
+      {id:"STF-003",name:"Nurse Anjali Mehta",role:"Staff Nurse",      dept:"ICU",       shift:"Night (12 AM – 8 AM)",status:"Off Duty"},
+      {id:"STF-004",name:"Dr. Anil Singh",    role:"General Physician",dept:"General",   shift:"Day (8 AM – 4 PM)",   status:"On Duty"}
+    ],
+    inventory:[
+      {id:"INV-001",name:"Paracetamol 500mg",cat:"Medicine", stock:240,min:50 },
+      {id:"INV-002",name:"Morphine 10mg",    cat:"Medicine", stock:18, min:30 },
+      {id:"INV-003",name:"Oxygen Cylinder",  cat:"Equipment",stock:12, min:15 },
+      {id:"INV-004",name:"Blood (O+ve)",     cat:"Blood",    stock:8,  min:10 },
+      {id:"INV-005",name:"Surgical Gloves",  cat:"PPE",      stock:500,min:100},
+      {id:"INV-006",name:"Defibrillator",    cat:"Equipment",stock:4,  min:3  }
+    ],
+    activity:[
+      {text:"Hospital portal initialised and connected to SAHAYAK network",color:"var(--ok)",  time:Date.now()-300000},
+      {text:"Bed grid loaded — 24 general, 8 ICU beds available",          color:"var(--info)",time:Date.now()-600000}
+    ],
+    counter:4, patCounter:5,
+    seenAmbulanceIds:{}   // tracks which dispatched ambulances we already notified about
+  };
+}
+
+let HOSP = null;
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(K.HOSP_STATE)||"null");
+    if(s && s.patients) return s;
+  }catch(e){}
+  return defaultState();
+}
+function saveState(){
+  try{ localStorage.setItem(K.HOSP_STATE, JSON.stringify(HOSP)); }catch(e){}
+}
+
+/* =====================================================
+   DISPATCHER INCIDENTS READER
+===================================================== */
+function getDispatcherIncidents(){
+  try{
+    const s = JSON.parse(localStorage.getItem(K.DISP_STATE)||"null");
+    if(s && Array.isArray(s.incidents)) return s.incidents;
+  }catch(e){}
+  try{
+    const a = JSON.parse(localStorage.getItem(K.AUTHORITY)||"[]");
+    if(Array.isArray(a)) return a;
+  }catch(e){}
+  return [];
+}
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+document.querySelectorAll(".nav-item[data-page]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".nav-item").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".page-section").forEach(s=>s.classList.remove("active"));
+    const tgt = document.getElementById(btn.dataset.page);
+    if(tgt) tgt.classList.add("active");
+  });
+});
+
+/* =====================================================
+   LEAFLET MAP
+===================================================== */
+let leafMap = null, layerInc = null, layerAmb = null;
+
+function initMap(){
+  if(typeof L === "undefined") return;
+  try{
+    leafMap = L.map("liveMap",{zoomControl:true}).setView(HOSPITAL_POS,13);
+    L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",{maxZoom:20}).addTo(leafMap);
+    layerInc = L.layerGroup().addTo(leafMap);
+    layerAmb = L.layerGroup().addTo(leafMap);
+
+    // Hospital pin
+    L.marker(HOSPITAL_POS,{
+      icon:L.divIcon({
+        html:'<div style="background:#3ddc97;border:3px solid #fff;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.4)">🏥</div>',
+        className:"",iconSize:[28,28]
+      })
+    }).bindPopup('<b>Civil Hospital Nadiad</b><br>Your location').addTo(layerInc);
+  }catch(e){}
+}
+
+function renderMap(){
+  if(!leafMap || !layerInc || !layerAmb) return;
+  layerAmb.clearLayers();
+
+  const ambState = readAmbulanceState();
+  if(!ambState || !ambState.units) return;
+
+  ambState.units.forEach(u => {
+    if(u.status === "Available") return;  // don't show available ambulances on hospital map
+    if(!u.incidentLat || !u.incidentLng) return;
+
+    const color = u.status === "On scene" ? "#34d399" : "#38bdf8";
+
+    // Ambulance at current position (between hospital and incident)
+    const ambPos = u.pos && u.pos.length === 2 ? u.pos : HOSPITAL_POS;
+    const midLat = (ambPos[0] + u.incidentLat) / 2;
+    const midLng = (ambPos[1] + u.incidentLng) / 2;
+    const ambCurrentPos = u.status === "On scene" ? [u.incidentLat, u.incidentLng] : [midLat, midLng];
+
+    // Draw route: hospital → incident
+    L.polyline([HOSPITAL_POS, [u.incidentLat, u.incidentLng]],{
+      color: color, weight:2, dashArray:"6 8", opacity:.7
+    }).addTo(layerAmb);
+
+    // Incident pin
+    const incColor = u.incidentSeverity==="Critical"?"#f87171":u.incidentSeverity==="High"?"#fb923c":"#fbbf24";
+    L.circleMarker([u.incidentLat, u.incidentLng],{
+      radius:9, color:incColor, weight:2, fillColor:incColor, fillOpacity:.85
+    }).bindTooltip(`<b>${u.incidentId}</b> · ${u.incidentCategory} · ${u.incidentSeverity}<br>📍 ${u.incidentLocation}`)
+     .addTo(layerAmb);
+
+    // Ambulance icon at midpoint / scene
+    L.marker(ambCurrentPos,{
+      icon:L.divIcon({
+        html:`<div style="font-size:20px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))">🚑</div>`,
+        className:"", iconSize:[24,24]
+      })
+    }).bindTooltip(`<b>${u.id}</b> → ${u.incidentId}<br>Status: ${u.status}<br>📍 ${u.incidentLocation}`)
+     .addTo(layerAmb);
+  });
+
+  // Update map ambulance count badge
+  const dispatched = ambState.units.filter(u=>u.status!=="Available").length;
+  const badge = document.getElementById("mapAmbCount");
+  if(badge) badge.textContent = dispatched + " ambulance" + (dispatched!==1?"s":"") + " deployed";
+}
+
+/* =====================================================
+   AMBULANCE NOTIFICATION ENGINE
+   Fires a toast + activity entry when dispatcher deploys
+   a new ambulance that wasn't deployed before
+===================================================== */
+function checkAmbulanceNotifications(){
+  const ambState = readAmbulanceState();
+  if(!ambState || !ambState.units) return;
+
+  if(!HOSP.seenAmbulanceIds) HOSP.seenAmbulanceIds = {};
+
+  ambState.units.forEach(u => {
+    if(u.status === "Available"){
+      // If this ambulance was previously dispatched and now returned
+      if(HOSP.seenAmbulanceIds[u.id] && HOSP.seenAmbulanceIds[u.id] !== "available"){
+        HOSP.seenAmbulanceIds[u.id] = "available";
+        addActivity(
+          `✅ ${u.id} returned to base — now available`,
+          "var(--ok)"
+        );
+        showToast(`✅ ${u.id} returned to hospital — available for next dispatch`);
+        saveState();
+      }
+      return;
+    }
+
+    // Ambulance is dispatched or on scene
+    const key = u.id + "|" + u.incidentId;
+    if(HOSP.seenAmbulanceIds[u.id] === key) return;  // already notified
+
+    HOSP.seenAmbulanceIds[u.id] = key;
+
+    const statusText = u.status === "On scene" ? "arrived on scene at" : "dispatched to";
+    const msg = `🚑 ${u.id} ${statusText}: ${u.incidentCategory} — ${u.incidentLocation}`;
+
+    addActivity(msg, u.incidentSeverity==="Critical"?"var(--crit)":"var(--high)");
+    saveState();
+    showToast(`🚨 ${u.id} ${statusText} ${u.incidentLocation} (${u.incidentSeverity} ${u.incidentCategory})`);
+  });
+}
+
+/* =====================================================
+   RENDER — DASHBOARD
+===================================================== */
+function renderDashboard(){
+  const ambState = readAmbulanceState();
+  const counts   = ambState ? ambState.counts : null;
+
+  const genAvail = HOSP.beds.general.filter(b=>!b.occupied).length;
+  const icuAvail = HOSP.beds.icu.filter(b=>!b.occupied).length;
+
+  setText("d-avail", genAvail + icuAvail);
+  setText("d-bed-sub", `${genAvail} general · ${icuAvail} ICU`);
+  setText("d-icu", HOSP.beds.icu.filter(b=>b.occupied).length);
+  setText("d-total", HOSP.patients.length);
+  setText("d-amb", counts ? counts.dispatched + counts.onScene : 0);
+
+  // Ambulance panel in dashboard — from shared ambulance state
+  const incomingBox = document.getElementById("incomingTable");
+  const badge = document.getElementById("incomingBadge");
+
+  if(ambState && ambState.units){
+    const deployed = ambState.units.filter(u=>u.status!=="Available");
+    if(badge) badge.textContent = deployed.length + " deployed";
+
+    if(incomingBox){
+      incomingBox.innerHTML = deployed.length
+        ? deployed.map(u => `
+            <tr>
+              <td><b>${esc(u.id)}</b></td>
+              <td>${esc(u.incidentCategory||"Emergency")}</td>
+              <td>${u.incidentSeverity==="Critical"?'<span class="badge badge-crit">Critical</span>':u.incidentSeverity==="High"?'<span class="badge badge-high">High</span>':'<span class="badge badge-med">'+esc(u.incidentSeverity||"Med")+'</span>'}</td>
+              <td>${esc(short(u.incidentLocation||"—"))}</td>
+              <td><span class="badge ${u.status==="On scene"?"badge-ok":"badge-info"}">${esc(u.status)}</span></td>
+              <td>${u.incidentId?'#'+esc(u.incidentId):'—'}</td>
+            </tr>`).join("")
+        : `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">No ambulances currently deployed.</td></tr>`;
+    }
+  } else {
+    if(badge) badge.textContent = "Dispatcher offline";
+    if(incomingBox) incomingBox.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">Waiting for dispatcher sync...</td></tr>`;
+  }
+
+  // Ambulance count summary card in dashboard stats
+  if(counts){
+    setText("d-staff", HOSP.staff.filter(s=>s.status==="On Duty").length);
+  }
+
+  // Activity
+  const af = document.getElementById("activityFeed");
+  if(af){
+    const items = [...HOSP.activity].reverse().slice(0,8);
+    af.innerHTML = items.length
+      ? items.map(a=>`
+          <div class="activity-item">
+            <div class="act-dot" style="background:${a.color||"var(--info)"}"></div>
+            <div>
+              <div class="act-text">${esc(a.text)}</div>
+              <div class="act-time">${timeAgo(a.time)}</div>
+            </div>
+          </div>`).join("")
+      : '<div style="color:var(--muted);font-size:13px;padding:10px">No recent activity.</div>';
+  }
+
+  // Nav badges
+  const empBadge = document.getElementById("empNavBadge");
+  if(empBadge && ambState && ambState.counts){
+    const n = ambState.counts.dispatched + ambState.counts.onScene;
+    empBadge.textContent = n;
+    empBadge.style.display = n ? "inline-block" : "none";
+  }
+
+  // Publish panel
+  setText("pub-gen", genAvail);
+  setText("pub-icu", icuAvail);
+}
+
+/* =====================================================
+   RENDER — PATIENTS
+===================================================== */
+function renderPatients(filter=""){
+  const list = document.getElementById("patientList"); if(!list) return;
+  const q = filter.toLowerCase();
+  const pts = HOSP.patients.filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
+
+  if(!pts.length){
+    list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)">No patients found.</div>';
+    return;
+  }
+
+  list.innerHTML = pts.map(p => {
+    const condBadge = p.condition==="Critical"?"badge-crit":p.condition==="Serious"?"badge-high":"badge-ok";
+    return `
+      <div class="patient-row">
+        <div class="pat-avatar">${p.gender==="Female"?"👩":"👨"}</div>
+        <div class="pat-details">
+          <div class="pat-name">${esc(p.name)} <span style="color:var(--muted);font-weight:400;font-size:12px">${esc(p.id)}</span></div>
+          <div class="pat-meta">${p.age}y · ${p.ward.toUpperCase()} · ${esc(p.diag)} · ${esc(p.doctor)}</div>
+        </div>
+        <span class="badge ${condBadge}">${esc(p.condition)}</span>
+        <span style="font-size:11px;color:var(--muted)">${timeAgo(p.admitted)}</span>
+        <button class="btn btn-danger btn-sm" data-discharge="${p.id}">Discharge</button>
+      </div>`;
+  }).join("");
+
+  list.querySelectorAll("[data-discharge]").forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.discharge;
+      const pat = HOSP.patients.find(p=>p.id===id);
+      HOSP.patients = HOSP.patients.filter(p=>p.id!==id);
+      addActivity(`Patient ${pat?pat.name:id} discharged`, "var(--ok)");
+      saveState(); renderAll();
+      showToast(`Patient ${id} discharged`);
+    };
+  });
+
+  const nb = document.getElementById("patNavBadge");
+  if(nb){ nb.textContent=HOSP.patients.length; nb.style.display="inline-block"; }
+}
+
+/* =====================================================
+   RENDER — BEDS
+===================================================== */
+function renderBeds(){
+  renderWard("generalWard","general","available","occupied","gen-avail","genBadge");
+  renderWard("icuWard","icu","icu-avail","icu-occ","icu-avail","icuBadge");
+}
+function renderWard(cId, wKey, aC, oC, sId, bId){
+  const container = document.getElementById(cId); if(!container) return;
+  const beds = HOSP.beds[wKey];
+  const free = beds.filter(b=>!b.occupied).length;
+  setText(sId, free);
+  const badge = document.getElementById(bId);
+  if(badge) badge.textContent = free+" free";
+  container.innerHTML = beds.map(b=>`
+    <div class="bed-item ${b.occupied?oC:aC}" data-ward="${wKey}" data-num="${b.num}">
+      <div class="bed-num">${b.num}</div>
+      <div class="bed-lbl">${b.occupied?"Occupied":"Available"}</div>
+    </div>`).join("");
+  container.querySelectorAll(".bed-item").forEach(item=>{
+    item.onclick=()=>{
+      const w=item.dataset.ward, n=parseInt(item.dataset.num);
+      const bed=HOSP.beds[w].find(b=>b.num===n); if(!bed) return;
+      bed.occupied=!bed.occupied;
+      addActivity(`Bed ${n} (${w.toUpperCase()}) → ${bed.occupied?"Occupied":"Available"}`, bed.occupied?"var(--crit)":"var(--ok)");
+      saveState(); renderAll();
+      showToast(`Bed ${n} ${w.toUpperCase()} — ${bed.occupied?"Occupied":"Available"}`);
+    };
+  });
+}
+
+/* =====================================================
+   RENDER — EMERGENCY (now shows ambulance state)
+===================================================== */
+function renderEmergency(){
+  const tbody = document.getElementById("empTable"); if(!tbody) return;
+  const ambState = readAmbulanceState();
+
+  // Show both dispatcher incidents AND ambulance deployment status
+  const incs = getDispatcherIncidents();
+
+  if(!incs.length && (!ambState || !ambState.units || !ambState.units.filter(u=>u.status!=="Available").length)){
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">No active incidents. All ambulances available.</td></tr>`;
+    return;
+  }
+
+  // Build a map of incident → ambulances assigned
+  const incAmbs = {};
+  if(ambState && ambState.units){
+    ambState.units.forEach(u=>{
+      if(u.incidentId && u.status!=="Available"){
+        if(!incAmbs[u.incidentId]) incAmbs[u.incidentId]=[];
+        incAmbs[u.incidentId].push(u);
+      }
+    });
+  }
+
+  tbody.innerHTML = incs.slice(0,15).map(i => {
+    const ambs = incAmbs[i.id] || [];
+    const ambCell = ambs.length
+      ? ambs.map(u=>`<span style="background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);border-radius:6px;padding:2px 7px;font-size:11px;color:#38bdf8;white-space:nowrap">🚑 ${u.id} — ${u.status}</span>`).join(" ")
+      : '<span style="color:var(--muted);font-size:11px">No ambulance assigned</span>';
+    return `
+      <tr>
+        <td><b>${esc(i.id)}</b></td>
+        <td>${esc(i.category||"Emergency")}</td>
+        <td>${sevBadge(i.severity||"Medium")}</td>
+        <td>${esc(short(i.location||"Nadiad"))}</td>
+        <td>${Array.isArray(i.reports)?i.reports.length:(i.reports||1)}</td>
+        <td>${esc(i.status||"New")}</td>
+        <td>${ambCell}</td>
+      </tr>`;
+  }).join("");
+}
+
+/* =====================================================
+   RENDER — STAFF
+===================================================== */
+function renderStaff(){
+  const tbody = document.getElementById("staffTable"); if(!tbody) return;
+  tbody.innerHTML = HOSP.staff.map(s=>`
+    <tr>
+      <td><b>${esc(s.name)}</b></td>
+      <td>${esc(s.role)}</td>
+      <td>${esc(s.dept)}</td>
+      <td>${esc(s.shift)}</td>
+      <td><span class="badge ${s.status==="On Duty"?"badge-ok":"badge-med"}">${esc(s.status)}</span></td>
+      <td>
+        <button class="btn btn-sm" data-toggle-staff="${s.id}">Toggle Duty</button>
+        <button class="btn btn-danger btn-sm" data-del-staff="${s.id}">Remove</button>
+      </td>
+    </tr>`).join("");
+  tbody.querySelectorAll("[data-toggle-staff]").forEach(btn=>{
+    btn.onclick=()=>{
+      const m=HOSP.staff.find(s=>s.id===btn.dataset.toggleStaff); if(!m) return;
+      m.status=m.status==="On Duty"?"Off Duty":"On Duty";
+      saveState(); renderStaff();
+      showToast(m.name+" — "+m.status);
+    };
+  });
+  tbody.querySelectorAll("[data-del-staff]").forEach(btn=>{
+    btn.onclick=()=>{
+      if(!confirm("Remove?")) return;
+      HOSP.staff=HOSP.staff.filter(s=>s.id!==btn.dataset.delStaff);
+      saveState(); renderStaff();
+    };
+  });
+  setText("d-staff", HOSP.staff.filter(s=>s.status==="On Duty").length);
+}
+
+/* =====================================================
+   RENDER — INVENTORY
+===================================================== */
+function renderInventory(){
+  const tbody = document.getElementById("invTable"); if(!tbody) return;
+  tbody.innerHTML = HOSP.inventory.map(i=>{
+    const r=i.stock/i.min;
+    const level=r<1?"low":r<1.5?"med":"ok";
+    const levelText=r<1?"Low ⚠️":r<1.5?"Moderate":"Adequate";
+    return `
+      <tr>
+        <td><b>${esc(i.name)}</b></td>
+        <td>${esc(i.cat)}</td>
+        <td>${i.stock}</td>
+        <td>${i.min}</td>
+        <td><span class="inv-level ${level}">${levelText}</span></td>
+        <td>
+          <button class="btn btn-sm" data-restock="${i.id}">+10</button>
+          <button class="btn btn-danger btn-sm" data-del-inv="${i.id}">Remove</button>
+        </td>
+      </tr>`;
+  }).join("");
+  tbody.querySelectorAll("[data-restock]").forEach(btn=>{
+    btn.onclick=()=>{
+      const item=HOSP.inventory.find(i=>i.id===btn.dataset.restock); if(!item) return;
+      item.stock+=10; saveState(); renderInventory();
+      showToast(item.name+" restocked (+10)");
+    };
+  });
+  tbody.querySelectorAll("[data-del-inv]").forEach(btn=>{
+    btn.onclick=()=>{
+      if(!confirm("Remove?")) return;
+      HOSP.inventory=HOSP.inventory.filter(i=>i.id!==btn.dataset.delInv);
+      saveState(); renderInventory();
+    };
+  });
+}
+
+/* =====================================================
+   CAPACITY PUBLISH
+===================================================== */
+function publishCapacity(){
+  const genAvail=HOSP.beds.general.filter(b=>!b.occupied).length;
+  const icuAvail=HOSP.beds.icu.filter(b=>!b.occupied).length;
+  const overGen=parseInt(document.getElementById("overGen").value)||genAvail;
+  const overIcu=parseInt(document.getElementById("overIcu").value)||icuAvail;
+  const notes=document.getElementById("capNotes").value;
+  const payload={hospital:"Civil Hospital Nadiad",generalAvailable:overGen,icuAvailable:overIcu,totalAvailable:overGen+overIcu,notes,published:Date.now()};
+  try{localStorage.setItem(K.HOSP_CAP,JSON.stringify(payload));}catch(e){}
+  addActivity("Capacity published: "+overGen+" general, "+overIcu+" ICU beds free","var(--ok)");
+  saveState();
+  const ts=document.getElementById("pubTimestamp");
+  if(ts) ts.textContent="Published at "+new Date().toLocaleTimeString();
+  showToast("✅ Capacity published to dispatcher network");
+}
+
+/* =====================================================
+   ACTIVITY LOG
+===================================================== */
+function addActivity(text, color="var(--info)"){
+  HOSP.activity.push({text,color,time:Date.now()});
+  if(HOSP.activity.length>60) HOSP.activity=HOSP.activity.slice(-60);
+}
+
+function setText(id,val){
+  const el=document.getElementById(id); if(el) el.textContent=val;
+}
+
+/* =====================================================
+   MODAL EVENTS
+===================================================== */
+document.getElementById("addPatBtn").onclick=()=>{ document.getElementById("patOverlay").classList.add("show"); };
+document.getElementById("savePatBtn").onclick=()=>{
+  const name=document.getElementById("pName").value.trim();
+  if(!name){showToast("Enter patient name",true);return;}
+  const id="PAT-"+String(HOSP.patCounter).padStart(3,"0");
+  HOSP.patCounter++;
+  HOSP.patients.push({id,name,
+    age:parseInt(document.getElementById("pAge").value)||0,
+    gender:document.getElementById("pGender").value,
+    ward:document.getElementById("pWard").value,
+    condition:document.getElementById("pCondition").value,
+    diag:document.getElementById("pDiag").value,
+    doctor:document.getElementById("pDoctor").value,
+    notes:document.getElementById("pNotes").value,
+    admitted:Date.now()});
+  addActivity("Patient "+name+" ("+id+") admitted","var(--info)");
+  document.getElementById("patOverlay").classList.remove("show");
+  ["pName","pAge","pDiag","pDoctor","pNotes"].forEach(i=>{document.getElementById(i).value="";});
+  saveState(); renderAll();
+  showToast("Patient "+name+" admitted");
+};
+
+document.getElementById("addStaffBtn").onclick=()=>{ document.getElementById("staffOverlay").classList.add("show"); };
+document.getElementById("saveStaffBtn").onclick=()=>{
+  const name=document.getElementById("sName").value.trim();
+  if(!name){showToast("Enter staff name",true);return;}
+  HOSP.counter++;
+  HOSP.staff.push({id:"STF-"+String(HOSP.counter).padStart(3,"0"),name,
+    role:document.getElementById("sRole").value,
+    dept:document.getElementById("sDept").value,
+    shift:document.getElementById("sShift").value,status:"On Duty"});
+  addActivity(name+" added to staff roster","var(--ok)");
+  document.getElementById("staffOverlay").classList.remove("show");
+  ["sName","sRole","sDept"].forEach(i=>{document.getElementById(i).value="";});
+  saveState(); renderAll();
+  showToast(name+" added to staff");
+};
+
+document.getElementById("addInvBtn").onclick=()=>{ document.getElementById("invOverlay").classList.add("show"); };
+document.getElementById("saveInvBtn").onclick=()=>{
+  const name=document.getElementById("iName").value.trim();
+  if(!name){showToast("Enter item name",true);return;}
+  HOSP.counter++;
+  HOSP.inventory.push({id:"INV-"+String(HOSP.counter).padStart(3,"0"),name,
+    cat:document.getElementById("iCat").value,
+    stock:parseInt(document.getElementById("iStock").value)||0,
+    min:parseInt(document.getElementById("iMin").value)||10});
+  document.getElementById("invOverlay").classList.remove("show");
+  ["iName","iStock","iMin"].forEach(i=>{document.getElementById(i).value="";});
+  saveState(); renderInventory();
+  showToast(name+" added to inventory");
+};
+
+document.getElementById("readyBtn").onclick=()=>{
+  addActivity("Emergency department confirmed READY status","var(--ok)");
+  saveState(); renderAll();
+  showToast("✅ ER Ready status confirmed");
+};
+
+document.getElementById("publishBtn").onclick=publishCapacity;
+
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.onclick=()=>{ const ov=document.getElementById(btn.dataset.close); if(ov) ov.classList.remove("show"); };
+});
+document.querySelectorAll(".overlay").forEach(ov=>{
+  ov.addEventListener("click",e=>{ if(e.target===ov) ov.classList.remove("show"); });
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"));
+});
+
+document.getElementById("patSearch").oninput=function(){ renderPatients(this.value); };
+document.getElementById("logoutBtn").onclick=()=>{
+  ["resqnet_token","resqnet_user","resqnet_session_expiry"].forEach(k=>localStorage.removeItem(k));
+  location.replace("login.html");
+};
+
+/* =====================================================
+   RENDER ALL
+===================================================== */
+function renderAll(){
+  renderDashboard();
+  renderPatients(document.getElementById("patSearch").value);
+  renderBeds();
+  renderEmergency();
+  renderStaff();
+  renderInventory();
+  renderMap();
+  setText("pub-gen", HOSP.beds.general.filter(b=>!b.occupied).length);
+  setText("pub-icu", HOSP.beds.icu.filter(b=>!b.occupied).length);
+}
+
+/* =====================================================
+   INIT & LIVE SYNC
+===================================================== */
+HOSP = loadState();
+initMap();
+renderAll();
+
+// Instant cross-tab sync via storage events
+window.addEventListener("storage", e => {
+  if(e.key === K.AMB_STATE){
+    // Ambulance state changed — check for notifications then re-render
+    checkAmbulanceNotifications();
+    renderDashboard();
+    renderEmergency();
+    renderMap();
+  }
+  if(e.key === K.DISP_STATE || e.key === K.AUTHORITY){
+    renderDashboard();
+    renderEmergency();
+  }
+  if(e.key === K.HOSP_STATE){
+    HOSP = loadState();
+    renderAll();
+  }
+});
+
+// 3-second polling fallback (catches same-tab changes)
+setInterval(()=>{
+  checkAmbulanceNotifications();
+  renderDashboard();
+  renderEmergency();
+  renderMap();
+}, 3000);
+</script>
+</body>
+</html>
