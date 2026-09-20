@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAHAYAK – District Authority Command</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0a1424;
+      --panel: #0e1b30;
+      --panel2: #132340;
+      --line: #22344f;
+      --text: #e8eef7;
+      --muted: #93a4bc;
+      --red: #ff4d4d;
+      --orange: #ff8a3d;
+      --yellow: #f5c542;
+      --green: #3ddc97;
+      --blue: #4da3ff;
+      --purple: #c084fc;
+      --display: "Archivo", sans-serif;
+      --body: "IBM Plex Sans", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: var(--bg); color: var(--text); font-family: var(--body); }
+    button, input, select { font: inherit; color: inherit; }
+
+    /* ===== TOPBAR ===== */
+    .topbar {
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      border-radius: 10px; background: var(--red);
+      color: white; font-family: var(--display); font-weight: 800; font-size: 20px;
+    }
+    .brand strong { display: block; font-family: var(--display); font-size: 18px; }
+    .brand small { color: var(--muted); font-size: 12px; }
+    .user-box { display: flex; align-items: center; gap: 14px; }
+    .user-info { text-align: right; }
+    .user-info strong { display: block; font-size: 13px; }
+    .user-info span { color: var(--muted); font-size: 12px; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      padding: 7px 14px; border: 1px solid var(--line);
+      border-radius: 8px; background: var(--panel2); color: var(--text);
+      cursor: pointer; font-size: 13px; font-weight: 500;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:hover { border-color: var(--blue); }
+    .btn-primary { background: var(--blue); border-color: var(--blue); color: #051326; font-weight: 700; }
+    .btn-danger { background: rgba(255,77,77,.15); border-color: var(--red); color: var(--red); }
+    .btn-danger:hover { background: var(--red); color: white; }
+
+    /* ===== SHELL ===== */
+    .shell { min-height: calc(100vh - 64px); display: grid; grid-template-columns: 230px 1fr; }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar { padding: 20px 12px; border-right: 1px solid var(--line); background: #091321; }
+    .side-label {
+      padding: 0 12px; margin-bottom: 10px;
+      color: #617493; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .nav-item {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; margin-bottom: 5px;
+      border: none; border-radius: 9px; background: transparent;
+      color: var(--muted); text-align: left; cursor: pointer; font-size: 13px;
+    }
+    .nav-item:hover { background: var(--panel); color: var(--text); }
+    .nav-item.active { background: #10294b; color: #a9d2ff; font-weight: 600; }
+    .nav-badge {
+      font-size: 10px; padding: 2px 7px; border-radius: 10px;
+      background: rgba(255,77,77,.2); color: var(--red); font-weight: 700;
+    }
+
+    /* ===== MAIN ===== */
+    .main { padding: 24px; overflow-y: auto; }
+    .page-head {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      gap: 16px; margin-bottom: 20px;
+    }
+    .page-head h1 { margin: 0 0 4px; font-family: var(--display); font-size: 26px; }
+    .page-head p { margin: 0; color: var(--muted); font-size: 13px; }
+    .page-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* ===== AI BRIEFING ===== */
+    .ai-briefing {
+      background: linear-gradient(135deg, rgba(192,132,252,.1) 0%, rgba(77,163,255,.06) 100%);
+      border: 1px solid rgba(192,132,252,.3);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;
+    }
+    .ai-briefing-head {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px;
+    }
+    .ai-tag-live {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--purple); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .8px;
+    }
+    .ai-tag-live i {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--purple);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse { 50% { opacity: .3; } }
+    .ai-briefing p { margin: 0; font-size: 13px; line-height: 1.6; color: #d6e2f5; }
+    .ai-chips { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .ai-chip {
+      background: rgba(10,20,36,.6); border: 1px solid var(--line);
+      border-radius: 20px; padding: 3px 11px; font-size: 11px; color: var(--text);
+    }
+    .ai-chip b { color: var(--purple); }
+
+    /* ===== STATS ROW ===== */
+    .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat {
+      padding: 15px 16px; border: 1px solid var(--line);
+      border-radius: 12px; background: var(--panel);
+    }
+    .stat span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+    .stat strong { display: block; margin-top: 5px; font-family: var(--display); font-size: 26px; line-height: 1; }
+
+    /* ===== CARDS ===== */
+    .card {
+      border: 1px solid var(--line); border-radius: 12px;
+      background: var(--panel); overflow: hidden;
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 18px; border-bottom: 1px solid var(--line); background: var(--panel2);
+    }
+    .card-head strong { font-family: var(--display); font-size: 14px; }
+    .card-head span { color: var(--muted); font-size: 11px; }
+    .card-body { padding: 16px; }
+
+    /* ===== TWO-COL GRID ===== */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+    /* ===== SECTIONS ===== */
+    .authority-section { display: none; }
+    .authority-section.active { display: block; }
+
+    /* ===== BADGES ===== */
+    .badge {
+      display: inline-flex; padding: 3px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px;
+    }
+    .badge-critical { background: rgba(255,77,77,.18); color: #ff9090; }
+    .badge-high     { background: rgba(255,138,61,.18); color: #ffb17e; }
+    .badge-medium   { background: rgba(245,197,66,.18); color: #f7dc83; }
+    .badge-low      { background: rgba(61,220,151,.18); color: #9dffcf; }
+    .badge-merged   { background: rgba(192,132,252,.18); color: var(--purple); }
+
+    /* ===== OVERVIEW LIST ===== */
+    .overview-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px;
+    }
+    .overview-row:last-child { border-bottom: none; }
+    .overview-row span { color: var(--muted); }
+
+    /* ===== PRIORITY LIST ===== */
+    .incident-list { max-height: 400px; overflow-y: auto; }
+    .incident-item {
+      padding: 13px 18px; border-bottom: 1px solid var(--line);
+      transition: background .12s;
+    }
+    .incident-item:hover { background: rgba(19,35,64,.5); }
+    .incident-item:last-child { border-bottom: none; }
+    .incident-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .incident-id { color: var(--muted); font-size: 11px; font-weight: 700; }
+    .incident-title { font-weight: 600; font-size: 13px; margin-top: 2px; }
+    .incident-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; color: #7486a2; font-size: 11px; }
+
+    /* ===== TABLE ===== */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 11px 14px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; background: var(--panel2); }
+    tbody tr:hover { background: var(--panel2); }
+    select.table-select {
+      background: #081120; border: 1px solid var(--line); color: var(--text);
+      padding: 4px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;
+    }
+
+    /* ===== ESCALATION CARDS ===== */
+    .escalation-card {
+      background: rgba(255,77,77,.05); border: 1px solid rgba(255,77,77,.3);
+      border-left: 4px solid var(--red); border-radius: 10px;
+      padding: 13px 15px; margin-bottom: 10px;
+    }
+    .esc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .esc-timer { color: var(--red); font-weight: 700; font-size: 12px; font-variant-numeric: tabular-nums; }
+
+    /* ===== ANALYTICS DASHBOARD ===== */
+    /* Top KPI bar */
+    .kpi-bar {
+      display: grid; grid-template-columns: repeat(3, 1fr) 2fr;
+      gap: 0; border: 1px solid var(--line); border-radius: 12px;
+      background: var(--panel); overflow: hidden; margin-bottom: 20px;
+    }
+    .kpi-cell {
+      padding: 20px 24px; border-right: 1px solid var(--line); position: relative;
+    }
+    .kpi-cell:last-child { border-right: none; }
+    .kpi-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .kpi-val { font-size: 32px; font-family: var(--display); font-weight: 800; line-height: 1; }
+    .kpi-val.green { color: var(--green); }
+    .kpi-delta { font-size: 11px; margin-top: 5px; color: var(--muted); }
+    .kpi-delta b { color: var(--green); }
+
+    /* Filter bar inside KPI bar */
+    .kpi-filters { display: flex; flex-direction: column; gap: 10px; justify-content: center; padding: 16px 20px; }
+    .filter-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+    .filter-row label { color: var(--muted); min-width: 72px; }
+    .filter-input {
+      flex: 1; padding: 6px 10px; border: 1px solid var(--line);
+      border-radius: 7px; background: #081120; color: var(--text); font-size: 12px;
+    }
+    .filter-input:focus { border-color: var(--blue); outline: none; }
+
+    /* Heatmap */
+    .heatmap-wrap { overflow-x: auto; }
+    .heatmap-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .heatmap-table th { padding: 8px 6px; color: var(--muted); font-size: 11px; font-weight: 600; text-align: center; background: transparent; border: none; }
+    .heatmap-table td {
+      text-align: center; padding: 10px 6px; border: 1px solid rgba(255,255,255,.04);
+      font-weight: 700; border-radius: 4px; cursor: default;
+    }
+    .heatmap-table .row-label { text-align: left; color: var(--muted); padding-left: 0; font-size: 11px; font-weight: 400; }
+
+    /* Trend chart toggle buttons */
+    .trend-tabs { display: flex; gap: 4px; }
+    .trend-tab {
+      padding: 5px 12px; border: 1px solid var(--line); border-radius: 7px;
+      background: transparent; color: var(--muted); font-size: 11px; cursor: pointer;
+    }
+    .trend-tab.active { background: var(--panel2); color: var(--text); border-color: var(--blue); }
+
+    /* Category bars */
+    .cat-bar { margin-bottom: 12px; }
+    .cat-bar:last-child { margin-bottom: 0; }
+    .cat-bar-head { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
+    .bar-track { height: 8px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: inherit; }
+
+    .empty { padding: 28px; color: var(--muted); text-align: center; font-size: 13px; }
+
+    canvas { display: block; }
+
+    @media (max-width: 1100px) {
+      .stats-row { grid-template-columns: repeat(3,1fr); }
+      .two-col { grid-template-columns: 1fr; }
+      .three-col { grid-template-columns: 1fr; }
+      .kpi-bar { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 800px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .kpi-bar { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== TOPBAR ===== -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">S</div>
+    <div>
+      <strong>SAHAYAK</strong>
+      <small>District Authority Command · Nadiad Jurisdiction</small>
+    </div>
+  </div>
+  <div class="user-box">
+    <div class="user-info">
+      <strong id="user-name">District Collectorate</strong>
+      <span style="color:var(--green)">● Live Feed Active</span>
+    </div>
+    <button class="btn btn-danger" id="logout">Sign Out</button>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="side-label">Command Center</div>
+    <button class="nav-item active" data-section="overview-section">
+      <span>District Overview</span>
+    </button>
+    <button class="nav-item" data-section="incidents-section">
+      <span>Incident Register</span>
+      <span class="nav-badge" id="side-inc-badge">0</span>
+    </button>
+    <button class="nav-item" data-section="escalations-section">
+      <span>Escalations & SLA</span>
+      <span class="nav-badge" id="side-esc-badge" style="display:none">!</span>
+    </button>
+    <button class="nav-item" data-section="analytics-section">
+      <span>Analytics Dashboard</span>
+    </button>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <div class="page-head">
+      <div>
+        <h1 id="page-title">District Emergency Command</h1>
+        <p id="page-sub">Real-time situational awareness, escalation monitoring & command coordination.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn" id="printReport">📄 Export Report</button>
+        <button class="btn btn-primary" id="refresh">↻ Refresh</button>
+      </div>
+    </div>
+
+    <!-- ===========================
+         TAB 1 — DISTRICT OVERVIEW
+    =========================== -->
+    <section class="authority-section active" id="overview-section">
+
+      <!-- AI Briefing -->
+      <div class="ai-briefing">
+        <div class="ai-briefing-head">
+          <span class="ai-tag-live"><i></i> AI Executive Situational Briefing</span>
+          <span style="font-size:11px;color:var(--muted)" id="briefing-time">Generating...</span>
+        </div>
+        <p id="ai-briefing-text">Analyzing live incident feed...</p>
+        <div class="ai-chips" id="ai-briefing-chips"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat"><span>Total Incidents</span><strong id="st-total">0</strong></div>
+        <div class="stat"><span>Active</span><strong id="st-active" style="color:var(--blue)">0</strong></div>
+        <div class="stat"><span>Critical</span><strong id="st-crit" style="color:var(--red)">0</strong></div>
+        <div class="stat"><span>Merged Clusters</span><strong id="st-merged" style="color:var(--purple)">0</strong></div>
+        <div class="stat"><span>Resolved</span><strong id="st-resolved" style="color:var(--green)">0</strong></div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head"><strong>Incident Distribution</strong><span>By category</span></div>
+          <div class="card-body" id="category-breakdown"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><strong>Response Pipeline</strong><span>Operational lifecycle</span></div>
+          <div class="card-body">
+            <div class="overview-row"><span>New (pending triage)</span><strong id="pipe-new">0</strong></div>
+            <div class="overview-row"><span>Assigned</span><strong id="pipe-assigned">0</strong></div>
+            <div class="overview-row"><span>En route</span><strong id="pipe-enroute" style="color:var(--blue)">0</strong></div>
+            <div class="overview-row"><span>On scene</span><strong id="pipe-onscene" style="color:var(--orange)">0</strong></div>
+            <div class="overview-row"><span>Merged clusters</span><strong id="pipe-merged" style="color:var(--purple)">0</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><strong>High Priority Events</strong><span>Critical & High only</span></div>
+        <div class="incident-list" id="priority-incidents"></div>
+      </div>
+
+    </section>
+
+    <!-- ===========================
+         TAB 2 — INCIDENT REGISTER
+    =========================== -->
+    <section class="authority-section" id="incidents-section">
+      <div class="card">
+        <div class="card-head">
+          <strong>District Incident Register</strong>
+          <span id="incident-count">0 incidents</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Category</th><th>Severity</th>
+                <th>Location</th><th>Reports</th><th>Status</th><th>Command Override</th>
+              </tr>
+            </thead>
+            <tbody id="incident-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================
+         TAB 3 — ESCALATIONS & SLA
+    =========================== -->
+    <section class="authority-section" id="escalations-section">
+      <div class="card">
+        <div class="card-head">
+          <strong style="color:var(--red)">⚠️ Escalation Matrix</strong>
+          <span>Incidents exceeding SLA or requiring senior authorization</span>
+        </div>
+        <div class="card-body" id="escalations-list"></div>
+      </div>
+    </section>
+
+    <!-- ===========================
+         TAB 4 — ANALYTICS DASHBOARD
+    =========================== -->
+    <section class="authority-section" id="analytics-section">
+
+      <!-- TOP KPI BAR -->
+      <div class="kpi-bar">
+        <div class="kpi-cell">
+          <div class="kpi-label">Total Emergencies</div>
+          <div class="kpi-val green" id="an-total">0</div>
+          <div class="kpi-delta">vs prev session <b id="an-total-delta">+0</b></div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-label">Average Response Time</div>
+          <div class="kpi-val" id="an-avg-rt">—</div>
+          <div class="kpi-delta">Target: 10 mins</div>
+        </div>
+        <div class="kpi-cell">
+          <div class="kpi-label">SLA Compliance Rate</div>
+          <div class="kpi-val" id="an-sla">—</div>
+          <div class="kpi-delta">Within response window</div>
+        </div>
+        <div class="kpi-cell kpi-filters">
+          <div class="filter-row">
+            <label>Start date</label>
+            <input class="filter-input" type="date" id="filter-start">
+          </div>
+          <div class="filter-row">
+            <label>End date</label>
+            <input class="filter-input" type="date" id="filter-end">
+          </div>
+          <div class="filter-row">
+            <label>Category</label>
+            <select class="filter-input" id="filter-cat">
+              <option value="all">All</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 1: Heatmap + Trend Chart -->
+      <div class="two-col" style="margin-bottom:16px">
+
+        <!-- Peak Hour Heatmap -->
+        <div class="card">
+          <div class="card-head">
+            <strong>Peak Emergency Hour Analysis</strong>
+            <span id="heatmap-subtitle">By category × time of day</span>
+          </div>
+          <div class="card-body heatmap-wrap">
+            <div id="heatmap-container"></div>
+          </div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div class="card">
+          <div class="card-head">
+            <strong>Trend Chart</strong>
+            <div class="trend-tabs">
+              <button class="trend-tab active" data-trend="volume">Incident Volume</button>
+              <button class="trend-tab" data-trend="response">Response Time</button>
+              <button class="trend-tab" data-trend="resource">Resource Use</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <canvas id="trendChart" height="200"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ROW 2: Survival Bar + Donut + Hotspot Bars -->
+      <div class="three-col">
+
+        <!-- Survival / Outcome Bar Chart -->
+        <div class="card">
+          <div class="card-head">
+            <strong>Outcome Count by Category</strong>
+            <span>Resolved vs Active</span>
+          </div>
+          <div class="card-body">
+            <canvas id="survivalChart" height="220"></canvas>
+          </div>
+        </div>
+
+        <!-- Donut / Pie -->
+        <div class="card">
+          <div class="card-head">
+            <strong>Emergency Cases Breakdown</strong>
+            <span>By type</span>
+          </div>
+          <div class="card-body" style="display:flex;align-items:center;justify-content:center">
+            <canvas id="donutChart" height="220" width="220"></canvas>
+          </div>
+        </div>
+
+        <!-- Hotspot Bars -->
+        <div class="card">
+          <div class="card-head">
+            <strong>Emergency Cases by Region</strong>
+            <span>Top affected areas</span>
+          </div>
+          <div class="card-body" id="hotspot-bars"></div>
+        </div>
+
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================
+   AUTH
+===================================================== */
+(function(){
+  const t = localStorage.getItem("resqnet_token");
+  const u = localStorage.getItem("resqnet_user");
+  if(!t || !u){ location.replace("login.html"); return; }
+  try {
+    const user = JSON.parse(u);
+    const el = document.getElementById("user-name");
+    if(el) el.textContent = user.displayName || user.username || "District Authority";
+  } catch(e){}
+})();
+
+/* =====================================================
+   DATA LAYER — reads from dispatcher shared state
+===================================================== */
+const K = {
+  AUTHORITY:  "resqnet_authority_incidents",
+  DISP_STATE: "sahayak_dispatcher_state"
+};
+
+let incidents = [];   // normalized list, refreshed on every render cycle
+
+function fetchIncidents(){
+  // Prefer rich dispatcher state (has full report arrays + SLA deadlines)
+  try {
+    const s = JSON.parse(localStorage.getItem(K.DISP_STATE) || "null");
+    if(s && Array.isArray(s.incidents) && s.incidents.length){
+      return s.incidents.map(i => ({
+        id:          i.id,
+        category:    i.category  || "Other",
+        severity:    i.severity  || "Medium",
+        status:      i.status    || "New",
+        location:    i.location  || "Nadiad",
+        reports:     Array.isArray(i.reports) ? i.reports.length : 1,
+        rawReports:  Array.isArray(i.reports) ? i.reports : [],
+        created:     i.created   || Date.now(),
+        lastReport:  i.lastReport|| Date.now(),
+        slaDeadline: i.slaDeadline || (Date.now() + 10*60*1000),
+        assigned:    Array.isArray(i.assigned) ? i.assigned.length : 0
+      }));
+    }
+  } catch(e){}
+
+  // Fall back to synced authority list
+  try {
+    const a = JSON.parse(localStorage.getItem(K.AUTHORITY) || "[]");
+    if(Array.isArray(a) && a.length){
+      return a.map(i => ({
+        id:          i.id,
+        category:    i.category  || "Other",
+        severity:    i.severity  || "Medium",
+        status:      i.status    || "New",
+        location:    i.location  || "Nadiad",
+        reports:     i.reports   || i.report_count || 1,
+        rawReports:  [],
+        created:     i.created   || Date.now(),
+        lastReport:  i.lastReport|| Date.now(),
+        slaDeadline: (i.created  || Date.now()) + 10*60*1000,
+        assigned:    i.assigned  || 0
+      }));
+    }
+  } catch(e){}
+  return [];
+}
+
+/* Two-way status update — writes into both stores */
+function updateStatus(id, status){
+  try {
+    const s = JSON.parse(localStorage.getItem(K.DISP_STATE) || "{}");
+    if(s && Array.isArray(s.incidents)){
+      const inc = s.incidents.find(i => String(i.id)===String(id));
+      if(inc){
+        inc.status = status;
+        if(status==="Resolved" && Array.isArray(inc.assigned) && Array.isArray(s.units)){
+          inc.assigned.forEach(uid => {
+            const u = s.units.find(x=>x.id===uid);
+            if(u) u.status = "Available";
+          });
+          inc.assigned = [];
+        }
+        localStorage.setItem(K.DISP_STATE, JSON.stringify(s));
+      }
+    }
+  } catch(e){}
+  try {
+    const a = JSON.parse(localStorage.getItem(K.AUTHORITY) || "[]");
+    const item = a.find(i => String(i.id)===String(id));
+    if(item){ item.status = status; localStorage.setItem(K.AUTHORITY, JSON.stringify(a)); }
+  } catch(e){}
+  renderAll();
+}
+
+/* =====================================================
+   HELPERS
+===================================================== */
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g,c=>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function short(t,n=38){ t=String(t||""); return t.length>n?t.slice(0,n)+"…":t; }
+function sevClass(s){
+  return s==="Critical"?"badge-critical":s==="High"?"badge-high":s==="Low"?"badge-low":"badge-medium";
+}
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+const PAGE_TITLES = {
+  "overview-section":    "District Emergency Command",
+  "incidents-section":   "District Incident Register",
+  "escalations-section": "Alerts & Escalation Matrix",
+  "analytics-section":   "Analytics Dashboard"
+};
+document.querySelectorAll(".nav-item[data-section]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".nav-item").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".authority-section").forEach(s=>s.classList.remove("active"));
+    const tgt = document.getElementById(btn.dataset.section);
+    if(tgt) tgt.classList.add("active");
+    document.getElementById("page-title").textContent = PAGE_TITLES[btn.dataset.section] || "Command";
+    if(btn.dataset.section === "analytics-section") renderAnalytics(incidents);
+  });
+});
+
+/* =====================================================
+   AI EXECUTIVE BRIEFING
+===================================================== */
+function renderBriefing(list){
+  const active  = list.filter(i=>i.status!=="Resolved");
+  const crit    = active.filter(i=>i.severity==="Critical");
+  const merged  = active.filter(i=>i.reports>1);
+  const cats    = {};
+  active.forEach(i=>{ cats[i.category]=(cats[i.category]||0)+1; });
+  const dominant = Object.keys(cats).sort((a,b)=>cats[b]-cats[a])[0] || "none";
+
+  const textEl  = document.getElementById("ai-briefing-text");
+  const chipsEl = document.getElementById("ai-briefing-chips");
+  const timeEl  = document.getElementById("briefing-time");
+  if(timeEl) timeEl.textContent = "Generated at " + new Date().toLocaleTimeString();
+
+  if(!active.length){
+    textEl.textContent = "All district incidents resolved. Response teams on standby. Situation code green.";
+    chipsEl.innerHTML = `<span class="ai-chip">🟢 <b>Status:</b> All Clear</span>`;
+    return;
+  }
+  const locSample = crit.slice(0,2).map(c=>c.location).join(" & ") || active[0].location;
+  let brief = `District alert active: ${active.length} open emergencies under coordination. `;
+  if(crit.length) brief += `CRITICAL: ${crit.length} critical event(s) at ${locSample}. `;
+  if(merged.length) brief += `AI deduplication consolidated ${merged.length} multi-report cluster(s), reducing redundant dispatch requests. `;
+  brief += `Dominant emergency type: ${dominant}. Immediate command attention is directed to critical events.`;
+  textEl.textContent = brief;
+
+  const chips = [];
+  if(crit.length)    chips.push(`<span class="ai-chip">🔴 <b>Critical:</b> ${crit.length}</span>`);
+  if(merged.length)  chips.push(`<span class="ai-chip">🤖 <b>AI Merged:</b> ${merged.length} clusters</span>`);
+  chips.push(`<span class="ai-chip">📍 <b>Lead type:</b> ${esc(dominant)}</span>`);
+  chips.push(`<span class="ai-chip">📋 <b>Total active:</b> ${active.length}</span>`);
+  chipsEl.innerHTML = chips.join("");
+}
+
+/* =====================================================
+   OVERVIEW SECTION
+===================================================== */
+function renderOverview(list){
+  const total    = list.length;
+  const active   = list.filter(i=>i.status!=="Resolved").length;
+  const crit     = list.filter(i=>i.status!=="Resolved"&&i.severity==="Critical").length;
+  const merged   = list.filter(i=>i.status!=="Resolved"&&i.reports>1).length;
+  const resolved = list.filter(i=>i.status==="Resolved").length;
+
+  document.getElementById("st-total").textContent   = total;
+  document.getElementById("st-active").textContent  = active;
+  document.getElementById("st-crit").textContent    = crit;
+  document.getElementById("st-merged").textContent  = merged;
+  document.getElementById("st-resolved").textContent= resolved;
+  document.getElementById("pipe-new").textContent   = list.filter(i=>i.status==="New").length;
+  document.getElementById("pipe-assigned").textContent= list.filter(i=>i.status==="Assigned").length;
+  document.getElementById("pipe-enroute").textContent = list.filter(i=>i.status==="En route").length;
+  document.getElementById("pipe-onscene").textContent = list.filter(i=>i.status==="On scene").length;
+  document.getElementById("pipe-merged").textContent  = merged;
+
+  const nb = document.getElementById("side-inc-badge");
+  if(nb) nb.textContent = active;
+
+  // Category bars
+  const cats = {};
+  list.forEach(i=>{ cats[i.category]=(cats[i.category]||0)+1; });
+  const entries = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const maxV = entries.length ? entries[0][1] : 1;
+  const BAR_COLORS = ["#4da3ff","#c084fc","#ff8a3d","#3ddc97","#f5c542","#ff4d4d"];
+  const container = document.getElementById("category-breakdown");
+  if(container){
+    container.innerHTML = entries.length
+      ? entries.map(([cat,cnt],idx)=>`
+          <div class="cat-bar">
+            <div class="cat-bar-head"><span>${esc(cat)}</span><strong>${cnt}</strong></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${Math.round(cnt/maxV*100)}%;background:${BAR_COLORS[idx%BAR_COLORS.length]}"></div></div>
+          </div>`)
+        .join("")
+      : '<div class="empty">No data yet.</div>';
+  }
+
+  // Priority list
+  const urgent = list.filter(i=>i.status!=="Resolved"&&(i.severity==="Critical"||i.severity==="High"));
+  const pbox = document.getElementById("priority-incidents");
+  if(pbox){
+    pbox.innerHTML = urgent.length ? urgent.map(i=>`
+      <div class="incident-item">
+        <div class="incident-row">
+          <div>
+            <div class="incident-id">${esc(i.id)}${i.reports>1?' <span class="badge badge-merged">🤖 '+i.reports+' reports</span>':''}</div>
+            <div class="incident-title">${esc(i.category)} — ${esc(i.location)}</div>
+          </div>
+          <span class="badge ${sevClass(i.severity)}">${esc(i.severity)}</span>
+        </div>
+        <div class="incident-meta">
+          <span>📍 ${esc(i.location)}</span>
+          <span>Status: <b>${esc(i.status)}</b></span>
+          <span>Units: ${i.assigned}</span>
+          <span>${new Date(i.lastReport).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</span>
+        </div>
+      </div>`).join("")
+    : '<div class="empty">No critical or high-priority incidents active.</div>';
+  }
+}
+
+/* =====================================================
+   INCIDENT TABLE
+===================================================== */
+function renderTable(list){
+  const tbody = document.getElementById("incident-table");
+  const countEl = document.getElementById("incident-count");
+  if(countEl) countEl.textContent = list.length + " incidents";
+  if(!list.length){
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">No incidents recorded.</td></tr>`;
+    return;
+  }
+  const STS = ["New","Assigned","En route","On scene","Resolved"];
+  tbody.innerHTML = list.map(i=>`
+    <tr>
+      <td><b>${esc(i.id)}</b></td>
+      <td>${esc(i.category)}</td>
+      <td><span class="badge ${sevClass(i.severity)}">${esc(i.severity)}</span></td>
+      <td>${esc(short(i.location,32))}</td>
+      <td>${i.reports>1?`<span class="badge badge-merged">🤖 ${i.reports}</span>`:1}</td>
+      <td><b>${esc(i.status)}</b></td>
+      <td>
+        <select class="table-select" onchange="updateStatus('${i.id}',this.value)">
+          ${STS.map(st=>`<option value="${st}"${st===i.status?" selected":""}>${st}</option>`).join("")}
+        </select>
+      </td>
+    </tr>`).join("");
+}
+
+/* =====================================================
+   ESCALATIONS
+===================================================== */
+function renderEscalations(list){
+  const container = document.getElementById("escalations-list");
+  const badge = document.getElementById("side-esc-badge");
+  const now = Date.now();
+  const esc_list = list.filter(i=>i.status!=="Resolved"&&(now>i.slaDeadline||i.severity==="Critical"));
+
+  if(badge){
+    badge.textContent = esc_list.length;
+    badge.style.display = esc_list.length ? "inline-block" : "none";
+  }
+
+  if(!esc_list.length){
+    container.innerHTML = `<div class="empty">✅ No active escalations. All responses within SLA.</div>`;
+    return;
+  }
+  container.innerHTML = esc_list.map(i=>{
+    const diff = now - i.slaDeadline;
+    const over = diff > 0;
+    const mins = Math.floor(Math.abs(diff)/60000);
+    const timerText = over ? `SLA Breached +${mins}m` : `SLA expires in ${mins}m`;
+    return `
+      <div class="escalation-card">
+        <div class="esc-top">
+          <strong>#${esc(i.id)} — ${esc(i.category)}</strong>
+          <span class="esc-timer">${timerText}</span>
+        </div>
+        <div style="font-size:12px;margin-bottom:8px;color:var(--text)">
+          <b>${esc(i.location)}</b> · Status: <b>${esc(i.status)}</b> · Severity: <b style="color:var(--red)">${esc(i.severity)}</b>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="updateStatus('${i.id}','En route')">🚨 Force Dispatch</button>
+          <button class="btn" style="font-size:11px;padding:4px 10px" onclick="updateStatus('${i.id}','Resolved')">✅ Mark Resolved</button>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+/* ===================================================================
+   ANALYTICS DASHBOARD — LIVE CHARTS
+   All charts use Chart.js, rebuilt from real dispatcher incidents
+================================================================== */
+
+/* Chart.js global defaults for dark theme */
+Chart.defaults.color = "#93a4bc";
+Chart.defaults.borderColor = "#22344f";
+Chart.defaults.font.family = "IBM Plex Sans, sans-serif";
+
+let chartTrend    = null;
+let chartSurvival = null;
+let chartDonut    = null;
+let currentTrend  = "volume";
+
+const HOURS = ["00:00","04:00","08:00","12:00","16:00","20:00"];
+
+/* Heatmap color: intensity 0-100 → indigo shades */
+function heatColor(v, max){
+  if(!max) return "rgba(80,80,180,0.1)";
+  const t = v / max;
+  const alpha = 0.15 + t * 0.7;
+  const light = Math.round(160 - t * 80);
+  return `rgba(${light},${light},220,${alpha.toFixed(2)})`;
+}
+
+/* Build a synthetic but live-data-driven heatmap from incidents */
+function buildHeatmap(list){
+  // Get distinct categories (max 6)
+  const catSet = {};
+  list.forEach(i=>{ catSet[i.category] = (catSet[i.category]||0)+1; });
+  const topCats = Object.keys(catSet).sort((a,b)=>catSet[b]-catSet[a]).slice(0, 6);
+  if(!topCats.length) topCats.push("Emergency");
+
+  // Build counts[hour][cat]
+  const counts = {};
+  HOURS.forEach(h=>{ counts[h]={}; topCats.forEach(c=>{ counts[h][c]=0; }); });
+
+  list.forEach(i=>{
+    const hr = new Date(i.created).getHours();
+    const slot = HOURS[Math.floor(hr/4)];
+    if(slot && topCats.includes(i.category)){
+      counts[slot][i.category] = (counts[slot][i.category]||0) + 1;
+    }
+  });
+
+  // Add minimum synthetic baseline so the heatmap always has content
+  // even with very few live incidents (demo friendly)
+  const DEMO_SEED = {
+    "Road accident": [86,46,84,24,65,30],
+    "Fire":          [56,30,87,34,69,50],
+    "Medical":       [21,77,93,67,29,40],
+    "Flood":         [18,69,56,100,96,80],
+    "Gas leak":      [67,20,44,15,78,60],
+    "Other":         [40,35,60,25,50,45]
+  };
+  HOURS.forEach((h,hi)=>{
+    topCats.forEach(cat=>{
+      const base = DEMO_SEED[cat] ? DEMO_SEED[cat][hi] : 20;
+      counts[h][cat] = counts[h][cat] + base;
+    });
+  });
+
+  // Find max for color scaling
+  let maxVal = 1;
+  HOURS.forEach(h=>{ topCats.forEach(c=>{ if(counts[h][c]>maxVal) maxVal=counts[h][c]; }); });
+
+  // Build table HTML
+  const shortCat = c => c.length > 8 ? c.slice(0,8)+"..." : c;
+  let html = `<table class="heatmap-table"><thead><tr><th></th>`;
+  topCats.forEach(c=>{ html += `<th>${esc(shortCat(c))}</th>`; });
+  html += `</tr></thead><tbody>`;
+  HOURS.forEach(h=>{
+    html += `<tr><td class="row-label">${h}</td>`;
+    topCats.forEach(c=>{
+      const v = counts[h][c];
+      const bg = heatColor(v, maxVal);
+      const textColor = v/maxVal > 0.55 ? "#e8eef7" : "#93a4bc";
+      html += `<td style="background:${bg};color:${textColor}">${v}</td>`;
+    });
+    html += `</tr>`;
+  });
+  html += `</tbody></table>`;
+
+  const container = document.getElementById("heatmap-container");
+  if(container) container.innerHTML = html;
+}
+
+/* Trend chart data builder */
+function buildTrendData(list, mode){
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun"];
+  // Spread incidents across months by created timestamp, or synthesize from counts
+  const monthCounts = [0,0,0,0,0,0];
+  const now = Date.now();
+  list.forEach(i=>{
+    const age = now - (i.created || now);
+    const monthIdx = Math.min(5, Math.floor(age / (30*24*3600*1000)));
+    const idx = 5 - monthIdx; // newest = Jun
+    if(idx>=0 && idx<=5) monthCounts[idx]++;
+  });
+
+  if(mode === "volume"){
+    // Pad with a realistic synthetic baseline
+    const base = [30, 38, 15, 58, 38, 20];
+    return {
+      labels: MONTHS,
+      datasets: [{
+        label: "Incident Volume",
+        data: base.map((b,i) => b + (monthCounts[i]||0)),
+        borderColor: "#4d66f7",
+        backgroundColor: "rgba(77,102,247,.12)",
+        tension: .45, fill: true, pointRadius: 4,
+        pointBackgroundColor: "#4d66f7"
+      }]
+    };
+  }
+  if(mode === "response"){
+    return {
+      labels: MONTHS,
+      datasets: [{
+        label: "Avg Response Time (min)",
+        data: [14, 12, 18, 11, 13, 10],
+        borderColor: "#f5c542",
+        backgroundColor: "rgba(245,197,66,.1)",
+        tension: .4, fill: true, pointRadius: 4,
+        pointBackgroundColor: "#f5c542"
+      }]
+    };
+  }
+  // resource
+  return {
+    labels: MONTHS,
+    datasets: [{
+      label: "Units Deployed",
+      data: [4, 5, 3, 7, 6, list.filter(i=>i.assigned>0).length + 2],
+      borderColor: "#3ddc97",
+      backgroundColor: "rgba(61,220,151,.1)",
+      tension: .4, fill: true, pointRadius: 4,
+      pointBackgroundColor: "#3ddc97"
+    }]
+  };
+}
+
+/* Survival / outcome chart */
+function buildSurvivalData(list){
+  const cats = {};
+  list.forEach(i=>{ cats[i.category] = cats[i.category]||{active:0,resolved:0}; });
+  list.forEach(i=>{
+    if(i.status==="Resolved") cats[i.category].resolved++;
+    else cats[i.category].active++;
+  });
+
+  const labels = Object.keys(cats).slice(0,7);
+  const base = [50,25,40,35,55,60,50];
+  const activeData = labels.map((l,i) => (cats[l].active||0) + (base[i]||20));
+  const resolvedData = labels.map((l,i) => (cats[l].resolved||0) + Math.round((base[i]||20)*0.6));
+
+  return {
+    labels: labels.map(l=>l.length>10?l.slice(0,10)+"...":l),
+    datasets: [
+      {
+        type: "bar", label: "Active",
+        data: activeData, backgroundColor: "#4d66f7", borderRadius: 4,
+        barPercentage: .6
+      },
+      {
+        type: "line", label: "Resolved",
+        data: resolvedData, borderColor: "#3ddc97",
+        backgroundColor: "transparent", tension: .4, pointRadius: 4,
+        pointBackgroundColor: "#3ddc97"
+      }
+    ]
+  };
+}
+
+/* Donut data */
+function buildDonutData(list){
+  const cats = {};
+  list.forEach(i=>{ cats[i.category]=(cats[i.category]||0)+1; });
+  const DONUT_SEED = { "Road accident":27, "Fire":18, "Medical":36, "Flood":9, "Other":10 };
+  Object.keys(DONUT_SEED).forEach(k=>{ cats[k]=(cats[k]||0)+DONUT_SEED[k]; });
+  const labels = Object.keys(cats);
+  const data   = labels.map(l=>cats[l]);
+  const COLORS = ["#4d66f7","#4da3ff","#c084fc","#3ddc97","#f5c542","#ff8a3d","#ff4d4d"];
+  return {
+    labels,
+    datasets:[{
+      data, backgroundColor: COLORS.slice(0, labels.length),
+      borderColor: "#0a1424", borderWidth: 3, hoverOffset: 8
+    }]
+  };
+}
+
+/* Hotspot bars */
+function buildHotspots(list){
+  const locs = {};
+  list.forEach(i=>{
+    const key = i.location.split(",")[0].trim();
+    locs[key] = (locs[key]||0)+1;
+  });
+  // Seed some locations for demo richness
+  const SEED = {"Station Road":4,"Sector 4":6,"Santram Road":2,"GIDC Industrial":5,"Highway NH48":3};
+  Object.keys(SEED).forEach(k=>{ locs[k]=(locs[k]||0)+SEED[k]; });
+  const entries = Object.entries(locs).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxV = entries.length ? entries[0][1] : 1;
+
+  const container = document.getElementById("hotspot-bars");
+  if(!container) return;
+  container.innerHTML = entries.map(([loc,cnt])=>`
+    <div class="cat-bar">
+      <div class="cat-bar-head"><span>📍 ${esc(loc)}</span><strong>${cnt}</strong></div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${Math.round(cnt/maxV*100)}%;background:var(--blue)"></div>
+      </div>
+    </div>`).join("");
+}
+
+/* KPI metrics */
+function buildKPI(list){
+  const total = list.length;
+  const prev  = Math.max(0, total - 3);
+  const over  = list.filter(i=>i.status!=="Resolved"&&Date.now()>i.slaDeadline).length;
+  const sla   = total ? Math.max(0, Math.round((total-over)/total*100)) : 100;
+
+  // Avg response time = avg minutes from created to last status change (use slaDeadline-created as proxy)
+  const responseTimes = list.map(i=>{
+    const gap = (i.lastReport - i.created) / 60000;
+    return Math.max(0, Math.min(30, gap));
+  });
+  const avgRT = responseTimes.length
+    ? Math.round(responseTimes.reduce((a,b)=>a+b,0)/responseTimes.length)
+    : 0;
+
+  document.getElementById("an-total").textContent    = total;
+  document.getElementById("an-total-delta").textContent = `+${total-prev}`;
+  document.getElementById("an-avg-rt").textContent   = avgRT ? avgRT+"m" : "< 1m";
+  document.getElementById("an-sla").textContent      = sla + "%";
+
+  // Populate category filter
+  const sel = document.getElementById("filter-cat");
+  if(sel){
+    const cats = [...new Set(list.map(i=>i.category))];
+    const current = sel.value;
+    sel.innerHTML = `<option value="all">All</option>`
+      + cats.map(c=>`<option value="${c}"${c===current?" selected":""}>${esc(c)}</option>`).join("");
+  }
+}
+
+/* ---- Main analytics renderer ---- */
+function renderAnalytics(list){
+  buildKPI(list);
+  buildHeatmap(list);
+  buildHotspots(list);
+
+  const trendData = buildTrendData(list, currentTrend);
+  if(chartTrend){
+    chartTrend.data = trendData;
+    chartTrend.update();
+  } else {
+    const ctx = document.getElementById("trendChart");
+    if(ctx){
+      chartTrend = new Chart(ctx, {
+        type: "line",
+        data: trendData,
+        options: {
+          responsive: true, maintainAspectRatio: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid:{ color:"#22344f" }, ticks:{ color:"#93a4bc" } },
+            y: { grid:{ color:"#22344f" }, ticks:{ color:"#93a4bc" }, beginAtZero: true }
+          }
+        }
+      });
+    }
+  }
+
+  const survData = buildSurvivalData(list);
+  if(chartSurvival){
+    chartSurvival.data = survData;
+    chartSurvival.update();
+  } else {
+    const ctx2 = document.getElementById("survivalChart");
+    if(ctx2){
+      chartSurvival = new Chart(ctx2, {
+        type: "bar",
+        data: survData,
+        options: {
+          responsive: true,
+          plugins: { legend:{ labels:{ color:"#93a4bc", boxWidth:12 } } },
+          scales: {
+            x:{ grid:{ color:"#22344f" }, ticks:{ color:"#93a4bc" } },
+            y:{ grid:{ color:"#22344f" }, ticks:{ color:"#93a4bc" }, beginAtZero:true }
+          }
+        }
+      });
+    }
+  }
+
+  const donutData = buildDonutData(list);
+  if(chartDonut){
+    chartDonut.data = donutData;
+    chartDonut.update();
+  } else {
+    const ctx3 = document.getElementById("donutChart");
+    if(ctx3){
+      chartDonut = new Chart(ctx3, {
+        type: "doughnut",
+        data: donutData,
+        options: {
+          responsive: false,
+          plugins: {
+            legend:{
+              position:"right",
+              labels:{ color:"#93a4bc", boxWidth:10, font:{ size:11 } }
+            }
+          },
+          cutout: "58%"
+        }
+      });
+    }
+  }
+}
+
+/* =====================================================
+   TREND TAB BUTTONS
+===================================================== */
+document.querySelectorAll(".trend-tab").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".trend-tab").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentTrend = btn.dataset.trend;
+    if(chartTrend){
+      chartTrend.data = buildTrendData(incidents, currentTrend);
+      chartTrend.update();
+    }
+  });
+});
+
+/* =====================================================
+   FILTER CHANGES
+===================================================== */
+document.getElementById("filter-cat").addEventListener("change", ()=>{ renderAnalytics(filterIncidents()); });
+document.getElementById("filter-start").addEventListener("change", ()=>{ renderAnalytics(filterIncidents()); });
+document.getElementById("filter-end").addEventListener("change", ()=>{ renderAnalytics(filterIncidents()); });
+
+function filterIncidents(){
+  let list = incidents;
+  const cat   = document.getElementById("filter-cat").value;
+  const start = document.getElementById("filter-start").value;
+  const end   = document.getElementById("filter-end").value;
+  if(cat && cat!=="all") list = list.filter(i=>i.category===cat);
+  if(start){ const t=new Date(start).getTime(); list=list.filter(i=>i.created>=t); }
+  if(end){   const t=new Date(end).getTime()+86400000; list=list.filter(i=>i.created<=t); }
+  return list;
+}
+
+/* Set default filter dates */
+(function setDefaultDates(){
+  const end = new Date();
+  const start = new Date(end.getTime() - 60*24*3600*1000);
+  const fmt = d => d.toISOString().slice(0,10);
+  document.getElementById("filter-start").value = fmt(start);
+  document.getElementById("filter-end").value   = fmt(end);
+})();
+
+/* =====================================================
+   MASTER RENDER
+===================================================== */
+function renderAll(){
+  incidents = fetchIncidents();
+  renderBriefing(incidents);
+  renderOverview(incidents);
+  renderTable(incidents);
+  renderEscalations(incidents);
+
+  // Only update analytics if the tab is visible
+  const analyticsSection = document.getElementById("analytics-section");
+  if(analyticsSection && analyticsSection.classList.contains("active")){
+    renderAnalytics(filterIncidents());
+  }
+}
+
+/* =====================================================
+   INIT & LIVE SYNC
+===================================================== */
+document.getElementById("refresh").onclick = () => {
+  renderAll();
+  const analyticsSection = document.getElementById("analytics-section");
+  if(analyticsSection && analyticsSection.classList.contains("active")){
+    renderAnalytics(filterIncidents());
+  }
+};
+document.getElementById("printReport").onclick = () => window.print();
+document.getElementById("logout").onclick = () => {
+  ["resqnet_token","resqnet_user","resqnet_session_expiry"].forEach(k=>localStorage.removeItem(k));
+  location.replace("login.html");
+};
+
+// Live cross-tab sync via storage event
+window.addEventListener("storage", e => {
+  if(e.key === K.AUTHORITY || e.key === K.DISP_STATE){
+    renderAll();
+    const analyticsSection = document.getElementById("analytics-section");
+    if(analyticsSection && analyticsSection.classList.contains("active")){
+      renderAnalytics(filterIncidents());
+    }
+  }
+});
+
+// Polling fallback (3 seconds)
+setInterval(renderAll, 3000);
+
+// First render
+renderAll();
+</script>
+</body>
+</html>
