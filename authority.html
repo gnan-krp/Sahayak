@@ -323,7 +323,7 @@
     <div class="page-head">
       <div>
         <h1 id="page-title">District Emergency Command</h1>
-        <p id="page-sub">Real-time situational awareness, escalation monitoring & command coordination.</p>
+        <p id="page-sub">Live situational awareness from the dispatcher feed, escalation monitoring & command coordination.</p>
       </div>
       <div class="page-actions">
         <button class="btn" id="printReport">📄 Export Report</button>
@@ -544,7 +544,7 @@
 })();
 
 /* =====================================================
-   DATA LAYER — reads from dispatcher shared state
+   DATA LAYER — live dispatcher state only
 ===================================================== */
 const K = {
   AUTHORITY:  "resqnet_authority_incidents",
@@ -554,59 +554,42 @@ const K = {
 let incidents = [];   // normalized list, refreshed on every render cycle
 
 function fetchIncidents(){
-  // Prefer rich dispatcher state (has full report arrays + SLA deadlines)
+  // Single source of truth: dispatcher live state in this browser.
+  // No built-in/synthetic incident list is used by Authority.
   try {
     const s = JSON.parse(localStorage.getItem(K.DISP_STATE) || "null");
-    if(s && Array.isArray(s.incidents) && s.incidents.length){
+    if(s && Array.isArray(s.incidents)){
       return s.incidents.map(i => ({
         id:          i.id,
-        category:    i.category  || "Other",
-        severity:    i.severity  || "Medium",
-        status:      i.status    || "New",
-        location:    i.location  || "Nadiad",
+        category:    i.category || "Other",
+        severity:    i.severity || "Medium",
+        status:      i.status || "New",
+        location:    i.location || "Nadiad",
         reports:     Array.isArray(i.reports) ? i.reports.length : 1,
         rawReports:  Array.isArray(i.reports) ? i.reports : [],
-        created:     i.created   || Date.now(),
-        lastReport:  i.lastReport|| Date.now(),
-        slaDeadline: i.slaDeadline || (Date.now() + 10*60*1000),
-        assigned:    Array.isArray(i.assigned) ? i.assigned.length : 0
+        created:     Number(i.created) || 0,
+        lastReport:  Number(i.lastReport) || Number(i.created) || 0,
+        slaDeadline: Number(i.slaDeadline) || 0,
+        assigned:    Array.isArray(i.assigned) ? i.assigned.length : 0,
+        lat:         Number(i.lat) || null,
+        lng:         Number(i.lng) || null
       }));
     }
-  } catch(e){}
-
-  // Fall back to synced authority list
-  try {
-    const a = JSON.parse(localStorage.getItem(K.AUTHORITY) || "[]");
-    if(Array.isArray(a) && a.length){
-      return a.map(i => ({
-        id:          i.id,
-        category:    i.category  || "Other",
-        severity:    i.severity  || "Medium",
-        status:      i.status    || "New",
-        location:    i.location  || "Nadiad",
-        reports:     i.reports   || i.report_count || 1,
-        rawReports:  [],
-        created:     i.created   || Date.now(),
-        lastReport:  i.lastReport|| Date.now(),
-        slaDeadline: (i.created  || Date.now()) + 10*60*1000,
-        assigned:    i.assigned  || 0
-      }));
-    }
-  } catch(e){}
+  } catch(e) {}
   return [];
 }
 
 /* Two-way status update — writes into both stores */
 function updateStatus(id, status){
   try {
-    const s = JSON.parse(localStorage.getItem(K.DISP_STATE) || "{}");
+    const s = JSON.parse(localStorage.getItem(K.DISP_STATE) || "null");
     if(s && Array.isArray(s.incidents)){
       const inc = s.incidents.find(i => String(i.id)===String(id));
       if(inc){
         inc.status = status;
         if(status==="Resolved" && Array.isArray(inc.assigned) && Array.isArray(s.units)){
           inc.assigned.forEach(uid => {
-            const u = s.units.find(x=>x.id===uid);
+            const u = s.units.find(x => x.id===uid);
             if(u) u.status = "Available";
           });
           inc.assigned = [];
@@ -614,11 +597,6 @@ function updateStatus(id, status){
         localStorage.setItem(K.DISP_STATE, JSON.stringify(s));
       }
     }
-  } catch(e){}
-  try {
-    const a = JSON.parse(localStorage.getItem(K.AUTHORITY) || "[]");
-    const item = a.find(i => String(i.id)===String(id));
-    if(item){ item.status = status; localStorage.setItem(K.AUTHORITY, JSON.stringify(a)); }
   } catch(e){}
   renderAll();
 }
@@ -854,17 +832,21 @@ function heatColor(v, max){
 
 /* Build a synthetic but live-data-driven heatmap from incidents */
 function buildHeatmap(list){
-  // Get distinct categories (max 6)
   const catSet = {};
   list.forEach(i=>{ catSet[i.category] = (catSet[i.category]||0)+1; });
   const topCats = Object.keys(catSet).sort((a,b)=>catSet[b]-catSet[a]).slice(0, 6);
-  if(!topCats.length) topCats.push("Emergency");
+  const container = document.getElementById("heatmap-container");
 
-  // Build counts[hour][cat]
+  if(!topCats.length){
+    if(container) container.innerHTML = '<div class="empty">No live incident data yet.</div>';
+    return;
+  }
+
   const counts = {};
   HOURS.forEach(h=>{ counts[h]={}; topCats.forEach(c=>{ counts[h][c]=0; }); });
 
   list.forEach(i=>{
+    if(!i.created) return;
     const hr = new Date(i.created).getHours();
     const slot = HOURS[Math.floor(hr/4)];
     if(slot && topCats.includes(i.category)){
@@ -872,28 +854,9 @@ function buildHeatmap(list){
     }
   });
 
-  // Add minimum synthetic baseline so the heatmap always has content
-  // even with very few live incidents (demo friendly)
-  const DEMO_SEED = {
-    "Road accident": [86,46,84,24,65,30],
-    "Fire":          [56,30,87,34,69,50],
-    "Medical":       [21,77,93,67,29,40],
-    "Flood":         [18,69,56,100,96,80],
-    "Gas leak":      [67,20,44,15,78,60],
-    "Other":         [40,35,60,25,50,45]
-  };
-  HOURS.forEach((h,hi)=>{
-    topCats.forEach(cat=>{
-      const base = DEMO_SEED[cat] ? DEMO_SEED[cat][hi] : 20;
-      counts[h][cat] = counts[h][cat] + base;
-    });
-  });
-
-  // Find max for color scaling
   let maxVal = 1;
   HOURS.forEach(h=>{ topCats.forEach(c=>{ if(counts[h][c]>maxVal) maxVal=counts[h][c]; }); });
 
-  // Build table HTML
   const shortCat = c => c.length > 8 ? c.slice(0,8)+"..." : c;
   let html = `<table class="heatmap-table"><thead><tr><th></th>`;
   topCats.forEach(c=>{ html += `<th>${esc(shortCat(c))}</th>`; });
@@ -909,32 +872,32 @@ function buildHeatmap(list){
     html += `</tr>`;
   });
   html += `</tbody></table>`;
-
-  const container = document.getElementById("heatmap-container");
   if(container) container.innerHTML = html;
 }
 
 /* Trend chart data builder */
 function buildTrendData(list, mode){
-  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun"];
-  // Spread incidents across months by created timestamp, or synthesize from counts
-  const monthCounts = [0,0,0,0,0,0];
-  const now = Date.now();
-  list.forEach(i=>{
-    const age = now - (i.created || now);
-    const monthIdx = Math.min(5, Math.floor(age / (30*24*3600*1000)));
-    const idx = 5 - monthIdx; // newest = Jun
-    if(idx>=0 && idx<=5) monthCounts[idx]++;
-  });
+  const now = new Date();
+  const months = [];
+  for(let i=5;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({
+      key: d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),
+      label: d.toLocaleString(undefined,{month:"short"})
+    });
+  }
 
   if(mode === "volume"){
-    // Pad with a realistic synthetic baseline
-    const base = [30, 38, 15, 58, 38, 20];
+    const data = months.map(m => list.filter(i=>{
+      if(!i.created) return false;
+      const d = new Date(i.created);
+      return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0") === m.key;
+    }).length);
     return {
-      labels: MONTHS,
+      labels: months.map(m=>m.label),
       datasets: [{
         label: "Incident Volume",
-        data: base.map((b,i) => b + (monthCounts[i]||0)),
+        data,
         borderColor: "#4d66f7",
         backgroundColor: "rgba(77,102,247,.12)",
         tension: .45, fill: true, pointRadius: 4,
@@ -942,12 +905,21 @@ function buildTrendData(list, mode){
       }]
     };
   }
+
   if(mode === "response"){
+    const data = months.map(m=>{
+      const vals = list.filter(i=>{
+        if(!i.created || !i.lastReport) return false;
+        const d = new Date(i.created);
+        return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0") === m.key;
+      }).map(i=>Math.max(0,(i.lastReport-i.created)/60000));
+      return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+    });
     return {
-      labels: MONTHS,
+      labels: months.map(m=>m.label),
       datasets: [{
         label: "Avg Response Time (min)",
-        data: [14, 12, 18, 11, 13, 10],
+        data,
         borderColor: "#f5c542",
         backgroundColor: "rgba(245,197,66,.1)",
         tension: .4, fill: true, pointRadius: 4,
@@ -955,12 +927,18 @@ function buildTrendData(list, mode){
       }]
     };
   }
-  // resource
+
+  const data = months.map(m=>list.filter(i=>{
+    if(!i.created || !i.assigned) return false;
+    const d = new Date(i.created);
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0") === m.key && i.assigned>0;
+  }).length);
+
   return {
-    labels: MONTHS,
+    labels: months.map(m=>m.label),
     datasets: [{
       label: "Units Deployed",
-      data: [4, 5, 3, 7, 6, list.filter(i=>i.assigned>0).length + 2],
+      data,
       borderColor: "#3ddc97",
       backgroundColor: "rgba(61,220,151,.1)",
       tension: .4, fill: true, pointRadius: 4,
@@ -972,28 +950,26 @@ function buildTrendData(list, mode){
 /* Survival / outcome chart */
 function buildSurvivalData(list){
   const cats = {};
-  list.forEach(i=>{ cats[i.category] = cats[i.category]||{active:0,resolved:0}; });
   list.forEach(i=>{
+    cats[i.category] = cats[i.category] || {active:0,resolved:0};
     if(i.status==="Resolved") cats[i.category].resolved++;
     else cats[i.category].active++;
   });
 
   const labels = Object.keys(cats).slice(0,7);
-  const base = [50,25,40,35,55,60,50];
-  const activeData = labels.map((l,i) => (cats[l].active||0) + (base[i]||20));
-  const resolvedData = labels.map((l,i) => (cats[l].resolved||0) + Math.round((base[i]||20)*0.6));
-
   return {
     labels: labels.map(l=>l.length>10?l.slice(0,10)+"...":l),
     datasets: [
       {
         type: "bar", label: "Active",
-        data: activeData, backgroundColor: "#4d66f7", borderRadius: 4,
+        data: labels.map(l=>cats[l].active),
+        backgroundColor: "#4d66f7", borderRadius: 4,
         barPercentage: .6
       },
       {
         type: "line", label: "Resolved",
-        data: resolvedData, borderColor: "#3ddc97",
+        data: labels.map(l=>cats[l].resolved),
+        borderColor: "#3ddc97",
         backgroundColor: "transparent", tension: .4, pointRadius: 4,
         pointBackgroundColor: "#3ddc97"
       }
@@ -1005,15 +981,14 @@ function buildSurvivalData(list){
 function buildDonutData(list){
   const cats = {};
   list.forEach(i=>{ cats[i.category]=(cats[i.category]||0)+1; });
-  const DONUT_SEED = { "Road accident":27, "Fire":18, "Medical":36, "Flood":9, "Other":10 };
-  Object.keys(DONUT_SEED).forEach(k=>{ cats[k]=(cats[k]||0)+DONUT_SEED[k]; });
   const labels = Object.keys(cats);
-  const data   = labels.map(l=>cats[l]);
+  const data = labels.map(l=>cats[l]);
   const COLORS = ["#4d66f7","#4da3ff","#c084fc","#3ddc97","#f5c542","#ff8a3d","#ff4d4d"];
   return {
     labels,
     datasets:[{
-      data, backgroundColor: COLORS.slice(0, labels.length),
+      data,
+      backgroundColor: COLORS.slice(0, labels.length),
       borderColor: "#0a1424", borderWidth: 3, hoverOffset: 8
     }]
   };
@@ -1023,24 +998,22 @@ function buildDonutData(list){
 function buildHotspots(list){
   const locs = {};
   list.forEach(i=>{
-    const key = i.location.split(",")[0].trim();
+    const key = String(i.location||"Unknown").split(",")[0].trim() || "Unknown";
     locs[key] = (locs[key]||0)+1;
   });
-  // Seed some locations for demo richness
-  const SEED = {"Station Road":4,"Sector 4":6,"Santram Road":2,"GIDC Industrial":5,"Highway NH48":3};
-  Object.keys(SEED).forEach(k=>{ locs[k]=(locs[k]||0)+SEED[k]; });
+
   const entries = Object.entries(locs).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const maxV = entries.length ? entries[0][1] : 1;
 
   const container = document.getElementById("hotspot-bars");
   if(!container) return;
-  container.innerHTML = entries.map(([loc,cnt])=>`
+  container.innerHTML = entries.length ? entries.map(([loc,cnt])=>`
     <div class="cat-bar">
       <div class="cat-bar-head"><span>📍 ${esc(loc)}</span><strong>${cnt}</strong></div>
       <div class="bar-track">
         <div class="bar-fill" style="width:${Math.round(cnt/maxV*100)}%;background:var(--blue)"></div>
       </div>
-    </div>`).join("");
+    </div>`).join("") : '<div class="empty">No live location data yet.</div>';
 }
 
 /* KPI metrics */
@@ -1060,7 +1033,7 @@ function buildKPI(list){
     : 0;
 
   document.getElementById("an-total").textContent    = total;
-  document.getElementById("an-total-delta").textContent = `+${total-prev}`;
+  document.getElementById("an-total-delta").textContent = "Live";
   document.getElementById("an-avg-rt").textContent   = avgRT ? avgRT+"m" : "< 1m";
   document.getElementById("an-sla").textContent      = sla + "%";
 
@@ -1235,8 +1208,8 @@ window.addEventListener("storage", e => {
   }
 });
 
-// Polling fallback (3 seconds)
-setInterval(renderAll, 3000);
+// Live polling fallback (1 second) keeps Authority synced with dispatcher changes.
+setInterval(renderAll, 1000);
 
 // First render
 renderAll();
