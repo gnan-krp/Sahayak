@@ -1,1531 +1,1581 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SAHAYAK – Hospital Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAHAYAK — Dispatcher Console</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <style>
-  :root {
-    --bg: #0a1424;
-    --panel: #0e1b30;
-    --panel-2: #132340;
-    --line: #22344f;
-    --text: #e8eef7;
-    --muted: #93a4bc;
-    --crit: #ff4d4d;
-    --high: #ff8a3d;
-    --med: #f5c542;
-    --ok: #3ddc97;
-    --info: #4da3ff;
-    --purple: #c084fc;
-    --display: "Archivo", sans-serif;
-    --body: "IBM Plex Sans", sans-serif;
+  :root{
+    --bg:#0b1020;--panel:#121a30;--panel2:#0f1730;--line:#22304f;
+    --txt:#e8eefc;--mut:#8fa3c8;--acc:#38bdf8;--ok:#34d399;--warn:#fbbf24;
+    --crit:#f87171;--high:#fb923c;--purple:#a78bfa;--ai:#c084fc;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--body);
-    font-size: 15px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-  button, input, select, textarea { font: inherit; color: inherit; }
-  :focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
-
-  /* ===== HEADER ===== */
-  .header {
-    background: var(--panel);
-    border-bottom: 1px solid var(--line);
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 200;
-    gap: 16px;
-  }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand-mark {
-    width: 36px; height: 36px; border-radius: 9px;
-    background: var(--crit);
-    display: grid; place-items: center;
-  }
-  .brand-name { font-family: var(--display); font-weight: 800; font-size: 20px; }
-  .brand-sub { color: var(--muted); font-size: 12px; }
-  .header-right { display: flex; align-items: center; gap: 14px; }
-  .live-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    font-size: 12px; color: var(--ok); font-weight: 600;
-  }
-  .live-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: var(--ok);
-    animation: blink 1.6s ease-in-out infinite;
-  }
-  @keyframes blink { 50% { opacity: .3; } }
-  .user-chip {
-    display: flex; align-items: center; gap: 9px;
-    padding: 6px 12px;
-    background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
-  }
-  .user-avatar {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--info); display: grid; place-items: center;
-    font-size: 14px; font-weight: 700; color: #051326;
-  }
-  .btn-logout {
-    background: transparent; border: 1px solid var(--line);
-    border-radius: 7px; padding: 7px 14px;
-    cursor: pointer; font-size: 13px; color: var(--muted);
-  }
-  .btn-logout:hover { border-color: var(--crit); color: var(--crit); }
-
-  /* ===== LAYOUT ===== */
-  .layout {
-    display: grid;
-    grid-template-columns: 230px 1fr;
-    min-height: calc(100vh - 62px);
-  }
-
-  /* ===== SIDEBAR ===== */
-  .sidebar {
-    background: var(--panel);
-    border-right: 1px solid var(--line);
-    padding: 18px 0;
-    position: sticky;
-    top: 62px;
-    height: calc(100vh - 62px);
-    overflow-y: auto;
-  }
-  .side-label {
-    padding: 0 18px 8px;
-    font-size: 11px; color: #617493;
-    text-transform: uppercase; letter-spacing: 1px;
-  }
-  .nav-item {
-    width: 100%; display: flex; align-items: center; gap: 12px;
-    padding: 11px 20px; border: none; border-radius: 0;
-    background: transparent; color: var(--muted);
-    text-align: left; cursor: pointer; font-size: 14px;
-    border-left: 3px solid transparent; transition: .15s;
-  }
-  .nav-item:hover { background: var(--panel-2); color: var(--text); }
-  .nav-item.active { background: var(--panel-2); color: var(--text); border-left-color: var(--info); }
-  .nav-icon { font-size: 17px; }
-  .nav-badge {
-    margin-left: auto; font-size: 10px; padding: 2px 7px;
-    border-radius: 10px; background: rgba(255,77,77,.2); color: var(--crit); font-weight: 700;
-  }
-
-  /* ===== MAIN ===== */
-  .main { padding: 24px; overflow-y: auto; }
-  .page-section { display: none; }
-  .page-section.active { display: block; animation: fadeIn .25s ease; }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-
-  .page-header { margin-bottom: 22px; }
-  .page-title { font-family: var(--display); font-size: 26px; font-weight: 700; margin-bottom: 4px; }
-  .page-subtitle { color: var(--muted); font-size: 13px; }
-
-  /* ===== STATS ===== */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 14px; margin-bottom: 22px;
-  }
-  .stat-card {
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: 12px; padding: 18px 20px;
-    display: flex; align-items: center; gap: 16px;
-  }
-  .stat-icon {
-    width: 46px; height: 46px; border-radius: 10px;
-    display: grid; place-items: center; font-size: 22px; flex-shrink: 0;
-  }
-  .stat-icon.ok   { background: rgba(61,220,151,.15); }
-  .stat-icon.crit { background: rgba(255,77,77,.15); }
-  .stat-icon.info { background: rgba(77,163,255,.15); }
-  .stat-icon.med  { background: rgba(245,197,66,.15); }
-  .stat-icon.pur  { background: rgba(192,132,252,.15); }
-  .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .5px; }
-  .stat-value { font-family: var(--display); font-size: 28px; font-weight: 700; line-height: 1; }
-  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
-  /* ===== CARD ===== */
-  .card {
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: 12px; margin-bottom: 18px; overflow: hidden;
-  }
-  .card-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px; border-bottom: 1px solid var(--line);
-    background: var(--panel-2); gap: 12px;
-  }
-  .card-title { font-family: var(--display); font-size: 15px; font-weight: 700; }
-  .card-body { padding: 18px; }
-
-  /* ===== BUTTONS ===== */
-  .btn {
-    padding: 8px 15px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--panel-2); color: var(--text); cursor: pointer;
-    font-size: 13px; font-weight: 500;
-    display: inline-flex; align-items: center; gap: 6px; transition: .15s;
-  }
-  .btn:hover { border-color: var(--info); }
-  .btn:disabled { opacity: .5; cursor: not-allowed; }
-  .btn-primary { background: var(--info); color: #051326; border-color: var(--info); font-weight: 700; }
-  .btn-primary:hover { background: #3a90e8; border-color: #3a90e8; }
-  .btn-success { background: var(--ok); color: #051326; border-color: var(--ok); font-weight: 700; }
-  .btn-success:hover { background: #2cc985; }
-  .btn-danger  { background: transparent; color: var(--crit); border-color: var(--crit); }
-  .btn-danger:hover { background: rgba(255,77,77,.12); }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-
-  /* ===== BADGES ===== */
-  .badge {
-    display: inline-flex; padding: 3px 9px;
-    border-radius: 10px; font-size: 11px; font-weight: 600;
-  }
-  .badge-ok   { background: rgba(61,220,151,.15); color: var(--ok); }
-  .badge-crit { background: rgba(255,77,77,.15);  color: var(--crit); }
-  .badge-high { background: rgba(255,138,61,.15); color: var(--high); }
-  .badge-med  { background: rgba(245,197,66,.15); color: var(--med); }
-  .badge-info { background: rgba(77,163,255,.15); color: var(--info); }
-  .badge-pur  { background: rgba(192,132,252,.15); color: var(--purple); }
-
-  /* ===== TABLE ===== */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; }
-  th { padding: 11px 14px; border-bottom: 1px solid var(--line); text-align: left; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; background: var(--panel-2); }
-  td { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
-  tbody tr:hover { background: var(--panel-2); }
-  tbody tr:last-child td { border-bottom: none; }
-
-  /* ===== MODAL ===== */
-  .overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(10,20,36,.82); backdrop-filter: blur(4px);
-    z-index: 1000; padding: 20px;
-    align-items: center; justify-content: center;
-  }
-  .overlay.show { display: flex; }
-  .modal-box {
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: 14px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto;
-  }
-  .modal-head {
-    padding: 18px 22px; border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .modal-title { font-family: var(--display); font-size: 18px; font-weight: 700; }
-  .modal-close {
-    width: 30px; height: 30px; border-radius: 7px;
-    background: transparent; border: 1px solid var(--line);
-    cursor: pointer; color: var(--muted); font-size: 18px;
-    display: grid; place-items: center;
-  }
-  .modal-close:hover { background: var(--panel-2); color: var(--text); }
-  .modal-body { padding: 22px; }
-  .modal-foot {
-    padding: 14px 22px; border-top: 1px solid var(--line);
-    display: flex; gap: 10px; justify-content: flex-end;
-  }
-
-  /* ===== FORM ===== */
-  .form-group { margin-bottom: 14px; }
-  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px; }
-  .form-control {
-    width: 100%; padding: 9px 13px;
-    background: var(--bg); border: 1px solid var(--line);
-    border-radius: 8px; color: var(--text); font-size: 13px;
-  }
-  .form-control:focus { outline: none; border-color: var(--info); box-shadow: 0 0 0 3px rgba(77,163,255,.18); }
-  .form-control::placeholder { color: #5d7090; }
-  textarea.form-control { resize: vertical; min-height: 80px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-  /* ===== BED GRID ===== */
-  .bed-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 10px; padding: 18px;
-  }
-  .bed-item {
-    background: var(--panel-2); border: 2px solid var(--line);
-    border-radius: 10px; padding: 14px 10px;
-    text-align: center; cursor: pointer; transition: .15s;
-  }
-  .bed-item:hover { transform: translateY(-2px); border-color: var(--info); }
-  .bed-item.available { border-color: var(--ok); background: rgba(61,220,151,.07); }
-  .bed-item.occupied  { border-color: var(--crit); background: rgba(255,77,77,.07); }
-  .bed-item.icu-avail { border-color: var(--med); background: rgba(245,197,66,.07); }
-  .bed-item.icu-occ   { border-color: var(--crit); background: rgba(255,77,77,.1); }
-  .bed-num { font-family: var(--display); font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-  .bed-lbl { font-size: 10px; color: var(--muted); }
-
-  /* ===== SEARCH ===== */
-  .search-wrap { position: relative; }
-  .search-wrap input {
-    width: 100%; max-width: 380px; padding: 9px 13px 9px 36px;
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: 8px; color: var(--text); font-size: 13px;
-  }
-  .search-wrap input:focus { outline: none; border-color: var(--info); }
-  .search-wrap::before {
-    content: "🔍"; position: absolute; left: 11px; top: 50%;
-    transform: translateY(-50%); font-size: 14px;
-  }
-
-  /* ===== PATIENT CARD ===== */
-  .patient-row {
-    display: flex; align-items: center; gap: 14px;
-    padding: 13px 18px; border-bottom: 1px solid var(--line);
-    transition: .12s;
-  }
-  .patient-row:hover { background: var(--panel-2); }
-  .patient-row:last-child { border-bottom: none; }
-  .pat-avatar {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: var(--panel-2); border: 2px solid var(--line);
-    display: grid; place-items: center; font-size: 18px; flex-shrink: 0;
-  }
-  .pat-details { flex: 1; }
-  .pat-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
-  .pat-meta { font-size: 12px; color: var(--muted); }
-
-  /* ===== ACTIVITY FEED ===== */
-  .activity-item {
-    display: flex; gap: 12px; padding: 11px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .activity-item:last-child { border-bottom: none; }
-  .act-dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
-  .act-text { font-size: 13px; margin-bottom: 2px; }
-  .act-time { font-size: 11px; color: var(--muted); }
-
-  /* ===== MAP ===== */
-  #liveMap { height: 360px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: var(--bg); }
-  .map-legend { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
-  .ldot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
-
-  /* ===== PROGRESS BAR ===== */
-  .prog-bar { height: 7px; border-radius: 99px; background: var(--bg); overflow: hidden; margin-top: 5px; }
-  .prog-fill { height: 100%; border-radius: 99px; }
-
-  /* ===== TOAST ===== */
-  .toast {
-    position: fixed; bottom: 22px; right: 22px;
-    background: var(--panel); border: 1px solid var(--line);
-    border-left: 4px solid var(--ok); color: var(--text);
-    padding: 13px 17px; border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.4);
-    font-size: 13px; max-width: 320px;
-    transform: translateY(16px); opacity: 0;
-    transition: .25s ease; z-index: 3000; pointer-events: none;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.error { border-left-color: var(--crit); }
-
-  /* ===== CAPACITY INDICATOR ===== */
-  .capacity-ring {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 64px; height: 64px; border-radius: 50%;
-    border: 4px solid var(--line); font-family: var(--display); font-size: 18px; font-weight: 800;
-    position: relative; flex-shrink: 0;
-  }
-
-  /* ===== INVENTORY LEVEL ===== */
-  .inv-level { font-size: 12px; }
-  .inv-level.low { color: var(--crit); }
-  .inv-level.med { color: var(--med); }
-  .inv-level.ok  { color: var(--ok); }
-
-  /* RESPONSIVE */
-  @media (max-width: 860px) {
-    .layout { grid-template-columns: 1fr; }
-    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); padding: 10px 0; }
-    .nav-item { display: inline-flex; border-left: none; border-bottom: 3px solid transparent; flex-direction: column; gap: 3px; padding: 8px 16px; font-size: 12px; }
-    .nav-item.active { border-bottom-color: var(--info); }
-    .sidebar ul { display: flex; overflow-x: auto; }
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    .form-row { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 540px) {
-    .stats-grid { grid-template-columns: 1fr; }
-    .main { padding: 14px; }
-  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif}
+  body{background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:16px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:var(--crit);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .brand h1{font-size:17px;letter-spacing:.5px}
+  .hstat{display:flex;gap:18px;margin-left:auto;align-items:center}
+  .hstat .s{text-align:center;min-width:64px}
+  .hstat .s b{font-size:19px;display:block}
+  .hstat .s span{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+  .main{flex:1;display:grid;grid-template-columns:340px 280px 1fr 260px;min-height:0}
+  .col{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line)}
+  .col:last-child{border-right:none}
+  .col-head{padding:10px 14px;background:var(--panel2);border-bottom:1px solid var(--line);font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .col-body{flex:1;overflow-y:auto;padding:10px;min-height:0}
+  .toolbar{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--panel2);flex-shrink:0}
+  .fbtn{background:#1a2544;border:1px solid var(--line);color:var(--mut);font-size:11px;padding:5px 10px;border-radius:14px;cursor:pointer}
+  .fbtn.active{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:600}
+  .search{width:100%;padding:7px 10px;margin-top:6px;background:#0a1226;border:1px solid var(--line);border-radius:8px;color:var(--txt);font-size:12px;outline:none}
+  .search:focus{border-color:var(--acc)}
+  .bulkbar{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);background:var(--panel2);font-size:11px;color:var(--mut);flex-wrap:wrap;flex-shrink:0}
+  .bulkbar button{background:var(--acc);border:none;color:#04121f;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px}
+  .bulkbar button:disabled{opacity:.4;cursor:not-allowed}
+  .bulkbar button.danger{background:var(--crit);color:#fff}
+  .inc-card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--mut);border-radius:10px;padding:10px 12px;margin-bottom:9px;cursor:pointer;transition:.15s}
+  .inc-card:hover{border-color:var(--acc);transform:translateX(2px)}
+  .inc-card.sel-Critical{border-left-color:var(--crit)}
+  .inc-card.sel-High{border-left-color:var(--high)}
+  .inc-card.sel-Medium{border-left-color:var(--warn)}
+  .inc-card.sel-Low{border-left-color:var(--ok)}
+  .inc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .inc-top input[type=checkbox]{accent-color:var(--acc);width:15px;height:15px;cursor:pointer;flex-shrink:0}
+  .inc-id{font-weight:700;font-size:13px}
+  .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase;white-space:nowrap}
+  .b-Critical{background:rgba(248,113,113,.15);color:var(--crit)}
+  .b-High{background:rgba(251,146,60,.15);color:var(--high)}
+  .b-Medium{background:rgba(251,191,36,.15);color:var(--warn)}
+  .b-Low{background:rgba(52,211,153,.15);color:var(--ok)}
+  .b-status{background:rgba(56,189,248,.13);color:var(--acc)}
+  .b-merged{background:rgba(192,132,252,.15);color:var(--ai);font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+  .inc-desc{font-size:12px;color:var(--txt);margin:6px 0 4px;line-height:1.35}
+  .inc-meta{font-size:11px;color:var(--mut);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .sla{font-variant-numeric:tabular-nums}
+  .sla.over{color:var(--crit);font-weight:700}
+  .sla.soon{color:var(--warn);font-weight:600}
+  .sla.ok{color:var(--ok)}
+  .merge-card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ai);border-radius:10px;padding:11px 13px;margin-bottom:9px;cursor:pointer;transition:.15s;position:relative}
+  .merge-card:hover{border-color:var(--ai);transform:translateX(2px)}
+  .merge-card.sel-Critical{border-left-color:var(--crit)}
+  .merge-card.sel-High{border-left-color:var(--high)}
+  .merge-card.sel-Medium{border-left-color:var(--warn)}
+  .merge-card.sel-Low{border-left-color:var(--ok)}
+  .mc-top{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap}
+  .mc-id{font-weight:700;font-size:13px;color:var(--ai)}
+  .mc-count{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(192,132,252,.18);color:var(--ai);font-weight:700}
+  .mc-category{font-size:12px;font-weight:600;color:var(--txt);margin-bottom:3px}
+  .mc-location{font-size:11px;color:var(--mut);margin-bottom:7px}
+  .mc-reports{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+  .mc-report-row{background:var(--panel2);border-radius:7px;padding:7px 9px;font-size:11px;border-left:3px solid var(--ai)}
+  .mc-report-row:first-child{border-left-color:var(--acc)}
+  .mc-report-name{font-weight:600;color:var(--txt);margin-bottom:2px;display:flex;align-items:center;justify-content:space-between}
+  .mc-report-time{color:var(--mut);font-size:10px}
+  .mc-report-msg{color:var(--mut);line-height:1.35;margin-top:2px}
+  .mc-score-bar{height:3px;border-radius:2px;background:var(--line);margin-bottom:6px;overflow:hidden}
+  .mc-score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--ai),var(--acc))}
+  .mc-footer{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}
+  .mc-reason{font-size:10px;color:var(--mut);font-style:italic;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mc-actions{display:flex;gap:6px;flex-shrink:0}
+  .mc-btn{font-size:10px;padding:4px 9px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);cursor:pointer;font-weight:600;white-space:nowrap}
+  .mc-btn:hover{border-color:var(--ai);color:var(--ai)}
+  .mc-btn.open{border-color:var(--acc);color:var(--acc)}
+  .mc-btn.open:hover{background:#0f2038}
+  .mc-empty{color:var(--mut);font-size:12px;padding:28px 14px;text-align:center;line-height:1.6}
+  .mc-empty .mc-empty-icon{font-size:32px;display:block;margin-bottom:8px;opacity:.5}
+  .ai-analysis{background:rgba(192,132,252,.1);border:1px solid rgba(192,132,252,.25);border-radius:8px;padding:7px 9px;margin-bottom:8px;font-size:11px;color:var(--ai);line-height:1.4}
+  .ai-analysis strong{display:block;margin-bottom:2px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;opacity:.8}
+  .merge-hbadge{background:rgba(192,132,252,.2);color:var(--ai);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:auto}
+  #map{flex:1;min-height:0;background:#0a1226}
+  .map-toolbar{display:flex;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--panel2);align-items:center;flex-shrink:0}
+  .map-toolbar button{background:#1a2544;border:1px solid var(--line);color:var(--txt);font-size:11px;padding:6px 11px;border-radius:7px;cursor:pointer}
+  .map-toolbar button:hover{border-color:var(--acc);color:var(--acc)}
+  .legend{position:absolute;bottom:14px;right:10px;z-index:500;background:rgba(10,16,32,.92);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:11px;color:var(--mut)}
+  .legend div{display:flex;align-items:center;gap:7px;margin:3px 0}
+  .legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .map-wrap{position:relative;flex:1;display:flex;min-height:0}
+  .pin-lbl{background:rgba(10,16,32,.9);color:#fff;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:10px;white-space:nowrap}
+  .mapswitch{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+  .mapswitch button{background:rgba(10,16,32,.92);color:var(--mut);border:none;padding:8px 14px;font-size:11px;font-weight:700;cursor:pointer}
+  .mapswitch button.on{background:var(--acc);color:#04121f}
+  /* Units column */
+  .unit-card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:8px;font-size:12px}
+  .unit-card.dispatched{border-left:3px solid var(--warn)}
+  .unit-card.available{border-left:3px solid var(--ok)}
+  .unit-card.onscene{border-left:3px solid var(--crit)}
+  .unit-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .unit-id{font-weight:700;font-size:13px}
+  .unit-status{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  .unit-status.ok{color:var(--ok)}
+  .unit-status.warn{color:var(--warn)}
+  .unit-status.crit{color:var(--crit)}
+  .unit-assign{font-size:11px;color:var(--mut);margin-top:2px}
+  /* Hospital sync panel */
+  .hosp-sync{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.3);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:11px}
+  .hosp-sync-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-weight:700;color:var(--ok);font-size:12px}
+  .hosp-sync-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(52,211,153,.1)}
+  .hosp-sync-row:last-child{border-bottom:none}
+  .overlay{position:fixed;inset:0;background:rgba(4,8,18,.75);display:none;align-items:center;justify-content:center;z-index:2000}
+  .overlay.show{display:flex}
+  .modal{width:580px;max-width:95vw;max-height:90vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .modal h2{font-size:16px;display:flex;align-items:center;gap:9px;margin-bottom:4px;flex-wrap:wrap}
+  .modal .sub{color:var(--mut);font-size:12px;margin-bottom:14px}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .mbox{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .mbox label{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:3px}
+  .mbox .v{font-size:13px;font-weight:600}
+  .reporter{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:7px;font-size:12px}
+  .reporter .rhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .mrow{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+  select{background:#0a1226;border:1px solid var(--line);color:var(--txt);padding:7px 9px;border-radius:7px;font-size:12px;outline:none}
+  .ulist{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+  .uqty{display:flex;align-items:center;gap:12px;background:#0a1226;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .uqty .uq-name{flex:1;font-size:13px;font-weight:600}
+  .uqty .uq-name small{display:block;color:var(--mut);font-size:10px;font-weight:400}
+  .uq-ctrl{display:flex;align-items:center;gap:9px}
+  .uq-ctrl button{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#1a2544;color:var(--txt);font-size:15px;cursor:pointer;line-height:1}
+  .uq-ctrl button:hover{border-color:var(--acc);color:var(--acc)}
+  .uq-ctrl b{min-width:20px;text-align:center;font-size:16px}
+  .mbtn{border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  .mbtn.pri{background:var(--acc);color:#04121f}
+  .mbtn.ok{background:var(--ok);color:#04121f}
+  .mbtn.ghost{background:none;border:1px solid var(--line);color:var(--mut)}
+  .mbtn:hover{filter:brightness(1.12)}
+  .ai-summary{background:rgba(192,132,252,.08);border:1px solid rgba(192,132,252,.3);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+  .ai-summary .ai-label{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--ai);font-weight:700;margin-bottom:6px}
+  .ai-summary p{font-size:12px;color:var(--txt);line-height:1.55;margin:0}
+  .ai-summary .ai-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .ai-summary .ai-tag{font-size:10px;padding:2px 9px;border-radius:10px;background:rgba(192,132,252,.15);color:var(--ai);font-weight:600}
+  #toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast{background:var(--panel);border:1px solid var(--ai);color:var(--txt);padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.5);animation:rise .25s;max-width:520px}
+  .toast.info{border-color:var(--acc)}
+  .toast.good{border-color:var(--ok)}
+  .toast.hosp{border-color:var(--ok);background:rgba(52,211,153,.08)}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .col-body::-webkit-scrollbar{width:4px}
+  .col-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
 </style>
 </head>
 <body>
 
-<!-- ===== HEADER ===== -->
-<header class="header">
+<header>
   <div class="brand">
-    <div class="brand-mark">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
-    </div>
+    <div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg></div>
     <div>
-      <span class="brand-name">SAHAYAK</span>
-      <span class="brand-sub"> · Hospital Portal</span>
+      <h1>SAHAYAK <span style="color:var(--mut);font-weight:400">— Dispatcher Console</span></h1>
+      <small style="color:var(--mut);font-size:11px">Control Room · Nadiad District · Live sync with Hospital Portal</small>
     </div>
   </div>
-  <div class="header-right">
-    <span class="live-badge"><i class="live-dot"></i>Live Feed Active</span>
-    <div class="user-chip">
-      <div class="user-avatar">🏥</div>
-      <span id="userName" style="font-size:13px;font-weight:500">Civil Hospital Nadiad</span>
-    </div>
-    <button class="btn-logout" id="logoutBtn">Sign Out</button>
+  <div class="hstat">
+    <div class="s"><b id="st-active">0</b><span>Active</span></div>
+    <div class="s"><b style="color:var(--crit)" id="st-crit">0</b><span>Critical</span></div>
+    <div class="s"><b style="color:var(--ai)" id="st-merged">0</b><span>Merged</span></div>
+    <div class="s"><b style="color:var(--acc)" id="st-enroute">0</b><span>En route</span></div>
+    <div class="s"><b style="color:var(--ok)" id="st-resolved">0</b><span>Resolved</span></div>
   </div>
 </header>
 
-<div class="layout">
+<div class="main">
 
-  <!-- ===== SIDEBAR ===== -->
-  <aside class="sidebar">
-    <div class="side-label">Hospital Portal</div>
-    <ul style="list-style:none">
-      <li class="nav-item active" data-page="dashboard">
-        <span class="nav-icon">📊</span><span>Dashboard</span>
-      </li>
-      <li class="nav-item" data-page="patients">
-        <span class="nav-icon">👥</span><span>Patients</span>
-        <span class="nav-badge" id="patNavBadge" style="display:none">0</span>
-      </li>
-      <li class="nav-item" data-page="beds">
-        <span class="nav-icon">🛏️</span><span>Bed Status</span>
-      </li>
-      <li class="nav-item" data-page="emergency">
-        <span class="nav-icon">🚑</span><span>Emergency</span>
-        <span class="nav-badge" id="empNavBadge" style="display:none">0</span>
-      </li>
-      <li class="nav-item" data-page="staff">
-        <span class="nav-icon">👨‍⚕️</span><span>Staff</span>
-      </li>
-      <li class="nav-item" data-page="inventory">
-        <span class="nav-icon">💊</span><span>Inventory</span>
-      </li>
-      <li class="nav-item" data-page="capacity">
-        <span class="nav-icon">📡</span><span>Share Capacity</span>
-      </li>
-    </ul>
-  </aside>
-
-  <!-- ===== MAIN ===== -->
-  <main class="main">
-
-    <!-- =============== DASHBOARD =============== -->
-    <section class="page-section active" id="dashboard">
-      <div class="page-header">
-        <div class="page-title">Hospital Dashboard</div>
-        <div class="page-subtitle">Real-time operations overview · Civil Hospital Nadiad</div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon ok">🛏️</div>
-          <div>
-            <div class="stat-label">Available Beds</div>
-            <div class="stat-value" id="d-avail">—</div>
-            <div class="stat-sub" id="d-bed-sub">of — total</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon crit">🆘</div>
-          <div>
-            <div class="stat-label">ICU Occupied</div>
-            <div class="stat-value" id="d-icu">—</div>
-            <div class="stat-sub" id="d-icu-sub">of 20 ICU beds</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon info">👥</div>
-          <div>
-            <div class="stat-label">Total Patients</div>
-            <div class="stat-value" id="d-total">—</div>
-            <div class="stat-sub">Admitted</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon med">🚑</div>
-          <div>
-            <div class="stat-label">Incoming Ambulances</div>
-            <div class="stat-value" id="d-amb">—</div>
-            <div class="stat-sub">From dispatcher</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon pur">👨‍⚕️</div>
-          <div>
-            <div class="stat-label">Staff On Duty</div>
-            <div class="stat-value" id="d-staff">42</div>
-            <div class="stat-sub">Day shift</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Live ambulance map -->
-      <div class="card">
-        <div class="card-head">
-          <span class="card-title">Live Ambulance Tracking</span>
-          <span class="badge badge-info" id="mapAmbCount">0 en route</span>
-        </div>
-        <div class="card-body" style="padding:0">
-          <div id="liveMap"></div>
-          <div class="card-body" style="padding-top:10px">
-            <div class="map-legend">
-              <span><span class="ldot" style="background:var(--info)"></span>This hospital</span>
-              <span><span class="ldot" style="background:var(--crit)"></span>Critical / incoming</span>
-              <span><span class="ldot" style="background:var(--high)"></span>High priority</span>
-              <span><span class="ldot" style="background:var(--ok)"></span>Resolved</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Incoming from dispatcher -->
-      <div class="card">
-        <div class="card-head">
-          <span class="card-title">Incoming Incidents from Dispatcher</span>
-          <span class="badge badge-crit" id="incomingBadge">0 active</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Incident ID</th><th>Category</th><th>Severity</th><th>Location</th><th>Status</th><th>Reports</th></tr>
-            </thead>
-            <tbody id="incomingTable"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Activity -->
-      <div class="card">
-        <div class="card-head"><span class="card-title">Recent Activity</span></div>
-        <div class="card-body">
-          <div id="activityFeed"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- =============== PATIENTS =============== -->
-    <section class="page-section" id="patients">
-      <div class="page-header">
-        <div class="page-title">Patient Management</div>
-        <div class="page-subtitle">Track and manage admitted patients</div>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap">
-        <div class="search-wrap">
-          <input type="text" id="patSearch" placeholder="Search patients by name or ID…">
-        </div>
-        <button class="btn btn-primary" id="addPatBtn">+ Admit Patient</button>
-      </div>
-
-      <div class="card">
-        <div id="patientList"></div>
-      </div>
-    </section>
-
-    <!-- =============== BEDS =============== -->
-    <section class="page-section" id="beds">
-      <div class="page-header">
-        <div class="page-title">Bed Management</div>
-        <div class="page-subtitle">Click any bed to toggle availability</div>
-      </div>
-
-      <!-- Capacity summary -->
-      <div class="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card">
-          <div class="stat-icon ok">✅</div>
-          <div>
-            <div class="stat-label">General Available</div>
-            <div class="stat-value" id="gen-avail">—</div>
-            <div class="stat-sub">of 60 beds</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon crit">⛔</div>
-          <div>
-            <div class="stat-label">ICU Available</div>
-            <div class="stat-value" id="icu-avail">—</div>
-            <div class="stat-sub">of 20 beds</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <span class="card-title">General Ward — 60 Beds</span>
-          <span class="badge badge-ok" id="genBadge">— free</span>
-        </div>
-        <div class="bed-grid" id="generalWard"></div>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <span class="card-title">ICU — 20 Beds</span>
-          <span class="badge badge-crit" id="icuBadge">— free</span>
-        </div>
-        <div class="bed-grid" id="icuWard"></div>
-      </div>
-    </section>
-
-    <!-- =============== EMERGENCY =============== -->
-    <section class="page-section" id="emergency">
-      <div class="page-header">
-        <div class="page-title">Emergency Department</div>
-        <div class="page-subtitle">Live incidents and incoming ambulances from SAHAYAK dispatcher</div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <span class="card-title">Active Dispatcher Incidents</span>
-          <button class="btn btn-success btn-sm" id="readyBtn">✓ Confirm ER Ready</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>ID</th><th>Category</th><th>Severity</th><th>Location</th><th>Status</th><th>Reports</th><th>Action</th></tr>
-            </thead>
-            <tbody id="empTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- =============== STAFF =============== -->
-    <section class="page-section" id="staff">
-      <div class="page-header">
-        <div class="page-title">Staff Management</div>
-        <div class="page-subtitle">On-duty roster and department assignments</div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <span class="card-title">Current Duty Roster</span>
-          <button class="btn btn-primary btn-sm" id="addStaffBtn">+ Add Staff</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Name</th><th>Role</th><th>Department</th><th>Shift</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="staffTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- =============== INVENTORY =============== -->
-    <section class="page-section" id="inventory">
-      <div class="page-header">
-        <div class="page-title">Medical Inventory</div>
-        <div class="page-subtitle">Stock levels for medicines and equipment</div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <span class="card-title">Stock Register</span>
-          <button class="btn btn-primary btn-sm" id="addInvBtn">+ Add Item</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Item</th><th>Category</th><th>Current Stock</th><th>Min Required</th><th>Level</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="invTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- =============== SHARE CAPACITY =============== -->
-    <section class="page-section" id="capacity">
-      <div class="page-header">
-        <div class="page-title">Share Capacity with Dispatcher</div>
-        <div class="page-subtitle">Publish real-time bed and ICU availability to the SAHAYAK network</div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><span class="card-title">Current Published Status</span></div>
-        <div class="card-body">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon ok">🛏️</div>
-              <div>
-                <div class="stat-label">General Beds Published</div>
-                <div class="stat-value" id="pub-gen">—</div>
-                <div class="stat-sub">available right now</div>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon crit">🆘</div>
-              <div>
-                <div class="stat-label">ICU Beds Published</div>
-                <div class="stat-value" id="pub-icu">—</div>
-                <div class="stat-sub">available right now</div>
-              </div>
-            </div>
-          </div>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
-            This information is visible to the dispatcher console and authority panel. Update whenever capacity changes.
-          </p>
-          <div class="form-row" style="margin-bottom:16px">
-            <div class="form-group">
-              <label class="form-label">Override General Available</label>
-              <input class="form-control" type="number" id="overGen" min="0" max="60" placeholder="Auto from bed grid">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Override ICU Available</label>
-              <input class="form-control" type="number" id="overIcu" min="0" max="20" placeholder="Auto from bed grid">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Special notes for dispatcher</label>
-            <textarea class="form-control" id="capNotes" placeholder="e.g. Trauma bay ready, no burns unit available…"></textarea>
-          </div>
-          <button class="btn btn-primary" id="publishBtn">📡 Publish to SAHAYAK Network</button>
-          <span style="font-size:12px;color:var(--muted);margin-left:12px" id="pubTimestamp"></span>
-        </div>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<!-- ===== MODALS ===== -->
-
-<!-- Patient Modal -->
-<div class="overlay" id="patOverlay">
-  <div class="modal-box">
-    <div class="modal-head">
-      <span class="modal-title" id="patModalTitle">Admit New Patient</span>
-      <button class="modal-close" data-close="patOverlay">×</button>
+  <!-- COL 1: QUEUE -->
+  <div class="col">
+    <div class="col-head">📥 Incident Queue <span id="qcount" style="margin-left:auto;color:var(--acc);font-size:11px"></span></div>
+    <div class="toolbar">
+      <button class="fbtn active" data-f="all">All</button>
+      <button class="fbtn" data-f="new">New</button>
+      <button class="fbtn" data-f="active">Active</button>
+      <button class="fbtn" data-f="resolved">Resolved</button>
+      <input class="search" id="search" placeholder="Search location / category / ID…">
     </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Full Name</label>
-          <input class="form-control" id="pName" placeholder="Patient full name">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Age</label>
-          <input class="form-control" type="number" id="pAge" placeholder="Age">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Gender</label>
-          <select class="form-control" id="pGender">
-            <option>Male</option><option>Female</option><option>Other</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Ward</label>
-          <select class="form-control" id="pWard">
-            <option value="general">General Ward</option>
-            <option value="icu">ICU</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Condition</label>
-          <select class="form-control" id="pCondition">
-            <option>Stable</option><option>Serious</option><option>Critical</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Diagnosis</label>
-          <input class="form-control" id="pDiag" placeholder="e.g. Road accident trauma">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Attending Doctor</label>
-        <input class="form-control" id="pDoctor" placeholder="Dr. Name">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" id="pNotes" placeholder="Additional notes…"></textarea>
+    <div class="bulkbar">
+      <label style="display:flex;gap:6px;align-items:center;cursor:pointer">
+        <input type="checkbox" id="selAll" style="accent-color:var(--acc)"> Select all
+      </label>
+      <button id="bulkDispatch" disabled>Dispatch selected</button>
+      <button id="btnDeleteResolved" class="danger">🗑 Delete resolved</button>
+      <span id="bulkCount"></span>
+    </div>
+    <div class="col-body" id="queue"></div>
+  </div>
+
+  <!-- COL 2: MERGED -->
+  <div class="col">
+    <div class="col-head">🤖 AI Merged <span class="merge-hbadge" id="mergeHeaderCount">0</span></div>
+    <div class="col-body" id="mergeCol"></div>
+  </div>
+
+  <!-- COL 3: MAP -->
+  <div class="col">
+    <div class="map-toolbar">
+      <button id="btnRecenter">⌖ Recenter</button>
+      <button id="btnFit">⤢ Fit all</button>
+      <button id="btnToggleRadius">◎ Radii</button>
+      <span style="margin-left:auto;font-size:11px;color:var(--mut)" id="mapClock"></span>
+    </div>
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="legend">
+        <div><i style="background:var(--crit)"></i> Critical</div>
+        <div><i style="background:var(--high)"></i> High</div>
+        <div><i style="background:var(--warn)"></i> Medium</div>
+        <div><i style="background:var(--ok)"></i> Low</div>
+        <div><i style="background:var(--acc)"></i> Ambulance</div>
+        <div><i style="background:var(--ai)"></i> Merged cluster</div>
+        <div><i style="background:var(--ok);border-radius:2px"></i> Hospital</div>
       </div>
     </div>
-    <div class="modal-foot">
-      <button class="btn" data-close="patOverlay">Cancel</button>
-      <button class="btn btn-primary" id="savePatBtn">Admit Patient</button>
-    </div>
+  </div>
+
+  <!-- COL 4: UNITS -->
+  <div class="col">
+    <div class="col-head">🚑 Units <span id="unitCount" style="margin-left:auto;color:var(--ok)"></span></div>
+    <div style="padding:10px;flex:1;overflow-y:auto" id="unitsCol"></div>
   </div>
 </div>
 
-<!-- Staff Modal -->
-<div class="overlay" id="staffOverlay">
-  <div class="modal-box">
-    <div class="modal-head">
-      <span class="modal-title">Add Staff Member</span>
-      <button class="modal-close" data-close="staffOverlay">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Full Name</label>
-          <input class="form-control" id="sName" placeholder="Dr. / Nurse name">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Role</label>
-          <input class="form-control" id="sRole" placeholder="e.g. Cardiologist">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Department</label>
-          <input class="form-control" id="sDept" placeholder="e.g. ICU">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Shift</label>
-          <select class="form-control" id="sShift">
-            <option>Day (8 AM – 4 PM)</option>
-            <option>Evening (4 PM – 12 AM)</option>
-            <option>Night (12 AM – 8 AM)</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn" data-close="staffOverlay">Cancel</button>
-      <button class="btn btn-primary" id="saveStaffBtn">Add Staff</button>
-    </div>
-  </div>
-</div>
-
-<!-- Inventory Modal -->
-<div class="overlay" id="invOverlay">
-  <div class="modal-box">
-    <div class="modal-head">
-      <span class="modal-title">Add Inventory Item</span>
-      <button class="modal-close" data-close="invOverlay">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Item Name</label>
-          <input class="form-control" id="iName" placeholder="e.g. Paracetamol 500mg">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Category</label>
-          <select class="form-control" id="iCat">
-            <option>Medicine</option><option>Equipment</option>
-            <option>PPE</option><option>Blood</option><option>Other</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Current Stock</label>
-          <input class="form-control" type="number" id="iStock" placeholder="Units">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Minimum Required</label>
-          <input class="form-control" type="number" id="iMin" placeholder="Alert threshold">
-        </div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn" data-close="invOverlay">Cancel</button>
-      <button class="btn btn-primary" id="saveInvBtn">Add Item</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div id="toasts"></div>
 
 <script>
+
+  window.addEventListener("pageshow", function (event) {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
+
 "use strict";
 
 /* =====================================================
-   AUTH
+   STORAGE KEYS — shared with hospital
 ===================================================== */
-(function(){
-  const t = localStorage.getItem("resqnet_token");
-  const u = localStorage.getItem("resqnet_user");
-  if(!t || !u){ location.replace("login.html"); return; }
-  try {
-    const user = JSON.parse(u);
-    const el = document.getElementById("userName");
-    if(el) el.textContent = user.displayName || user.username || "Civil Hospital Nadiad";
-  } catch(e){}
-})();
-
-/* =====================================================
-   STORAGE KEYS — shared with dispatcher
-===================================================== */
-const K = {
-  HOSP_STATE:   "sahayak_hospital_state",
-  DISP_STATE:   "sahayak_dispatcher_state",
-  AUTHORITY:    "resqnet_authority_incidents",
-  HOSP_CAP:     "sahayak_hospital_capacity",
-  AMB_STATE:    "sahayak_ambulance_state"   // ← THE BRIDGE
+var K = {
+  QUEUE:      "sahayak_queue",
+  PROCESSED:  "sahayak_dispatcher_processed",
+  STATE:      "sahayak_dispatcher_state",
+  AUTHORITY:  "resqnet_authority_incidents",
+  AMB_STATE:  "sahayak_ambulance_state",   // ← shared with hospital
+  HOSP_CAP:   "sahayak_hospital_capacity"  // ← read from hospital
 };
 
-const HOSPITAL_POS = [22.6911, 72.8667];
+var AI_MERGE_ENABLED = true;
+var MERGE_THRESHOLD  = 0.70;
+var NADIAD = [22.6911, 72.8667];
+var HOSPITAL_POS = [22.6911, 72.8667];
 
 /* =====================================================
    HELPERS
 ===================================================== */
 function esc(s){
-  return String(s==null?"":s).replace(/[&<>"']/g, c =>
-    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+    return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
 }
-function short(t, n=34){ t=String(t||""); return t.length>n?t.slice(0,n)+"…":t; }
-function timeAgo(ts){
-  const d = Date.now()-ts, m = Math.floor(d/60000);
-  if(m<1) return "just now";
-  if(m<60) return m+"m ago";
-  return Math.floor(m/60)+"h ago";
+function shortText(t,n){ t=String(t||""); n=n||44; return t.length>n?t.slice(0,n)+"…":t; }
+function normalize(t){ return String(t||"").toLowerCase().replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim(); }
+function tokenize(t){ return normalize(t).split(" ").filter(function(w){ return w.length>1; }); }
+
+/* =====================================================
+   AI MERGE ENGINE
+===================================================== */
+var TYPE_KEYWORDS = {
+  "Road accident":     ["accident","crash","crashed","collision","collided","truck","bus","car","bike","motorbike","scooter","auto","rickshaw","lorry","vehicle","train","derailed","overturned","pileup","skid","skidded","rammed","hit by"],
+  "Fire":              ["fire","burning","burn","burnt","smoke","flames","blaze","explosion","blast","exploded","ignite"],
+  "Medical":           ["medical","heart","heartattack","unconscious","bleeding","bleed","injured","injury","injuries","fainted","fainting","breathing","stroke","fracture","patient","collapsed","chest pain","unresponsive"],
+  "Flood":             ["flood","flooded","flooding","water","overflow","submerged","drowning","waterlogging","waterlogged","heavy rain","storm"],
+  "Gas leak":          ["gas","leak","leaking","leakage","lpg","cylinder","fumes"],
+  "Building collapse": ["collapse","collapsed","building fell","structure fell","wall fell","debris"],
+  "Crime":             ["robbery","robbed","theft","stolen","assault","murder","kidnap","gun","fight","attack by"],
+  "Electrical":        ["electric","electrical","shock","electrocuted","transformer","short circuit","live wire","power line"]
+};
+var STOP_WORDS = ("near outside at the on in of to from is are was were there here please help urgent and or my our his her its some very big just now close by side front back gate area around next to a an it for with without one two three many people person man woman child kids sir nadiad gujarat india district city town village").split(" ");
+var SEV_CRIT = ["dead","died","death","critical","severe","explosion","blast","collapsed","trapped","fire","unconscious","heavy bleeding","multiple injured","serious"];
+var SEV_HIGH = ["serious","trapped","injured","bleeding","spread","spreading","stuck"];
+var SEV_LOW  = ["minor","small","slight","little"];
+
+function classifyType(text){
+  var toks=tokenize(text), best=null, bestHits=0;
+  Object.keys(TYPE_KEYWORDS).forEach(function(cat){
+    var hits=0;
+    TYPE_KEYWORDS[cat].forEach(function(kw){
+      if(kw.indexOf(" ")>-1){ if(normalize(text).indexOf(kw)>-1) hits++; }
+      else if(toks.indexOf(kw)>-1) hits++;
+    });
+    if(hits>bestHits){ bestHits=hits; best=cat; }
+  });
+  var fireHits=0;
+  TYPE_KEYWORDS["Fire"].forEach(function(kw){ if(toks.indexOf(kw)>-1) fireHits++; });
+  if(fireHits>0&&fireHits>=bestHits) best="Fire";
+  return best||"Other";
 }
-function sevBadge(s){
-  const cls = s==="Critical"?"badge-crit":s==="High"?"badge-high":s==="Low"?"badge-ok":"badge-med";
-  return `<span class="badge ${cls}">${esc(s)}</span>`;
+function inferSeverity(text){
+  var n=normalize(text);
+  for(var i=0;i<SEV_CRIT.length;i++) if(n.indexOf(SEV_CRIT[i])>-1) return "Critical";
+  for(i=0;i<SEV_HIGH.length;i++) if(n.indexOf(SEV_HIGH[i])>-1) return "High";
+  for(i=0;i<SEV_LOW.length;i++) if(n.indexOf(SEV_LOW[i])>-1) return "Low";
+  return "Medium";
 }
-function showToast(msg, err=false){
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast show" + (err?" error":"");
-  clearTimeout(t._tid);
-  t._tid = setTimeout(()=>{ t.classList.remove("show"); }, 4000);
+function extractLandmarks(text){
+  var typeWords={};
+  Object.keys(TYPE_KEYWORDS).forEach(function(c){ TYPE_KEYWORDS[c].forEach(function(w){ typeWords[w]=1; }); });
+  return tokenize(text).filter(function(w){ return STOP_WORDS.indexOf(w)===-1&&!typeWords[w]&&!/^\d+$/.test(w); });
+}
+function jaccard(a,b){
+  if(!a.length||!b.length) return 0;
+  var A={},B={},inter=0,uni=0;
+  a.forEach(function(x){A[x]=1;}); b.forEach(function(x){B[x]=1;});
+  Object.keys(A).forEach(function(x){ uni++; if(B[x]) inter++; });
+  Object.keys(B).forEach(function(x){ if(!A[x]) uni++; });
+  return uni?inter/uni:0;
+}
+function haversine(p1,p2){
+  var R=6371000,dLat=(p2[0]-p1[0])*Math.PI/180,dLng=(p2[1]-p1[1])*Math.PI/180;
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(p1[0]*Math.PI/180)*Math.cos(p2[0]*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function computeMergeScore(rep,inc){
+  var typeSim=rep.category===inc.category?1:(rep.category==="Other"||inc.category==="Other"?0.5:0);
+  var repLM=extractLandmarks((rep.message||"")+" "+(rep.location||""));
+  var incLM=[];
+  inc.reports.forEach(function(r){ incLM=incLM.concat(extractLandmarks((r.message||"")+" "+(r.location||""))); });
+  var textLoc=jaccard(repLM,incLM);
+  var shared=repLM.filter(function(w){ return incLM.indexOf(w)>-1; });
+  if(shared.length>=2) textLoc=Math.min(1,textLoc+0.30);
+  else if(shared.length===1) textLoc=Math.min(0.6,textLoc+0.15);
+  var geoLoc=0;
+  if(rep.lat&&rep.lng&&inc.lat&&inc.lng){
+    var d=haversine([rep.lat,rep.lng],[inc.lat,inc.lng]);
+    geoLoc=d<200?1:(d<1000?1-(d-200)/800:0);
+  }
+  var locSim=(rep.lat&&inc.lat)?geoLoc:textLoc;
+  if(rep.lat&&inc.lat&&haversine([rep.lat,rep.lng],[inc.lat,inc.lng])>1000) locSim=Math.min(locSim,0.2);
+  var dtMin=(Date.now()-inc.lastReport)/60000;
+  var timeSim=dtMin<=10?1:(dtMin<=60?1-(dtMin-10)/50:0);
+  var score=0.35*typeSim+0.50*locSim+0.15*timeSim;
+  var reasons=[];
+  if(typeSim===1) reasons.push("same type");
+  if(shared.length>=2) reasons.push("landmarks: "+shared.slice(0,3).join(", "));
+  else if(shared.length===1) reasons.push("shared: \""+shared[0]+"\"");
+  if(geoLoc>=0.9) reasons.push("GPS <200m");
+  if(timeSim>0.5) reasons.push(Math.round(dtMin)+"min apart");
+  return{score:score,reason:reasons.join(" + ")||"weak match"};
+}
+function findMergeCandidate(rep){
+  var best=null;
+  STATE.incidents.forEach(function(inc){
+    if(inc.status==="Resolved") return;
+    var s=computeMergeScore(rep,inc);
+    if(!best||s.score>best.info.score) best={inc:inc,info:s};
+  });
+  if(best&&best.info.score>=MERGE_THRESHOLD) return best;
+  return null;
+}
+function severityRank(s){ return{Critical:4,High:3,Medium:2,Low:1}[s]||2; }
+function generateAISummary(inc){
+  if(inc.reports.length<2) return null;
+  var allText=inc.reports.map(function(r){return r.message||"";}).join(" ");
+  var n=normalize(allText);
+  var hasDeath=/(dead|died|death|fatality|killed)/.test(n);
+  var hasInjured=/(injur|bleed|wound|hurt|casualt)/.test(n);
+  var hasTrapped=/(trap|stuck|pinned|rescue)/.test(n);
+  var hasFire=/(fire|burn|flame|blaze|smoke)/.test(n);
+  var hasFlood=/(flood|water|overflow|submerge|drown)/.test(n);
+  var hasGas=/(gas|fume|leak|lpg|cylinder)/.test(n);
+  var loc=inc.reports[0].location||inc.location||"the area";
+  var parts=[inc.reports.length+" independent reports confirm a "+inc.severity.toLowerCase()+" "+inc.category.toLowerCase()+" at "+loc+"."];
+  if(hasDeath) parts.push("⚠️ Fatalities reported.");
+  if(hasInjured) parts.push("Casualties confirmed — immediate medical response required.");
+  if(hasTrapped) parts.push("People reported trapped — rescue equipment needed.");
+  if(hasFire) parts.push("Active fire — fire suppression units critical.");
+  if(hasFlood) parts.push("Flooding reported — water rescue may be needed.");
+  if(hasGas) parts.push("Gas leak suspected — evacuate 200m radius.");
+  var tags=[];
+  if(inc.severity==="Critical") tags.push("Critical");
+  if(hasDeath) tags.push("Fatality");
+  if(hasInjured) tags.push("Casualties");
+  if(hasTrapped) tags.push("Rescue needed");
+  if(hasFire) tags.push("Fire");
+  if(hasFlood) tags.push("Flood");
+  if(inc.reports.length>=3) tags.push("High confidence merge");
+  return{text:parts.join(" "),tags:tags};
 }
 
 /* =====================================================
-   READ AMBULANCE STATE FROM DISPATCHER
+   RESOURCE RECOMMENDATION
 ===================================================== */
-function readAmbulanceState(){
-  try{
-    const raw = localStorage.getItem(K.AMB_STATE);
-    if(!raw) return null;
-    return JSON.parse(raw);
-  } catch(e){ return null; }
+var UNIT_RULES={
+  "Road accident":["AMB","POL"],
+  "Fire":["FIR","AMB"],
+  "Medical":["AMB"],
+  "Flood":["FIR","POL","AMB"],
+  "Gas leak":["FIR","POL"],
+  "Building collapse":["FIR","AMB","POL"],
+  "Crime":["POL","AMB"],
+  "Electrical":["FIR","AMB"],
+  "Other":["AMB","POL"]
+};
+function recommendTypes(inc){
+  var types=(UNIT_RULES[inc.category]||UNIT_RULES["Other"]).slice();
+  var text=normalize(inc.reports.map(function(r){return r.message;}).join(" "));
+  if(/(trapped|stuck|pinned|rescue)/.test(text)&&types.indexOf("FIR")===-1) types.push("FIR");
+  if(/(injur|bleed|wound|unconscious|pain|dead|died)/.test(text)&&types.indexOf("AMB")===-1) types.push("AMB");
+  if(inc.severity==="Critical"&&types.indexOf("POL")===-1) types.push("POL");
+  return types;
+}
+function unitById(id){ return STATE.units.filter(function(u){return u.id===id;})[0]; }
+var UNIT_META={AMB:{icon:"🚑",label:"Ambulance"},FIR:{icon:"🚒",label:"Fire tender"},POL:{icon:"🚓",label:"Police"}};
+
+function applyQuantities(inc,want){
+  var types=Object.keys(want);
+  inc.assigned.forEach(function(uid){ var u=unitById(uid); if(u&&types.indexOf(u.type)===-1) types.push(u.type); });
+  var picked=[];
+  types.forEach(function(t){
+    var committed=inc.assigned.filter(function(uid){ var u=unitById(uid); return u&&u.type===t; });
+    var n=(t in want)?(want[t]||0):committed.length;
+    var extra=Math.max(0,n-committed.length);
+    var take=STATE.units.filter(function(u){return u.status==="Available"&&u.type===t;}).slice(0,extra);
+    picked=picked.concat(committed,take.map(function(u){return u.id;}));
+  });
+  inc.assigned=picked;
+  picked.forEach(function(uid){ var u=unitById(uid); if(u) u.status="Dispatched"; });
+  return picked;
 }
 
 /* =====================================================
    STATE
 ===================================================== */
-function defaultState(){
-  return {
-    patients:[
-      {id:"PAT-001",name:"Ramesh Patel",  age:45,gender:"Male",  ward:"general",condition:"Stable",  diag:"Road accident",  doctor:"Dr. Kumar", notes:"",admitted:Date.now()-3600000},
-      {id:"PAT-002",name:"Sita Joshi",    age:32,gender:"Female",ward:"icu",    condition:"Critical",diag:"Cardiac arrest", doctor:"Dr. Sharma",notes:"",admitted:Date.now()-7200000},
-      {id:"PAT-003",name:"Ankit Mehta",   age:28,gender:"Male",  ward:"general",condition:"Serious", diag:"Flood rescue",   doctor:"Dr. Kumar", notes:"",admitted:Date.now()-1800000},
-      {id:"PAT-004",name:"Ritu Shah",     age:60,gender:"Female",ward:"icu",    condition:"Critical",diag:"Burn injuries",  doctor:"Dr. Singh", notes:"",admitted:Date.now()-900000 }
-    ],
-    beds:{
-      general:Array.from({length:60},(_,i)=>({num:i+1,occupied:i<36})),
-      icu:    Array.from({length:20},(_,i)=>({num:i+1,occupied:i<12}))
-    },
-    staff:[
-      {id:"STF-001",name:"Dr. Rajesh Kumar",  role:"Cardiologist",    dept:"Cardiology",shift:"Day (8 AM – 4 PM)",   status:"On Duty"},
-      {id:"STF-002",name:"Dr. Priya Sharma",  role:"Pediatrician",    dept:"Pediatrics",shift:"Day (8 AM – 4 PM)",   status:"On Duty"},
-      {id:"STF-003",name:"Nurse Anjali Mehta",role:"Staff Nurse",      dept:"ICU",       shift:"Night (12 AM – 8 AM)",status:"Off Duty"},
-      {id:"STF-004",name:"Dr. Anil Singh",    role:"General Physician",dept:"General",   shift:"Day (8 AM – 4 PM)",   status:"On Duty"}
-    ],
-    inventory:[
-      {id:"INV-001",name:"Paracetamol 500mg",cat:"Medicine", stock:240,min:50 },
-      {id:"INV-002",name:"Morphine 10mg",    cat:"Medicine", stock:18, min:30 },
-      {id:"INV-003",name:"Oxygen Cylinder",  cat:"Equipment",stock:12, min:15 },
-      {id:"INV-004",name:"Blood (O+ve)",     cat:"Blood",    stock:8,  min:10 },
-      {id:"INV-005",name:"Surgical Gloves",  cat:"PPE",      stock:500,min:100},
-      {id:"INV-006",name:"Defibrillator",    cat:"Equipment",stock:4,  min:3  }
-    ],
-    activity:[
-      {text:"Hospital portal initialised and connected to SAHAYAK network",color:"var(--ok)",  time:Date.now()-300000},
-      {text:"Bed grid loaded — 24 general, 8 ICU beds available",          color:"var(--info)",time:Date.now()-600000}
-    ],
-    counter:4, patCounter:5,
-    seenAmbulanceIds:{}   // tracks which dispatched ambulances we already notified about
+var STATE={incidents:[],units:[],counter:0,selected:{},filter:"all",search:"",showRadius:true};
+
+var UNITS_SEED=[
+  {id:"AMB-01",icon:"🚑",name:"Ambulance 01",type:"AMB",status:"Available",pos:[22.6948,72.8660]},
+  {id:"AMB-02",icon:"🚑",name:"Ambulance 02",type:"AMB",status:"Available",pos:[22.6880,72.8712]},
+  {id:"AMB-03",icon:"🚑",name:"Ambulance 03",type:"AMB",status:"Available",pos:[22.7001,72.8620]},
+  {id:"FIR-01",icon:"🚒",name:"Fire Tender 01",type:"FIR",status:"Available",pos:[22.6860,72.8600]},
+  {id:"FIR-02",icon:"🚒",name:"Fire Tender 02",type:"FIR",status:"Available",pos:[22.6990,72.8750]},
+  {id:"POL-01",icon:"🚓",name:"Police Unit 01",type:"POL",status:"Available",pos:[22.6925,72.8690]},
+  {id:"POL-02",icon:"🚓",name:"Police Unit 02",type:"POL",status:"Available",pos:[22.6840,72.8700]}
+];
+
+function saveState(){
+  try{ localStorage.setItem(K.STATE,JSON.stringify({incidents:STATE.incidents,units:STATE.units,counter:STATE.counter})); }catch(e){}
+  syncAmbulanceState();  // ← always sync ambulance state after every save
+}
+
+/* =====================================================
+   AMBULANCE STATE SYNC — THE BRIDGE TO HOSPITAL
+===================================================== */
+function syncAmbulanceState(){
+  // Build a clean ambulance-only snapshot that the hospital reads
+  var ambUnits = STATE.units.filter(function(u){ return u.type==="AMB"; });
+
+  var snapshot = ambUnits.map(function(u){
+    // Find which incident this ambulance is assigned to
+    var assignedInc = null;
+    STATE.incidents.forEach(function(inc){
+      if(inc.assigned && inc.assigned.indexOf(u.id) > -1 && inc.status !== "Resolved"){
+        assignedInc = inc;
+      }
+    });
+
+    return {
+      id:         u.id,
+      name:       u.name,
+      icon:       u.icon,
+      status:     u.status,                            // Available / Dispatched / On scene
+      pos:        u.pos,
+      incidentId: assignedInc ? assignedInc.id : null,
+      incidentCategory: assignedInc ? assignedInc.category : null,
+      incidentSeverity: assignedInc ? assignedInc.severity : null,
+      incidentLocation: assignedInc ? assignedInc.location : null,
+      incidentLat: assignedInc ? assignedInc.lat : null,
+      incidentLng: assignedInc ? assignedInc.lng : null,
+      dispatchedAt: (u.status !== "Available" && assignedInc) ? assignedInc.lastReport : null
+    };
+  });
+
+  var counts = {
+    total:      ambUnits.length,
+    available:  ambUnits.filter(function(u){ return u.status==="Available"; }).length,
+    dispatched: ambUnits.filter(function(u){ return u.status==="Dispatched"; }).length,
+    onScene:    ambUnits.filter(function(u){ return u.status==="On scene"; }).length,
+    lastSync:   Date.now()
+  };
+
+  try{
+    localStorage.setItem(K.AMB_STATE, JSON.stringify({ units: snapshot, counts: counts }));
+  }catch(e){}
+}
+
+function loadState(){
+  try{
+    var s=JSON.parse(localStorage.getItem(K.STATE)||"null");
+    if(s&&s.incidents){
+      STATE.incidents=s.incidents; STATE.counter=s.counter||0;
+      var units=(s.units&&s.units.length)?s.units:UNITS_SEED;
+      STATE.units=units.map(function(u){
+        return{id:u.id,icon:u.icon,name:u.name,pos:u.pos,
+               type:(u.type==="FIRE")?"FIR":(u.type||"AMB"),
+               status:(u.status==="Dispatched"||u.status==="On scene")?u.status:"Available"};
+      });
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+function processedIds(){
+  try{return JSON.parse(localStorage.getItem(K.PROCESSED)||"[]");}catch(e){return[];}
+}
+function markProcessed(id){
+  var p=processedIds();
+  if(p.indexOf(id)===-1){p.push(id);if(p.length>300)p=p.slice(-300);localStorage.setItem(K.PROCESSED,JSON.stringify(p));}
+}
+function nextId(){ STATE.counter++; return "INC-"+String(1000+STATE.counter); }
+
+function createIncident(rep){
+  var now=Date.now();
+  var inc={
+    id:nextId(),category:rep.category,severity:rep.severity,status:"New",
+    location:rep.location||"Nadiad",
+    lat:rep.lat||(NADIAD[0]+(Math.random()-.5)*.02),
+    lng:rep.lng||(NADIAD[1]+(Math.random()-.5)*.02),
+    created:now,lastReport:now,slaDeadline:now+10*60*1000,
+    assigned:[],mergeScores:[],
+    reports:[{name:rep.name||"Citizen",phone:rep.phone||"—",message:rep.message,location:rep.location||"",time:rep.time||now}]
+  };
+  STATE.incidents.unshift(inc);
+  return inc;
+}
+function mergeReport(inc,rep,score){
+  inc.reports.push({name:rep.name||"Citizen",phone:rep.phone||"—",message:rep.message,location:rep.location||"",time:rep.time||Date.now()});
+  inc.lastReport=Date.now();
+  if(!inc.mergeScores) inc.mergeScores=[];
+  inc.mergeScores.push(score);
+  if(severityRank(rep.severity)>severityRank(inc.severity)) inc.severity=rep.severity;
+}
+function ingestReport(rep){
+  rep.category=rep.category&&TYPE_KEYWORDS[rep.category]?rep.category:classifyType(rep.message);
+  rep.severity=rep.severity||inferSeverity(rep.message);
+  var cand=AI_MERGE_ENABLED?findMergeCandidate(rep):null;
+  if(cand){
+    mergeReport(cand.inc,rep,cand.info.score);
+    toast("🤖 AI merged report into "+cand.inc.id+" (score: "+cand.info.score.toFixed(2)+")", "info");
+  } else {
+    createIncident(rep);
+  }
+  saveState(); renderAll();
+}
+
+/* =====================================================
+   CITIZEN QUEUE INGESTION
+===================================================== */
+function pollQueue(){
+  var raw; try{raw=JSON.parse(localStorage.getItem(K.QUEUE)||"[]");}catch(e){return;}
+  if(raw&&!Array.isArray(raw)) raw=[raw];
+  if(!Array.isArray(raw)||!raw.length) return;
+  var done=processedIds(), found=false;
+  raw.forEach(function(item){
+    if(!item) return;
+    var id=item.id||String("h"+JSON.stringify(item).length+"|"+(item.time||0)+"|"+(item.message||"").slice(0,24));
+    if(done.indexOf(id)>-1) return;
+    var rep={id:id,name:item.name||"Citizen",phone:item.phone||"—",
+              message:item.message||item.text||item.description||"",
+              location:item.location||item.address||"",
+              lat:parseFloat(item.lat||0)||null,
+              lng:parseFloat(item.lng||item.lon||0)||null,
+              category:item.category||null,time:item.time||Date.now()};
+    if(!rep.message) rep.message=rep.category?rep.category+" reported":"Emergency reported";
+    if(typeof rep.category==="string"&&!TYPE_KEYWORDS[rep.category]){
+      var map={"accident":"Road accident","road accident":"Road accident","medical":"Medical","medical emergency":"Medical","fire":"Fire","flood":"Flood","crime":"Crime","gas leak":"Gas leak","building collapse":"Building collapse","electrical":"Electrical","other":"Other"};
+      rep.category=map[normalize(rep.category)]||null;
+    }
+    ingestReport(rep); markProcessed(id); found=true;
+  });
+  if(found){ try{localStorage.setItem(K.QUEUE,JSON.stringify([]));}catch(e){} }
+}
+
+/* =====================================================
+   AUTHORITY SYNC
+===================================================== */
+function syncAuthority(){
+  var list=STATE.incidents.map(function(i){
+    return{id:i.id,category:i.category,severity:i.severity,status:i.status,
+           location:i.location,reports:i.reports.length,created:i.created,
+           lastReport:i.lastReport,assigned:i.assigned.length,lat:i.lat,lng:i.lng};
+  });
+  try{localStorage.setItem(K.AUTHORITY,JSON.stringify(list));}catch(e){}
+}
+
+/* =====================================================
+   HOSPITAL CAPACITY READER — shows in units column
+===================================================== */
+function readHospitalCapacity(){
+  try{
+    var cap=JSON.parse(localStorage.getItem(K.HOSP_CAP)||"null");
+    return cap;
+  }catch(e){ return null; }
+}
+
+/* =====================================================
+   RENDER — STATS
+===================================================== */
+function renderStats(){
+  var act=STATE.incidents.filter(function(i){return i.status!=="Resolved";}).length;
+  var crit=STATE.incidents.filter(function(i){return i.status!=="Resolved"&&i.severity==="Critical";}).length;
+  var merged=STATE.incidents.filter(function(i){return i.reports&&i.reports.length>1&&i.status!=="Resolved";}).length;
+  var enr=STATE.incidents.filter(function(i){return i.status==="En route"||i.status==="Assigned"||i.status==="On scene";}).length;
+  var res=STATE.incidents.filter(function(i){return i.status==="Resolved";}).length;
+  var e;
+  e=document.getElementById("st-active");   if(e) e.textContent=act;
+  e=document.getElementById("st-crit");     if(e) e.textContent=crit;
+  e=document.getElementById("st-merged");   if(e) e.textContent=merged;
+  e=document.getElementById("st-enroute");  if(e) e.textContent=enr;
+  e=document.getElementById("st-resolved"); if(e) e.textContent=res;
+  e=document.getElementById("mapClock");    if(e) e.textContent=new Date().toLocaleTimeString();
+}
+
+/* =====================================================
+   RENDER — QUEUE
+===================================================== */
+function slaInfo(inc){
+  if(inc.status==="Resolved") return{txt:"resolved",cls:"ok"};
+  var left=inc.slaDeadline-Date.now(), over=left<0;
+  var m=Math.floor(Math.abs(left)/60000), s=Math.floor((Math.abs(left)%60000)/1000);
+  return{txt:(over?"SLA +":"SLA ")+m+":"+String(s).padStart(2,"0"), cls:over?"over":(left<180000?"soon":"ok")};
+}
+function filteredIncidents(){
+  var f=STATE.filter, q=normalize(STATE.search);
+  return STATE.incidents.filter(function(i){
+    if(f==="new"&&i.status!=="New") return false;
+    if(f==="active"&&i.status==="Resolved") return false;
+    if(f==="resolved"&&i.status!=="Resolved") return false;
+    if(q&&normalize(i.id+" "+i.category+" "+i.location+" "+i.reports.map(function(r){return r.message;}).join(" ")).indexOf(q)===-1) return false;
+    return true;
+  });
+}
+function renderQueue(){
+  var box=document.getElementById("queue"); if(!box) return;
+  var list=filteredIncidents();
+  var ce=document.getElementById("qcount"); if(ce) ce.textContent=list.length+" shown";
+  if(!list.length){ box.innerHTML='<div style="color:var(--mut);font-size:12px;padding:20px;text-align:center">No incidents match.</div>'; return; }
+  box.innerHTML=list.map(function(i){
+    var sla=slaInfo(i);
+    var lastMsg=i.reports&&i.reports.length?i.reports[i.reports.length-1].message:"";
+    var isMerged=i.reports&&i.reports.length>1;
+    return '<div class="inc-card sel-'+i.severity+'" data-id="'+i.id+'">'+
+      '<div class="inc-top">'+
+        '<input type="checkbox" class="incChk" data-id="'+i.id+'" '+(STATE.selected[i.id]?"checked":"")+'>'+
+        '<span class="inc-id">'+esc(i.id)+'</span>'+
+        '<span class="badge b-'+i.severity+'">'+esc(i.severity)+'</span>'+
+        '<span class="badge b-status">'+esc(i.status)+'</span>'+
+        (isMerged?'<span class="b-merged">🤖 '+i.reports.length+' reports</span>':'')+
+      '</div>'+
+      '<div class="inc-desc">'+esc(shortText(lastMsg))+'</div>'+
+      '<div class="inc-meta">'+
+        '<span>📍 '+esc(shortText(i.location,32))+'</span>'+
+        '<span>🗂 '+esc(i.category)+'</span>'+
+        '<span class="sla '+sla.cls+'">⏱ '+sla.txt+'</span>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+
+/* =====================================================
+   RENDER — MERGED COLUMN
+===================================================== */
+function renderMergeColumn(){
+  var box=document.getElementById("mergeCol"); if(!box) return;
+  var hc=document.getElementById("mergeHeaderCount");
+  var merged=STATE.incidents.filter(function(i){ return i.reports&&i.reports.length>1&&i.status!=="Resolved"; });
+  if(hc) hc.textContent=merged.length;
+  if(!merged.length){
+    box.innerHTML='<div class="mc-empty"><span class="mc-empty-icon">🤖</span>No merged incidents yet.<br><span style="font-size:11px">AI combines similar reports automatically.</span></div>';
+    return;
+  }
+  box.innerHTML=merged.map(function(inc){
+    var summary=generateAISummary(inc);
+    var avgScore=inc.mergeScores&&inc.mergeScores.length?(inc.mergeScores.reduce(function(a,b){return a+b;},0)/inc.mergeScores.length):0;
+    var scorePct=Math.round(avgScore*100);
+    var previewReports=inc.reports.slice(0,2);
+    var extraCount=inc.reports.length-2;
+    return '<div class="merge-card sel-'+inc.severity+'" data-id="'+inc.id+'">'+
+      '<div class="mc-top"><span class="mc-id">'+esc(inc.id)+'</span><span class="mc-count">'+inc.reports.length+' reports</span><span class="badge b-'+inc.severity+'">'+esc(inc.severity)+'</span></div>'+
+      '<div class="mc-category">'+esc(inc.category)+'</div>'+
+      '<div class="mc-location">📍 '+esc(shortText(inc.location,36))+'</div>'+
+      (scorePct>0?'<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mut);margin-bottom:3px"><span>AI confidence</span><span style="color:var(--ai);font-weight:700">'+scorePct+'%</span></div><div class="mc-score-bar"><div class="mc-score-fill" style="width:'+scorePct+'%"></div></div></div>':'')+
+      (summary?'<div class="ai-analysis"><strong>🤖 AI Analysis</strong>'+esc(summary.text)+(summary.tags.length?'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">'+summary.tags.map(function(tg){return'<span class="ai-summary ai-tag">'+esc(tg)+'</span>';}).join("")+'</div>':'')+'</div>':'')+
+      '<div class="mc-reports">'+
+        previewReports.map(function(r,idx){
+          return '<div class="mc-report-row"><div class="mc-report-name"><span>'+esc(r.name||"Citizen")+(idx===0?' <span style="font-size:9px;color:var(--acc)">FIRST</span>':'')+'</span><span class="mc-report-time">'+new Date(r.time||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})+'</span></div><div class="mc-report-msg">"'+esc(shortText(r.message,68))+'"</div></div>';
+        }).join("")+
+        (extraCount>0?'<div style="font-size:11px;color:var(--mut);text-align:center;padding:5px 0;font-style:italic">+ '+extraCount+' more report'+(extraCount>1?'s':'')+' — click to view all</div>':'')+
+      '</div>'+
+      '<div class="mc-footer">'+
+        '<span class="mc-reason">'+(avgScore?'Score: '+avgScore.toFixed(2):'')+'</span>'+
+        '<div class="mc-actions">'+
+          '<button class="mc-btn open" data-open="'+inc.id+'">Open ↗️</button>'+
+          '<button class="mc-btn" data-dispatch="'+inc.id+'">🚨 Dispatch</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+
+/* =====================================================
+   RENDER — UNITS COLUMN (with hospital capacity panel)
+===================================================== */
+function renderUnitsColumn(){
+  var col=document.getElementById("unitsCol"); if(!col) return;
+
+  var avail=STATE.units.filter(function(u){return u.status==="Available";});
+  var ambUnits=STATE.units.filter(function(u){return u.type==="AMB";});
+  var ambAvail=ambUnits.filter(function(u){return u.status==="Available";}).length;
+
+  // Count badge
+  var uc=document.getElementById("unitCount");
+  if(uc) uc.textContent=avail.length+" free";
+
+  // Hospital capacity panel
+  var cap=readHospitalCapacity();
+  var hospHtml="";
+  if(cap){
+    hospHtml='<div class="hosp-sync">'+
+      '<div class="hosp-sync-head">🏥 Hospital Capacity Live</div>'+
+      '<div class="hosp-sync-row"><span>General beds free</span><b style="color:var(--ok)">'+cap.generalAvailable+'</b></div>'+
+      '<div class="hosp-sync-row"><span>ICU beds free</span><b style="color:'+(cap.icuAvailable>2?"var(--ok)":"var(--crit)")+'">'+cap.icuAvailable+'</b></div>'+
+      '<div class="hosp-sync-row"><span>Published</span><span style="color:var(--mut);font-size:10px">'+new Date(cap.published).toLocaleTimeString()+'</span></div>'+
+      (cap.notes?'<div style="font-size:10px;color:var(--mut);margin-top:5px;font-style:italic">'+esc(cap.notes)+'</div>':'')+
+    '</div>';
+  }
+
+  // Ambulance summary
+  var ambSummary='<div style="text-align:center;padding:14px 0 10px">'+
+    '<div style="font-size:32px;font-weight:800;color:var(--ok);line-height:1">'+avail.length+'</div>'+
+    '<div style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;margin-top:3px">units available</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px">'+
+      '<div style="background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 12px;text-align:center;font-size:13px;font-weight:700">🚑 '+ambAvail+'<div style="font-size:9px;color:var(--mut);font-weight:400">AMB</div></div>'+
+      '<div style="background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 12px;text-align:center;font-size:13px;font-weight:700">🚒 '+STATE.units.filter(function(u){return u.type==="FIR"&&u.status==="Available";}).length+'<div style="font-size:9px;color:var(--mut);font-weight:400">FIR</div></div>'+
+      '<div style="background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 12px;text-align:center;font-size:13px;font-weight:700">🚓 '+STATE.units.filter(function(u){return u.type==="POL"&&u.status==="Available";}).length+'<div style="font-size:9px;color:var(--mut);font-weight:400">POL</div></div>'+
+    '</div>';
+
+  // Individual unit cards
+  var unitCards=STATE.units.map(function(u){
+    var statusCls=u.status==="Available"?"available":u.status==="On scene"?"onscene":"dispatched";
+    var statusColor=u.status==="Available"?"ok":u.status==="On scene"?"crit":"warn";
+    var assignedInc=STATE.incidents.filter(function(i){return i.assigned&&i.assigned.indexOf(u.id)>-1&&i.status!=="Resolved";})[0];
+    return '<div class="unit-card '+statusCls+'">'+
+      '<div class="unit-top">'+
+        '<span class="unit-id">'+u.icon+' '+esc(u.id)+'</span>'+
+        '<span class="unit-status '+statusColor+'">'+esc(u.status)+'</span>'+
+      '</div>'+
+      (assignedInc?'<div class="unit-assign">→ '+esc(assignedInc.id)+' · '+esc(shortText(assignedInc.location,24))+'</div>':'')+
+    '</div>';
+  }).join("");
+
+  col.innerHTML=hospHtml+ambSummary+unitCards;
+}
+
+/* =====================================================
+   MAP
+===================================================== */
+var map=null, layerInc=null, layerUnit=null, mapFitted=false;
+
+function initMap(){
+  if(typeof L==="undefined"){ var me=document.getElementById("map"); if(me) me.innerHTML='<div style="padding:30px;color:var(--mut)">Map unavailable.</div>'; return; }
+  var me=document.getElementById("map"); if(!me) return;
+  try{
+    map=L.map("map",{zoomControl:true}).setView(NADIAD,13);
+    var road=L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",{maxZoom:20}).addTo(map);
+    var sat=L.layerGroup([
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:20}),
+      L.tileLayer("https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}",{maxZoom:20})
+    ]);
+    var sw=L.control({position:"bottomleft"});
+    sw.onAdd=function(){
+      var d=L.DomUtil.create("div","mapswitch");
+      d.innerHTML='<button data-m="map" class="on">Map</button><button data-m="sat">Satellite</button>';
+      L.DomEvent.disableClickPropagation(d);
+      d.addEventListener("click",function(e){
+        var b=e.target.closest("button"); if(!b) return;
+        if(b.getAttribute("data-m")==="sat"){map.removeLayer(road);sat.addTo(map);}
+        else{map.removeLayer(sat);road.addTo(map);}
+        Array.prototype.forEach.call(d.querySelectorAll("button"),function(x){x.classList.toggle("on",x===b);});
+      });
+      return d;
+    };
+    sw.addTo(map);
+    layerInc=L.layerGroup().addTo(map);
+    layerUnit=L.layerGroup().addTo(map);
+  }catch(e){}
+}
+
+function sevColor(s){ return s==="Critical"?"#f87171":s==="High"?"#fb923c":s==="Medium"?"#fbbf24":"#34d399"; }
+
+function renderMap(){
+  if(!map||!layerInc||!layerUnit) return;
+  layerInc.clearLayers(); layerUnit.clearLayers();
+  var bounds=[];
+
+  // Hospital marker
+  L.marker(HOSPITAL_POS,{
+    icon:L.divIcon({html:'<div style="background:#34d399;border:2px solid #fff;border-radius:4px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px">🏥</div>',className:"",iconSize:[22,22]})
+  }).bindTooltip('<span class="pin-lbl">Civil Hospital Nadiad</span>').addTo(layerInc);
+
+  STATE.incidents.forEach(function(i){
+    if(!i.lat||!i.lng||i.status==="Resolved") return;
+    var color=sevColor(i.severity);
+    var isMerged=i.reports&&i.reports.length>1;
+    var m=L.circleMarker([i.lat,i.lng],{radius:isMerged?11:9,color:isMerged?"#c084fc":color,weight:isMerged?3:2,fillColor:color,fillOpacity:.85})
+      .bindTooltip('<span class="pin-lbl">'+esc(i.id)+' · '+esc(i.category)+' · '+esc(i.severity)+(isMerged?' · 🤖 '+i.reports.length+' reports':'')+'</span>')
+      .on("click",function(){openModal(i.id);});
+    layerInc.addLayer(m);
+    bounds.push([i.lat,i.lng]);
+    if(STATE.showRadius&&(i.severity==="Critical"||i.severity==="High")){
+      layerInc.addLayer(L.circle([i.lat,i.lng],{radius:i.severity==="Critical"?400:250,color:isMerged?"#c084fc":color,weight:1,fillColor:isMerged?"#c084fc":color,fillOpacity:.1}));
+    }
+    i.assigned.forEach(function(uid){
+      var u=STATE.units.filter(function(x){return x.id===uid;})[0];
+      if(!u||!u.pos||u.pos.length<2) return;
+      var to=(i.status==="On scene")?[i.lat,i.lng]:(i.status==="En route"?[(u.pos[0]+i.lat)/2,(u.pos[1]+i.lng)/2]:u.pos);
+      // Draw route from unit to incident AND from incident to hospital (for ambulances)
+      layerInc.addLayer(L.polyline([u.pos,to],{color:"#38bdf8",weight:2,dashArray:"6 8"}));
+      if(u.type==="AMB"){
+        // Extra dashed line from incident to hospital showing patient journey
+        layerInc.addLayer(L.polyline([[i.lat,i.lng],HOSPITAL_POS],{color:"#34d399",weight:1.5,dashArray:"4 8",opacity:.6}));
+      }
+      var um=L.marker(to,{
+        icon:L.divIcon({html:'<div style="font-size:18px">'+u.icon+'</div>',className:"",iconSize:[24,24]})
+      }).bindTooltip('<span class="pin-lbl">'+esc(u.id)+' → '+esc(i.id)+'</span>');
+      layerUnit.addLayer(um);
+    });
+  });
+
+  if(!mapFitted&&bounds.length){ mapFitted=true; try{map.fitBounds(bounds,{padding:[40,40]});}catch(e){} }
+}
+
+/* =====================================================
+   TOAST
+===================================================== */
+function toast(html,cls){
+  var t=document.createElement("div");
+  t.className="toast "+(cls||"");
+  t.textContent=html;
+  var tc=document.getElementById("toasts"); if(tc) tc.appendChild(t);
+  setTimeout(function(){t.style.opacity="0";t.style.transition=".4s";},3800);
+  setTimeout(function(){if(t.parentNode)t.remove();},4300);
+}
+
+/* =====================================================
+   MODAL
+===================================================== */
+function openModal(id){
+  var inc=STATE.incidents.filter(function(i){return i.id===id;})[0]; if(!inc) return;
+  var sla=slaInfo(inc);
+  var statuses=["New","Assigned","En route","On scene","Resolved"];
+  var me=document.getElementById("modal"); if(!me) return;
+  var isMerged=inc.reports&&inc.reports.length>1;
+  var summary=isMerged?generateAISummary(inc):null;
+
+  me.innerHTML=
+    '<h2>'+esc(inc.id)+
+      ' <span class="badge b-'+inc.severity+'">'+esc(inc.severity)+'</span>'+
+      ' <span class="badge b-status">'+esc(inc.status)+'</span>'+
+      (isMerged?'<span class="b-merged">🤖 '+inc.reports.length+' reports merged</span>':'')+
+    '</h2>'+
+    '<div class="sub">'+esc(inc.category)+' · 📍 '+esc(inc.location)+' · <span class="sla '+sla.cls+'">'+sla.txt+'</span></div>'+
+    '<div class="mgrid">'+
+      '<div class="mbox"><label>Reported</label><div class="v">'+new Date(inc.created).toLocaleTimeString()+'</div></div>'+
+      '<div class="mbox"><label>Last report</label><div class="v">'+new Date(inc.lastReport).toLocaleTimeString()+'</div></div>'+
+    '</div>'+
+    (summary?'<div class="ai-summary"><div class="ai-label">🤖 AI Incident Summary</div><p>'+esc(summary.text)+'</p>'+(summary.tags.length?'<div class="ai-tags">'+summary.tags.map(function(tg){return'<span class="ai-tag">'+esc(tg)+'</span>';}).join("")+'</div>':'')+'</div>':'')+
+    '<label style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px">Citizen reports ('+inc.reports.length+')'+(isMerged?' <span style="color:var(--ai)">— AI merged</span>':'')+'</label>'+
+    '<div style="margin:6px 0 12px">'+
+      inc.reports.map(function(r,idx){
+        return '<div class="reporter"><div class="rhead"><b>'+esc(r.name)+(idx===0&&isMerged?' <span style="font-size:10px;color:var(--acc);font-weight:400">(first)</span>':'')+'</b><span style="color:var(--mut);font-size:10px">'+new Date(r.time).toLocaleTimeString()+' · '+esc(r.phone)+'</span></div><div style="margin-top:3px">"'+esc(r.message)+'"'+(r.location?'<span style="color:var(--mut)"> — '+esc(r.location)+'</span>':'')+'</div></div>';
+      }).join("")+
+    '</div>'+
+    '<div class="mrow" style="align-items:center"><label style="font-size:11px;color:var(--mut)">Status:</label><select id="mStatus">'+statuses.map(function(s){return'<option '+(s===inc.status?"selected":"")+'>'+s+'</option>';}).join("")+'</select></div>'+
+    '<label style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;display:block;margin-top:12px">Units for '+esc(inc.category)+' ('+recommendTypes(inc).join(" + ")+')</label>'+
+    '<div class="ulist" id="mUnits">'+
+      recommendTypes(inc).map(function(t){
+        var meta=UNIT_META[t]||{icon:"🚑",label:t};
+        var avail=STATE.units.filter(function(u){return u.type===t&&u.status==="Available";}).length;
+        var cur=inc.assigned.filter(function(uid){var u=unitById(uid);return u&&u.type===t;}).length;
+        var max=avail+cur;
+        var def=cur>0?cur:(max>0?1:0);
+        return '<div class="uqty"><span style="font-size:18px">'+meta.icon+'</span><span class="uq-name">'+meta.label+'<small>'+avail+' available</small></span><span class="uq-ctrl"><button data-d="-1" type="button">−</button><b class="uq-n" data-type="'+t+'" data-max="'+max+'">'+def+'</b><button data-d="1" type="button">+</button></span></div>';
+      }).join("")+
+    '</div>'+
+    '<div class="mrow" style="margin-top:16px"><button class="mbtn pri" id="mDispatch">🚨 Dispatch units</button><button class="mbtn ok" id="mResolve">✅ Mark resolved</button><button class="mbtn ghost" id="mClose">Close</button></div>';
+
+  document.getElementById("overlay").classList.add("show");
+
+  var mu=document.getElementById("mUnits");
+  if(mu){
+    mu.addEventListener("click",function(e){
+      var b=e.target.closest("button[data-d]"); if(!b) return;
+      var n=b.parentNode.querySelector(".uq-n"); if(!n) return;
+      var v=(parseInt(n.textContent,10)||0)+parseInt(b.getAttribute("data-d"),10);
+      v=Math.max(0,Math.min(parseInt(n.getAttribute("data-max"),10),v));
+      n.textContent=v;
+    });
+  }
+  document.getElementById("mClose").onclick=closeModal;
+  document.getElementById("mStatus").onchange=function(){
+    var oldStatus=inc.status;
+    inc.status=this.value;
+    if(inc.status==="Resolved"||inc.status==="New") freeUnits(inc);
+    else if(inc.status==="On scene") STATE.units.forEach(function(u){if(inc.assigned.indexOf(u.id)>-1)u.status="On scene";});
+    saveState(); renderAll();
+    if(inc.status==="Resolved"){ closeModal(); toast("✅ "+inc.id+" resolved — ambulances returned to hospital","good"); }
+    else openModal(id);
+  };
+  document.getElementById("mResolve").onclick=function(){
+    inc.status="Resolved";
+    freeUnits(inc);
+    saveState(); renderAll(); closeModal();
+    toast("✅ "+inc.id+" resolved — ambulances returning to base","good");
+  };
+  document.getElementById("mDispatch").onclick=function(){
+    var want={};
+    document.querySelectorAll("#mUnits .uq-n").forEach(function(n){ want[n.getAttribute("data-type")]=parseInt(n.textContent,10)||0; });
+    var prevAmb=inc.assigned.filter(function(uid){var u=unitById(uid);return u&&u.type==="AMB";}).length;
+    var picked=applyQuantities(inc,want);
+    if(!picked.length){toast("Set at least one unit quantity","info");return;}
+    inc.status="En route";
+
+    // Count new ambulances dispatched
+    var newAmb=inc.assigned.filter(function(uid){var u=unitById(uid);return u&&u.type==="AMB";}).length - prevAmb;
+
+    saveState(); renderAll(); closeModal();
+    toast("🚨 "+inc.id+" dispatched — "+picked.join(", ")+" en route to "+inc.location,"info");
+
+    // Hospital gets notified via ambulance state sync (already done in saveState)
+    if(newAmb>0){
+      toast("🏥 Hospital notified: "+newAmb+" ambulance"+(newAmb>1?"s":"")+" dispatched to "+inc.location,"hosp");
+    }
   };
 }
 
-let HOSP = null;
-function loadState(){
-  try{
-    const s = JSON.parse(localStorage.getItem(K.HOSP_STATE)||"null");
-    if(s && s.patients) return s;
-  }catch(e){}
-  return defaultState();
-}
-function saveState(){
-  try{ localStorage.setItem(K.HOSP_STATE, JSON.stringify(HOSP)); }catch(e){}
-}
+function closeModal(){ document.getElementById("overlay").classList.remove("show"); }
 
-/* =====================================================
-   DISPATCHER INCIDENTS READER
-===================================================== */
-function getDispatcherIncidents(){
-  try{
-    const s = JSON.parse(localStorage.getItem(K.DISP_STATE)||"null");
-    if(s && Array.isArray(s.incidents)) return s.incidents;
-  }catch(e){}
-  try{
-    const a = JSON.parse(localStorage.getItem(K.AUTHORITY)||"[]");
-    if(Array.isArray(a)) return a;
-  }catch(e){}
-  return [];
-}
-
-/* =====================================================
-   NAVIGATION
-===================================================== */
-document.querySelectorAll(".nav-item[data-page]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".nav-item").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    document.querySelectorAll(".page-section").forEach(s=>s.classList.remove("active"));
-    const tgt = document.getElementById(btn.dataset.page);
-    if(tgt) tgt.classList.add("active");
+function freeUnits(inc){
+  inc.assigned.forEach(function(uid){
+    var u=STATE.units.filter(function(x){return x.id===uid;})[0];
+    var busy=STATE.incidents.some(function(o){return o!==inc&&o.status!=="Resolved"&&o.assigned.indexOf(uid)>-1;});
+    if(u&&!busy) u.status="Available";
   });
-});
-
-/* =====================================================
-   LEAFLET MAP
-===================================================== */
-let leafMap = null, layerInc = null, layerAmb = null;
-
-function initMap(){
-  if(typeof L === "undefined") return;
-  try{
-    leafMap = L.map("liveMap",{zoomControl:true}).setView(HOSPITAL_POS,13);
-    L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",{maxZoom:20}).addTo(leafMap);
-    layerInc = L.layerGroup().addTo(leafMap);
-    layerAmb = L.layerGroup().addTo(leafMap);
-
-    // Hospital pin
-    L.marker(HOSPITAL_POS,{
-      icon:L.divIcon({
-        html:'<div style="background:#3ddc97;border:3px solid #fff;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.4)">🏥</div>',
-        className:"",iconSize:[28,28]
-      })
-    }).bindPopup('<b>Civil Hospital Nadiad</b><br>Your location').addTo(layerInc);
-  }catch(e){}
+  inc.assigned=[];
 }
-
-function renderMap(){
-  if(!leafMap || !layerInc || !layerAmb) return;
-  layerAmb.clearLayers();
-
-  const ambState = readAmbulanceState();
-  if(!ambState || !ambState.units) return;
-
-  ambState.units.forEach(u => {
-    if(u.status === "Available") return;  // don't show available ambulances on hospital map
-    if(!u.incidentLat || !u.incidentLng) return;
-
-    const color = u.status === "On scene" ? "#34d399" : "#38bdf8";
-
-    // Ambulance at current position (between hospital and incident)
-    const ambPos = u.pos && u.pos.length === 2 ? u.pos : HOSPITAL_POS;
-    const midLat = (ambPos[0] + u.incidentLat) / 2;
-    const midLng = (ambPos[1] + u.incidentLng) / 2;
-    const ambCurrentPos = u.status === "On scene" ? [u.incidentLat, u.incidentLng] : [midLat, midLng];
-
-    // Draw route: hospital → incident
-    L.polyline([HOSPITAL_POS, [u.incidentLat, u.incidentLng]],{
-      color: color, weight:2, dashArray:"6 8", opacity:.7
-    }).addTo(layerAmb);
-
-    // Incident pin
-    const incColor = u.incidentSeverity==="Critical"?"#f87171":u.incidentSeverity==="High"?"#fb923c":"#fbbf24";
-    L.circleMarker([u.incidentLat, u.incidentLng],{
-      radius:9, color:incColor, weight:2, fillColor:incColor, fillOpacity:.85
-    }).bindTooltip(`<b>${u.incidentId}</b> · ${u.incidentCategory} · ${u.incidentSeverity}<br>📍 ${u.incidentLocation}`)
-     .addTo(layerAmb);
-
-    // Ambulance icon at midpoint / scene
-    L.marker(ambCurrentPos,{
-      icon:L.divIcon({
-        html:`<div style="font-size:20px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))">🚑</div>`,
-        className:"", iconSize:[24,24]
-      })
-    }).bindTooltip(`<b>${u.id}</b> → ${u.incidentId}<br>Status: ${u.status}<br>📍 ${u.incidentLocation}`)
-     .addTo(layerAmb);
-  });
-
-  // Update map ambulance count badge
-  const dispatched = ambState.units.filter(u=>u.status!=="Available").length;
-  const badge = document.getElementById("mapAmbCount");
-  if(badge) badge.textContent = dispatched + " ambulance" + (dispatched!==1?"s":"") + " deployed";
-}
-
-/* =====================================================
-   AMBULANCE NOTIFICATION ENGINE
-   Fires a toast + activity entry when dispatcher deploys
-   a new ambulance that wasn't deployed before
-===================================================== */
-function checkAmbulanceNotifications(){
-  const ambState = readAmbulanceState();
-  if(!ambState || !ambState.units) return;
-
-  if(!HOSP.seenAmbulanceIds) HOSP.seenAmbulanceIds = {};
-
-  ambState.units.forEach(u => {
-    if(u.status === "Available"){
-      // If this ambulance was previously dispatched and now returned
-      if(HOSP.seenAmbulanceIds[u.id] && HOSP.seenAmbulanceIds[u.id] !== "available"){
-        HOSP.seenAmbulanceIds[u.id] = "available";
-        addActivity(
-          `✅ ${u.id} returned to base — now available`,
-          "var(--ok)"
-        );
-        showToast(`✅ ${u.id} returned to hospital — available for next dispatch`);
-        saveState();
-      }
-      return;
-    }
-
-    // Ambulance is dispatched or on scene
-    const key = u.id + "|" + u.incidentId;
-    if(HOSP.seenAmbulanceIds[u.id] === key) return;  // already notified
-
-    HOSP.seenAmbulanceIds[u.id] = key;
-
-    const statusText = u.status === "On scene" ? "arrived on scene at" : "dispatched to";
-    const msg = `🚑 ${u.id} ${statusText}: ${u.incidentCategory} — ${u.incidentLocation}`;
-
-    addActivity(msg, u.incidentSeverity==="Critical"?"var(--crit)":"var(--high)");
-    saveState();
-    showToast(`🚨 ${u.id} ${statusText} ${u.incidentLocation} (${u.incidentSeverity} ${u.incidentCategory})`);
-  });
-}
-
-/* =====================================================
-   RENDER — DASHBOARD
-===================================================== */
-function renderDashboard(){
-  const ambState = readAmbulanceState();
-  const counts   = ambState ? ambState.counts : null;
-
-  const genAvail = HOSP.beds.general.filter(b=>!b.occupied).length;
-  const icuAvail = HOSP.beds.icu.filter(b=>!b.occupied).length;
-
-  setText("d-avail", genAvail + icuAvail);
-  setText("d-bed-sub", `${genAvail} general · ${icuAvail} ICU`);
-  setText("d-icu", HOSP.beds.icu.filter(b=>b.occupied).length);
-  setText("d-total", HOSP.patients.length);
-  setText("d-amb", counts ? counts.dispatched + counts.onScene : 0);
-
-  // Ambulance panel in dashboard — from shared ambulance state
-  const incomingBox = document.getElementById("incomingTable");
-  const badge = document.getElementById("incomingBadge");
-
-  if(ambState && ambState.units){
-    const deployed = ambState.units.filter(u=>u.status!=="Available");
-    if(badge) badge.textContent = deployed.length + " deployed";
-
-    if(incomingBox){
-      incomingBox.innerHTML = deployed.length
-        ? deployed.map(u => `
-            <tr>
-              <td><b>${esc(u.id)}</b></td>
-              <td>${esc(u.incidentCategory||"Emergency")}</td>
-              <td>${u.incidentSeverity==="Critical"?'<span class="badge badge-crit">Critical</span>':u.incidentSeverity==="High"?'<span class="badge badge-high">High</span>':'<span class="badge badge-med">'+esc(u.incidentSeverity||"Med")+'</span>'}</td>
-              <td>${esc(short(u.incidentLocation||"—"))}</td>
-              <td><span class="badge ${u.status==="On scene"?"badge-ok":"badge-info"}">${esc(u.status)}</span></td>
-              <td>${u.incidentId?'#'+esc(u.incidentId):'—'}</td>
-            </tr>`).join("")
-        : `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">No ambulances currently deployed.</td></tr>`;
-    }
-  } else {
-    if(badge) badge.textContent = "Dispatcher offline";
-    if(incomingBox) incomingBox.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">Waiting for dispatcher sync...</td></tr>`;
-  }
-
-  // Ambulance count summary card in dashboard stats
-  if(counts){
-    setText("d-staff", HOSP.staff.filter(s=>s.status==="On Duty").length);
-  }
-
-  // Activity
-  const af = document.getElementById("activityFeed");
-  if(af){
-    const items = [...HOSP.activity].reverse().slice(0,8);
-    af.innerHTML = items.length
-      ? items.map(a=>`
-          <div class="activity-item">
-            <div class="act-dot" style="background:${a.color||"var(--info)"}"></div>
-            <div>
-              <div class="act-text">${esc(a.text)}</div>
-              <div class="act-time">${timeAgo(a.time)}</div>
-            </div>
-          </div>`).join("")
-      : '<div style="color:var(--muted);font-size:13px;padding:10px">No recent activity.</div>';
-  }
-
-  // Nav badges
-  const empBadge = document.getElementById("empNavBadge");
-  if(empBadge && ambState && ambState.counts){
-    const n = ambState.counts.dispatched + ambState.counts.onScene;
-    empBadge.textContent = n;
-    empBadge.style.display = n ? "inline-block" : "none";
-  }
-
-  // Publish panel
-  setText("pub-gen", genAvail);
-  setText("pub-icu", icuAvail);
-}
-
-/* =====================================================
-   RENDER — PATIENTS
-===================================================== */
-function renderPatients(filter=""){
-  const list = document.getElementById("patientList"); if(!list) return;
-  const q = filter.toLowerCase();
-  const pts = HOSP.patients.filter(p => !q || p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
-
-  if(!pts.length){
-    list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)">No patients found.</div>';
-    return;
-  }
-
-  list.innerHTML = pts.map(p => {
-    const condBadge = p.condition==="Critical"?"badge-crit":p.condition==="Serious"?"badge-high":"badge-ok";
-    return `
-      <div class="patient-row">
-        <div class="pat-avatar">${p.gender==="Female"?"👩":"👨"}</div>
-        <div class="pat-details">
-          <div class="pat-name">${esc(p.name)} <span style="color:var(--muted);font-weight:400;font-size:12px">${esc(p.id)}</span></div>
-          <div class="pat-meta">${p.age}y · ${p.ward.toUpperCase()} · ${esc(p.diag)} · ${esc(p.doctor)}</div>
-        </div>
-        <span class="badge ${condBadge}">${esc(p.condition)}</span>
-        <span style="font-size:11px;color:var(--muted)">${timeAgo(p.admitted)}</span>
-        <button class="btn btn-danger btn-sm" data-discharge="${p.id}">Discharge</button>
-      </div>`;
-  }).join("");
-
-  list.querySelectorAll("[data-discharge]").forEach(btn => {
-    btn.onclick = () => {
-      const id = btn.dataset.discharge;
-      const pat = HOSP.patients.find(p=>p.id===id);
-      HOSP.patients = HOSP.patients.filter(p=>p.id!==id);
-      addActivity(`Patient ${pat?pat.name:id} discharged`, "var(--ok)");
-      saveState(); renderAll();
-      showToast(`Patient ${id} discharged`);
-    };
-  });
-
-  const nb = document.getElementById("patNavBadge");
-  if(nb){ nb.textContent=HOSP.patients.length; nb.style.display="inline-block"; }
-}
-
-/* =====================================================
-   RENDER — BEDS
-===================================================== */
-function renderBeds(){
-  renderWard("generalWard","general","available","occupied","gen-avail","genBadge");
-  renderWard("icuWard","icu","icu-avail","icu-occ","icu-avail","icuBadge");
-}
-function renderWard(cId, wKey, aC, oC, sId, bId){
-  const container = document.getElementById(cId); if(!container) return;
-  const beds = HOSP.beds[wKey];
-  const free = beds.filter(b=>!b.occupied).length;
-  setText(sId, free);
-  const badge = document.getElementById(bId);
-  if(badge) badge.textContent = free+" free";
-  container.innerHTML = beds.map(b=>`
-    <div class="bed-item ${b.occupied?oC:aC}" data-ward="${wKey}" data-num="${b.num}">
-      <div class="bed-num">${b.num}</div>
-      <div class="bed-lbl">${b.occupied?"Occupied":"Available"}</div>
-    </div>`).join("");
-  container.querySelectorAll(".bed-item").forEach(item=>{
-    item.onclick=()=>{
-      const w=item.dataset.ward, n=parseInt(item.dataset.num);
-      const bed=HOSP.beds[w].find(b=>b.num===n); if(!bed) return;
-      bed.occupied=!bed.occupied;
-      addActivity(`Bed ${n} (${w.toUpperCase()}) → ${bed.occupied?"Occupied":"Available"}`, bed.occupied?"var(--crit)":"var(--ok)");
-      saveState(); renderAll();
-      showToast(`Bed ${n} ${w.toUpperCase()} — ${bed.occupied?"Occupied":"Available"}`);
-    };
-  });
-}
-
-/* =====================================================
-   RENDER — EMERGENCY (now shows ambulance state)
-===================================================== */
-function renderEmergency(){
-  const tbody = document.getElementById("empTable"); if(!tbody) return;
-  const ambState = readAmbulanceState();
-
-  // Show both dispatcher incidents AND ambulance deployment status
-  const incs = getDispatcherIncidents();
-
-  if(!incs.length && (!ambState || !ambState.units || !ambState.units.filter(u=>u.status!=="Available").length)){
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">No active incidents. All ambulances available.</td></tr>`;
-    return;
-  }
-
-  // Build a map of incident → ambulances assigned
-  const incAmbs = {};
-  if(ambState && ambState.units){
-    ambState.units.forEach(u=>{
-      if(u.incidentId && u.status!=="Available"){
-        if(!incAmbs[u.incidentId]) incAmbs[u.incidentId]=[];
-        incAmbs[u.incidentId].push(u);
-      }
-    });
-  }
-
-  tbody.innerHTML = incs.slice(0,15).map(i => {
-    const ambs = incAmbs[i.id] || [];
-    const ambCell = ambs.length
-      ? ambs.map(u=>`<span style="background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);border-radius:6px;padding:2px 7px;font-size:11px;color:#38bdf8;white-space:nowrap">🚑 ${u.id} — ${u.status}</span>`).join(" ")
-      : '<span style="color:var(--muted);font-size:11px">No ambulance assigned</span>';
-    return `
-      <tr>
-        <td><b>${esc(i.id)}</b></td>
-        <td>${esc(i.category||"Emergency")}</td>
-        <td>${sevBadge(i.severity||"Medium")}</td>
-        <td>${esc(short(i.location||"Nadiad"))}</td>
-        <td>${Array.isArray(i.reports)?i.reports.length:(i.reports||1)}</td>
-        <td>${esc(i.status||"New")}</td>
-        <td>${ambCell}</td>
-      </tr>`;
-  }).join("");
-}
-
-/* =====================================================
-   RENDER — STAFF
-===================================================== */
-function renderStaff(){
-  const tbody = document.getElementById("staffTable"); if(!tbody) return;
-  tbody.innerHTML = HOSP.staff.map(s=>`
-    <tr>
-      <td><b>${esc(s.name)}</b></td>
-      <td>${esc(s.role)}</td>
-      <td>${esc(s.dept)}</td>
-      <td>${esc(s.shift)}</td>
-      <td><span class="badge ${s.status==="On Duty"?"badge-ok":"badge-med"}">${esc(s.status)}</span></td>
-      <td>
-        <button class="btn btn-sm" data-toggle-staff="${s.id}">Toggle Duty</button>
-        <button class="btn btn-danger btn-sm" data-del-staff="${s.id}">Remove</button>
-      </td>
-    </tr>`).join("");
-  tbody.querySelectorAll("[data-toggle-staff]").forEach(btn=>{
-    btn.onclick=()=>{
-      const m=HOSP.staff.find(s=>s.id===btn.dataset.toggleStaff); if(!m) return;
-      m.status=m.status==="On Duty"?"Off Duty":"On Duty";
-      saveState(); renderStaff();
-      showToast(m.name+" — "+m.status);
-    };
-  });
-  tbody.querySelectorAll("[data-del-staff]").forEach(btn=>{
-    btn.onclick=()=>{
-      if(!confirm("Remove?")) return;
-      HOSP.staff=HOSP.staff.filter(s=>s.id!==btn.dataset.delStaff);
-      saveState(); renderStaff();
-    };
-  });
-  setText("d-staff", HOSP.staff.filter(s=>s.status==="On Duty").length);
-}
-
-/* =====================================================
-   RENDER — INVENTORY
-===================================================== */
-function renderInventory(){
-  const tbody = document.getElementById("invTable"); if(!tbody) return;
-  tbody.innerHTML = HOSP.inventory.map(i=>{
-    const r=i.stock/i.min;
-    const level=r<1?"low":r<1.5?"med":"ok";
-    const levelText=r<1?"Low ⚠️":r<1.5?"Moderate":"Adequate";
-    return `
-      <tr>
-        <td><b>${esc(i.name)}</b></td>
-        <td>${esc(i.cat)}</td>
-        <td>${i.stock}</td>
-        <td>${i.min}</td>
-        <td><span class="inv-level ${level}">${levelText}</span></td>
-        <td>
-          <button class="btn btn-sm" data-restock="${i.id}">+10</button>
-          <button class="btn btn-danger btn-sm" data-del-inv="${i.id}">Remove</button>
-        </td>
-      </tr>`;
-  }).join("");
-  tbody.querySelectorAll("[data-restock]").forEach(btn=>{
-    btn.onclick=()=>{
-      const item=HOSP.inventory.find(i=>i.id===btn.dataset.restock); if(!item) return;
-      item.stock+=10; saveState(); renderInventory();
-      showToast(item.name+" restocked (+10)");
-    };
-  });
-  tbody.querySelectorAll("[data-del-inv]").forEach(btn=>{
-    btn.onclick=()=>{
-      if(!confirm("Remove?")) return;
-      HOSP.inventory=HOSP.inventory.filter(i=>i.id!==btn.dataset.delInv);
-      saveState(); renderInventory();
-    };
-  });
-}
-
-/* =====================================================
-   CAPACITY PUBLISH
-===================================================== */
-function publishCapacity(){
-  const genAvail=HOSP.beds.general.filter(b=>!b.occupied).length;
-  const icuAvail=HOSP.beds.icu.filter(b=>!b.occupied).length;
-  const overGen=parseInt(document.getElementById("overGen").value)||genAvail;
-  const overIcu=parseInt(document.getElementById("overIcu").value)||icuAvail;
-  const notes=document.getElementById("capNotes").value;
-  const payload={hospital:"Civil Hospital Nadiad",generalAvailable:overGen,icuAvailable:overIcu,totalAvailable:overGen+overIcu,notes,published:Date.now()};
-  try{localStorage.setItem(K.HOSP_CAP,JSON.stringify(payload));}catch(e){}
-  addActivity("Capacity published: "+overGen+" general, "+overIcu+" ICU beds free","var(--ok)");
-  saveState();
-  const ts=document.getElementById("pubTimestamp");
-  if(ts) ts.textContent="Published at "+new Date().toLocaleTimeString();
-  showToast("✅ Capacity published to dispatcher network");
-}
-
-/* =====================================================
-   ACTIVITY LOG
-===================================================== */
-function addActivity(text, color="var(--info)"){
-  HOSP.activity.push({text,color,time:Date.now()});
-  if(HOSP.activity.length>60) HOSP.activity=HOSP.activity.slice(-60);
-}
-
-function setText(id,val){
-  const el=document.getElementById(id); if(el) el.textContent=val;
-}
-
-/* =====================================================
-   MODAL EVENTS
-===================================================== */
-document.getElementById("addPatBtn").onclick=()=>{ document.getElementById("patOverlay").classList.add("show"); };
-document.getElementById("savePatBtn").onclick=()=>{
-  const name=document.getElementById("pName").value.trim();
-  if(!name){showToast("Enter patient name",true);return;}
-  const id="PAT-"+String(HOSP.patCounter).padStart(3,"0");
-  HOSP.patCounter++;
-  HOSP.patients.push({id,name,
-    age:parseInt(document.getElementById("pAge").value)||0,
-    gender:document.getElementById("pGender").value,
-    ward:document.getElementById("pWard").value,
-    condition:document.getElementById("pCondition").value,
-    diag:document.getElementById("pDiag").value,
-    doctor:document.getElementById("pDoctor").value,
-    notes:document.getElementById("pNotes").value,
-    admitted:Date.now()});
-  addActivity("Patient "+name+" ("+id+") admitted","var(--info)");
-  document.getElementById("patOverlay").classList.remove("show");
-  ["pName","pAge","pDiag","pDoctor","pNotes"].forEach(i=>{document.getElementById(i).value="";});
-  saveState(); renderAll();
-  showToast("Patient "+name+" admitted");
-};
-
-document.getElementById("addStaffBtn").onclick=()=>{ document.getElementById("staffOverlay").classList.add("show"); };
-document.getElementById("saveStaffBtn").onclick=()=>{
-  const name=document.getElementById("sName").value.trim();
-  if(!name){showToast("Enter staff name",true);return;}
-  HOSP.counter++;
-  HOSP.staff.push({id:"STF-"+String(HOSP.counter).padStart(3,"0"),name,
-    role:document.getElementById("sRole").value,
-    dept:document.getElementById("sDept").value,
-    shift:document.getElementById("sShift").value,status:"On Duty"});
-  addActivity(name+" added to staff roster","var(--ok)");
-  document.getElementById("staffOverlay").classList.remove("show");
-  ["sName","sRole","sDept"].forEach(i=>{document.getElementById(i).value="";});
-  saveState(); renderAll();
-  showToast(name+" added to staff");
-};
-
-document.getElementById("addInvBtn").onclick=()=>{ document.getElementById("invOverlay").classList.add("show"); };
-document.getElementById("saveInvBtn").onclick=()=>{
-  const name=document.getElementById("iName").value.trim();
-  if(!name){showToast("Enter item name",true);return;}
-  HOSP.counter++;
-  HOSP.inventory.push({id:"INV-"+String(HOSP.counter).padStart(3,"0"),name,
-    cat:document.getElementById("iCat").value,
-    stock:parseInt(document.getElementById("iStock").value)||0,
-    min:parseInt(document.getElementById("iMin").value)||10});
-  document.getElementById("invOverlay").classList.remove("show");
-  ["iName","iStock","iMin"].forEach(i=>{document.getElementById(i).value="";});
-  saveState(); renderInventory();
-  showToast(name+" added to inventory");
-};
-
-document.getElementById("readyBtn").onclick=()=>{
-  addActivity("Emergency department confirmed READY status","var(--ok)");
-  saveState(); renderAll();
-  showToast("✅ ER Ready status confirmed");
-};
-
-document.getElementById("publishBtn").onclick=publishCapacity;
-
-document.querySelectorAll("[data-close]").forEach(btn=>{
-  btn.onclick=()=>{ const ov=document.getElementById(btn.dataset.close); if(ov) ov.classList.remove("show"); };
-});
-document.querySelectorAll(".overlay").forEach(ov=>{
-  ov.addEventListener("click",e=>{ if(e.target===ov) ov.classList.remove("show"); });
-});
-document.addEventListener("keydown",e=>{
-  if(e.key==="Escape") document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show"));
-});
-
-document.getElementById("patSearch").oninput=function(){ renderPatients(this.value); };
-document.getElementById("logoutBtn").onclick=()=>{
-  ["resqnet_token","resqnet_user","resqnet_session_expiry"].forEach(k=>localStorage.removeItem(k));
-  location.replace("login.html");
-};
 
 /* =====================================================
    RENDER ALL
 ===================================================== */
-function renderAll(){
-  renderDashboard();
-  renderPatients(document.getElementById("patSearch").value);
-  renderBeds();
-  renderEmergency();
-  renderStaff();
-  renderInventory();
-  renderMap();
-  setText("pub-gen", HOSP.beds.general.filter(b=>!b.occupied).length);
-  setText("pub-icu", HOSP.beds.icu.filter(b=>!b.occupied).length);
-}
+function renderAll(){ renderStats(); renderQueue(); renderMergeColumn(); renderUnitsColumn(); renderMap(); }
 
 /* =====================================================
-   INIT & LIVE SYNC
+   EVENTS
 ===================================================== */
-HOSP = loadState();
-initMap();
-renderAll();
+document.querySelectorAll(".fbtn").forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll(".fbtn").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active"); STATE.filter=b.getAttribute("data-f"); renderQueue();
+  };
+});
+var se=document.getElementById("search");
+if(se) se.oninput=function(){STATE.search=this.value;renderQueue();};
 
-// Instant cross-tab sync via storage events
-window.addEventListener("storage", e => {
-  if(e.key === K.AMB_STATE){
-    // Ambulance state changed — check for notifications then re-render
-    checkAmbulanceNotifications();
-    renderDashboard();
-    renderEmergency();
-    renderMap();
+document.getElementById("queue").addEventListener("click",function(e){
+  if(e.target.classList.contains("incChk")){
+    var id=e.target.getAttribute("data-id");
+    if(e.target.checked)STATE.selected[id]=1; else delete STATE.selected[id];
+    updateBulk(); return;
   }
-  if(e.key === K.DISP_STATE || e.key === K.AUTHORITY){
-    renderDashboard();
-    renderEmergency();
+  var card=e.target.closest(".inc-card");
+  if(card) openModal(card.getAttribute("data-id"));
+});
+
+document.getElementById("mergeCol").addEventListener("click",function(e){
+  var ob=e.target.closest("[data-open]");
+  if(ob){ openModal(ob.getAttribute("data-open")); return; }
+  var db=e.target.closest("[data-dispatch]");
+  if(db){
+    var inc=STATE.incidents.filter(function(i){return i.id===db.getAttribute("data-dispatch");})[0];
+    if(!inc||inc.status==="Resolved") return;
+    var want={};
+    recommendTypes(inc).forEach(function(t){want[t]=1;});
+    var picked=applyQuantities(inc,want);
+    if(picked.length){ inc.status="En route"; saveState(); renderAll(); toast("🚨 "+inc.id+" dispatched — "+picked.join(", "),"info"); }
+    else { toast("No available units","info"); }
+    return;
   }
-  if(e.key === K.HOSP_STATE){
-    HOSP = loadState();
-    renderAll();
+  var card=e.target.closest(".merge-card");
+  if(card) openModal(card.getAttribute("data-id"));
+});
+
+document.getElementById("selAll").onchange=function(){
+  var on=this.checked;
+  filteredIncidents().forEach(function(i){if(on)STATE.selected[i.id]=1;else delete STATE.selected[i.id];});
+  renderQueue(); updateBulk();
+};
+function updateBulk(){
+  var n=Object.keys(STATE.selected).length;
+  var bd=document.getElementById("bulkDispatch"); if(bd) bd.disabled=!n;
+  var bc=document.getElementById("bulkCount"); if(bc) bc.textContent=n?n+" selected":"";
+}
+
+document.getElementById("bulkDispatch").onclick=function(){
+  var ids=Object.keys(STATE.selected);
+  ids.forEach(function(id){
+    var inc=STATE.incidents.filter(function(i){return i.id===id;})[0];
+    if(!inc||inc.status==="Resolved") return;
+    if(!inc.assigned.length){
+      var want=recommendTypes(inc);
+      var free=STATE.units.filter(function(u){return u.status==="Available"&&want.indexOf(u.type)>-1;})[0]||
+               STATE.units.filter(function(u){return u.status==="Available";})[0];
+      if(free){inc.assigned=[free.id];free.status="Dispatched";}
+    }
+    if(inc.assigned.length) inc.status="En route";
+  });
+  STATE.selected={}; saveState(); renderAll(); updateBulk();
+  toast("🚨 Dispatched "+ids.length+" incident(s)","info");
+};
+
+document.getElementById("btnDeleteResolved").onclick=function(){
+  var n=STATE.incidents.filter(function(i){return i.status==="Resolved";}).length;
+  if(!n){toast("No resolved incidents","info");return;}
+  if(!confirm("Delete all "+n+" resolved incident(s)?")) return;
+  STATE.incidents=STATE.incidents.filter(function(i){return i.status!=="Resolved";});
+  Object.keys(STATE.selected).forEach(function(id){
+    if(!STATE.incidents.some(function(i){return i.id===id;})) delete STATE.selected[id];
+  });
+  saveState(); renderAll(); updateBulk();
+  toast("🗑 Deleted "+n+" resolved incident(s)","good");
+};
+
+document.getElementById("btnRecenter").onclick=function(){if(map)map.setView(NADIAD,13);};
+document.getElementById("btnFit").onclick=function(){
+  if(!map) return;
+  var b=STATE.incidents.filter(function(i){return i.lat&&i.lng&&i.status!=="Resolved";}).map(function(i){return[i.lat,i.lng];});
+  if(b.length) map.fitBounds(b,{padding:[40,40]});
+};
+document.getElementById("btnToggleRadius").onclick=function(){STATE.showRadius=!STATE.showRadius;renderMap();};
+document.getElementById("overlay").addEventListener("click",function(e){if(e.target===this)closeModal();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeModal();});
+
+// Listen for hospital capacity changes
+window.addEventListener("storage",function(e){
+  if(e.key===K.HOSP_CAP){
+    renderUnitsColumn();
+    toast("🏥 Hospital capacity updated","hosp");
   }
 });
 
-// 3-second polling fallback (catches same-tab changes)
-setInterval(()=>{
-  checkAmbulanceNotifications();
-  renderDashboard();
-  renderEmergency();
-  renderMap();
-}, 3000);
+/* =====================================================
+   SEED
+===================================================== */
+function seed(){
+  var now=Date.now();
+  function mk(cat,sev,loc,lat,lng,msgs){
+    var inc={id:nextId(),category:cat,severity:sev,status:"New",location:loc,lat:lat,lng:lng,
+             created:now,lastReport:now,slaDeadline:now+10*60*1000,assigned:[],mergeScores:[],reports:[]};
+    msgs.forEach(function(m,i){ inc.reports.push({name:m[0],phone:"—",message:m[1],location:loc,time:now-(msgs.length-i)*60000}); });
+    return inc;
+  }
+  STATE.incidents=[
+    mk("Road accident","High","Station Road, Nadiad",22.6942,72.8626,
+      [["Ramesh","Two bike riders fell near station road, one unconscious"],
+       ["Priya","Bike accident outside railway station, need ambulance"],
+       ["Sunil","Major accident at station road crossing, traffic blocked"]]),
+    mk("Flood","Critical","Sector 4 low-lying area",22.6842,72.8588,
+      [["Amit","Water logging very high in sector 4, water entering houses"],
+       ["Nita","Flood water rising fast in sector 4, families trapped"]]),
+    mk("Medical","Medium","Santram Road, Nadiad",22.6976,72.8701,
+      [["Kiran","Elderly man feeling dizzy on santram road"]]),
+    mk("Fire","Critical","Vithal Udyognagar GIDC",22.6901,72.8801,
+      [["Dhruv","Huge fire at chemical factory in GIDC, thick black smoke"],
+       ["Meera","GIDC factory on fire, workers may be trapped inside"],
+       ["Raj","Explosion sound from GIDC factory, fire spreading fast"]])
+  ];
+  STATE.incidents[0].mergeScores=[0.82,0.78];
+  STATE.incidents[1].mergeScores=[0.91];
+  STATE.incidents[3].mergeScores=[0.88,0.85];
+  saveState();
+}
+
+/* =====================================================
+   BOOT
+===================================================== */
+initMap();
+if(!loadState()) seed();
+if(!STATE.units||!STATE.units.length) STATE.units=UNITS_SEED;
+STATE.incidents.forEach(function(i){ if(!i.mergeScores) i.mergeScores=[]; });
+renderAll(); updateBulk(); syncAuthority(); syncAmbulanceState();
+
+setInterval(pollQueue,1200);
+setInterval(function(){ renderStats(); renderQueue(); renderMergeColumn(); },2000);
+setInterval(syncAuthority,2000);
+setInterval(syncAmbulanceState,2000);
+setInterval(renderUnitsColumn,4000);  // refresh hospital capacity panel
 </script>
+
+
+
+<script>
+/* =====================================================
+   SAHAYAK REPORT LEVEL ADD-ON
+   ADD-ONLY: no existing Dispatcher code is changed.
+   Fixes Fire / Flood / Road accident reports that were
+   otherwise falling back to Medium.
+===================================================== */
+(function () {
+  "use strict";
+
+  function hasPhrase(text, phrases) {
+    var value = normalize(text || "");
+    for (var i = 0; i < phrases.length; i++) {
+      if (value.indexOf(normalize(phrases[i])) !== -1) return true;
+    }
+    return false;
+  }
+
+  var CRITICAL_CUES = [
+    "dead", "died", "death", "fatal", "killed",
+    "unconscious", "unresponsive", "not breathing",
+    "heavy bleeding", "severe bleeding",
+    "trapped", "pinned", "drowning",
+    "explosion", "blast", "multiple injured",
+    "many injured", "multiple casualties"
+  ];
+
+  var HIGH_CUES = [
+    "injured", "bleeding", "fracture", "broken bone",
+    "overturned", "vehicle overturned", "traffic blocked",
+    "heavy smoke", "spreading", "spread",
+    "water rising", "water entering houses",
+    "people stranded", "stuck"
+  ];
+
+  var LOW_CUES = [
+    "minor", "small", "slight",
+    "contained", "under control",
+    "no injury", "no injuries",
+    "nobody injured", "no one injured",
+    "everyone safe", "all safe"
+  ];
+
+  function assessReportLevel(rep) {
+    var category = String(rep && rep.category || "");
+    var text = String(rep && rep.message || "");
+
+    /* Explicit danger wording always has highest priority. */
+    if (hasPhrase(text, CRITICAL_CUES)) return "Critical";
+
+    /* FIRE */
+    if (category === "Fire") {
+      if (hasPhrase(text, LOW_CUES)) return "Low";
+      if (hasPhrase(text, HIGH_CUES)) return "High";
+      return "High";
+    }
+
+    /* FLOOD */
+    if (category === "Flood") {
+      if (hasPhrase(text, LOW_CUES)) return "Low";
+      if (hasPhrase(text, ["drowning", "trapped", "water rising fast", "families trapped"])) {
+        return "Critical";
+      }
+      return "High";
+    }
+
+    /* ROAD ACCIDENT */
+    if (category === "Road accident") {
+      if (hasPhrase(text, LOW_CUES)) return "Low";
+      if (hasPhrase(text, HIGH_CUES)) return "High";
+      return "Medium";
+    }
+
+    /*
+      For every other emergency type, do nothing.
+      Your original Dispatcher severity logic remains in control.
+    */
+    return null;
+  }
+
+  /*
+    Wrap the existing ingestReport() instead of editing it.
+    The original function still runs exactly as written.
+  */
+  if (typeof window.ingestReport === "function") {
+    var originalIngestReportForLevel = window.ingestReport;
+
+    window.ingestReport = function (rep) {
+      var level = assessReportLevel(rep);
+
+      if (level) {
+        rep.severity = level;
+      }
+
+      return originalIngestReportForLevel(rep);
+    };
+  }
+})();
+</script>
+
+
+
+<style>
+/* SAHAYAK NORMAL PRIORITY — ADD-ONLY */
+.inc-card.sel-Normal { border-left-color: var(--ok); }
+.merge-card.sel-Normal { border-left-color: var(--ok); }
+.b-Normal { background: rgba(52,211,153,.15); color: var(--ok); }
+</style>
+
+<script>
+/* =====================================================
+   SAHAYAK PRIORITY BRIDGE
+   ADD-ONLY: no existing Dispatcher code is changed.
+
+   The Report page already decides the automatic priority.
+   This bridge preserves that value when the Dispatcher
+   processes the existing "sahayak_queue".
+===================================================== */
+(function () {
+  "use strict";
+
+  function priorityRank(value) {
+    return {
+      Critical: 4,
+      High: 3,
+      Medium: 2,
+      Normal: 1,
+      Low: 1
+    }[value] || 0;
+  }
+
+  function queuedPriority(reportId) {
+    try {
+      var queue = JSON.parse(localStorage.getItem("sahayak_queue") || "[]");
+      if (!Array.isArray(queue)) queue = [queue];
+
+      for (var i = 0; i < queue.length; i++) {
+        if (
+          queue[i] &&
+          String(queue[i].id) === String(reportId) &&
+          (queue[i].aiPriority || queue[i].severity)
+        ) {
+          return queue[i].aiPriority || queue[i].severity;
+        }
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
+  function findIncidentContainingReport(rep) {
+    var best = null;
+
+    STATE.incidents.forEach(function (inc) {
+      if (!inc || !Array.isArray(inc.reports)) return;
+
+      var matched = inc.reports.some(function (r) {
+        return (
+          String(r.message || "") === String(rep.message || "") &&
+          String(r.location || "") === String(rep.location || "")
+        );
+      });
+
+      if (matched && (!best || inc.lastReport > best.lastReport)) {
+        best = inc;
+      }
+    });
+
+    return best;
+  }
+
+  /*
+    Teach the existing merge severity comparison that
+    "Normal" is below Medium.
+  */
+  if (typeof window.severityRank === "function") {
+    var originalSeverityRankForPriority = window.severityRank;
+
+    window.severityRank = function (severity) {
+      if (severity === "Normal") return 1;
+      return originalSeverityRankForPriority(severity);
+    };
+  }
+
+  /*
+    Wrap the CURRENT ingestReport(), including every existing
+    add-on already in the uploaded Dispatcher.
+  */
+  if (typeof window.ingestReport === "function") {
+    var originalIngestReportForAutoPriority = window.ingestReport;
+
+    window.ingestReport = function (rep) {
+      var desiredPriority = queuedPriority(rep && rep.id);
+
+      var existingIds = {};
+      STATE.incidents.forEach(function (inc) {
+        existingIds[inc.id] = true;
+      });
+
+      var result = originalIngestReportForAutoPriority(rep);
+
+      if (!desiredPriority) return result;
+
+      var target = null;
+      var isNewIncident = false;
+
+      for (var i = 0; i < STATE.incidents.length; i++) {
+        if (!existingIds[STATE.incidents[i].id]) {
+          target = STATE.incidents[i];
+          isNewIncident = true;
+          break;
+        }
+      }
+
+      if (!target) {
+        target = findIncidentContainingReport(rep);
+      }
+
+      if (!target) return result;
+
+      /*
+        A brand-new incident gets exactly the automatically
+        assessed priority.
+
+        If the report was merged into an existing incident,
+        it may only increase the incident priority — never lower it.
+      */
+      if (
+        isNewIncident ||
+        priorityRank(desiredPriority) > priorityRank(target.severity)
+      ) {
+        target.severity = desiredPriority;
+
+        if (typeof saveState === "function") saveState();
+        if (typeof renderAll === "function") renderAll();
+      }
+
+      return result;
+    };
+  }
+})();
+</script>
+
+
+
+<script>
+/* =====================================================
+   SAHAYAK SIMILAR REPORT MERGE ADD-ON
+   ADD-ONLY: no existing Dispatcher code is changed.
+
+   Purpose:
+   If the original merge engine does not merge a new report,
+   this add-on performs a conservative fallback check so that
+   clearly similar reports appear in the existing "AI Merged"
+   column instead of becoming separate incidents.
+===================================================== */
+(function () {
+  "use strict";
+
+  function mergeNorm(value) {
+    return String(value == null ? "" : value)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  var MERGE_STOP_WORDS = {
+    "the":1,"a":1,"an":1,"is":1,"are":1,"was":1,"were":1,
+    "at":1,"in":1,"on":1,"near":1,"to":1,"from":1,"of":1,
+    "and":1,"or":1,"for":1,"with":1,"this":1,"that":1,
+    "there":1,"here":1,"please":1,"help":1,"urgent":1,
+    "people":1,"person":1,"nadiad":1,"gujarat":1
+  };
+
+  function mergeTokens(value) {
+    return mergeNorm(value)
+      .split(" ")
+      .filter(function (word) {
+        return word.length > 2 && !MERGE_STOP_WORDS[word];
+      });
+  }
+
+  function tokenSimilarity(a, b) {
+    var A = mergeTokens(a);
+    var B = mergeTokens(b);
+
+    if (!A.length || !B.length) return 0;
+
+    var seenA = {};
+    var seenB = {};
+    var intersection = 0;
+    var union = 0;
+
+    A.forEach(function (word) { seenA[word] = 1; });
+    B.forEach(function (word) { seenB[word] = 1; });
+
+    Object.keys(seenA).forEach(function (word) {
+      union++;
+      if (seenB[word]) intersection++;
+    });
+
+    Object.keys(seenB).forEach(function (word) {
+      if (!seenA[word]) union++;
+    });
+
+    return union ? intersection / union : 0;
+  }
+
+  function locationMatch(rep, inc) {
+    var repLocation = mergeNorm(rep.location || "");
+    var incLocation = mergeNorm(inc.location || "");
+
+    /* Exact / contained location text is a strong match. */
+    if (repLocation && incLocation) {
+      if (repLocation === incLocation) return 1;
+
+      if (
+        repLocation.length >= 5 &&
+        incLocation.length >= 5 &&
+        (repLocation.indexOf(incLocation) !== -1 ||
+         incLocation.indexOf(repLocation) !== -1)
+      ) {
+        return 0.95;
+      }
+    }
+
+    /* Reuse your existing GPS-distance helper when coordinates exist. */
+    if (
+      rep.lat && rep.lng &&
+      inc.lat && inc.lng &&
+      typeof haversine === "function"
+    ) {
+      var metres = haversine(
+        [Number(rep.lat), Number(rep.lng)],
+        [Number(inc.lat), Number(inc.lng)]
+      );
+
+      if (metres <= 200) return 1;
+      if (metres <= 500) return 0.90;
+      if (metres <= 800) return 0.75;
+    }
+
+    /* Fallback to location-token similarity. */
+    return tokenSimilarity(repLocation, incLocation);
+  }
+
+  function incidentText(inc) {
+    var parts = [];
+
+    if (inc.location) parts.push(inc.location);
+
+    if (Array.isArray(inc.reports)) {
+      inc.reports.forEach(function (report) {
+        if (report && report.message) parts.push(report.message);
+      });
+    }
+
+    return parts.join(" ");
+  }
+
+  function fallbackMergeCandidate(rep) {
+    if (!rep || !Array.isArray(STATE.incidents)) return null;
+
+    var best = null;
+
+    STATE.incidents.forEach(function (inc) {
+      if (!inc || inc.status === "Resolved") return;
+
+      /*
+        Same emergency type is required for this fallback.
+        This prevents a fire and a road accident at the same place
+        from being merged just because their locations match.
+      */
+      if (
+        rep.category &&
+        inc.category &&
+        rep.category !== inc.category
+      ) {
+        return;
+      }
+
+      var ageMinutes = (Date.now() - Number(inc.lastReport || inc.created || 0)) / 60000;
+
+      /* Do not merge very old incidents through the fallback rule. */
+      if (ageMinutes > 45) return;
+
+      var locScore = locationMatch(rep, inc);
+      var textScore = tokenSimilarity(
+        (rep.message || "") + " " + (rep.location || ""),
+        incidentText(inc)
+      );
+
+      /*
+        Conservative merge rules:
+
+        1. Same category + nearly identical location
+           -> merge even when citizens describe the event differently.
+
+        2. Same category + nearby GPS/location + similar wording
+           -> merge.
+
+        3. Very similar wording + at least some location agreement
+           -> merge.
+      */
+      var qualifies =
+        (locScore >= 0.95) ||
+        (locScore >= 0.75 && textScore >= 0.18) ||
+        (locScore >= 0.35 && textScore >= 0.42);
+
+      if (!qualifies) return;
+
+      var combinedScore =
+        (0.65 * locScore) +
+        (0.25 * textScore) +
+        (0.10 * Math.max(0, 1 - (ageMinutes / 45)));
+
+      if (!best || combinedScore > best.info.score) {
+        best = {
+          inc: inc,
+          info: {
+            score: Math.min(0.99, combinedScore),
+            reason:
+              "similar report fallback: same type + location/message match"
+          }
+        };
+      }
+    });
+
+    return best;
+  }
+
+  /*
+    Keep the original AI merge engine first.
+    Only if it returns no candidate do we try the conservative
+    fallback above. Nothing from the original logic is removed.
+  */
+  if (typeof window.findMergeCandidate === "function") {
+    var originalFindMergeCandidate = window.findMergeCandidate;
+
+    window.findMergeCandidate = function (rep) {
+      var originalCandidate = originalFindMergeCandidate(rep);
+
+      if (originalCandidate) {
+        return originalCandidate;
+      }
+
+      return fallbackMergeCandidate(rep);
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
