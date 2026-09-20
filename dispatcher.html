@@ -240,13 +240,6 @@
 <div id="toasts"></div>
 
 <script>
-
-  window.addEventListener("pageshow", function (event) {
-  if (event.persisted) {
-    window.location.reload();
-  }
-});
-
 "use strict";
 
 /* =====================================================
@@ -1573,6 +1566,73 @@ setInterval(renderUnitsColumn,4000);  // refresh hospital capacity panel
 
       return fallbackMergeCandidate(rep);
     };
+  }
+})();
+</script>
+
+
+<!-- =====================================================
+     SAHAYAK DISPATCHER SIGN OUT — ADD-ONLY
+     Existing dispatcher code is unchanged.
+===================================================== -->
+<style>
+  .sahayak-signout{
+    margin-left:8px;
+    padding:7px 12px;
+    border:1px solid rgba(248,113,113,.55);
+    border-radius:8px;
+    background:rgba(248,113,113,.10);
+    color:#fca5a5;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.2px;
+    cursor:pointer;
+    transition:.18s ease;
+    white-space:nowrap;
+  }
+  .sahayak-signout:hover{
+    background:rgba(248,113,113,.20);
+    border-color:#f87171;
+    color:#fff;
+  }
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  function signOutDispatcher() {
+    try {
+      localStorage.removeItem("resqnet_token");
+      localStorage.removeItem("resqnet_user");
+      localStorage.removeItem("resqnet_session_expiry");
+      localStorage.removeItem("resqnet_login_reason");
+    } catch (e) {}
+
+    window.location.replace("login.html?t=" + Date.now());
+  }
+
+  function addDispatcherSignOut() {
+    if (document.getElementById("dispatcher-signout")) return;
+
+    var headerStats = document.querySelector(".hstat");
+    if (!headerStats) return;
+
+    var button = document.createElement("button");
+    button.id = "dispatcher-signout";
+    button.type = "button";
+    button.className = "sahayak-signout";
+    button.textContent = "Sign out";
+    button.setAttribute("aria-label", "Sign out of dispatcher console");
+    button.addEventListener("click", signOutDispatcher);
+
+    headerStats.appendChild(button);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", addDispatcherSignOut);
+  } else {
+    addDispatcherSignOut();
   }
 })();
 </script>
